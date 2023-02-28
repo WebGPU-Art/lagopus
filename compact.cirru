@@ -79,6 +79,26 @@
       :ns $ quote (ns lagopus.config)
     |lagopus.main $ {}
       :defs $ {}
+        |handle-compilation $ quote
+          defn handle-compilation (info code)
+            if-let
+              error $ -> info .-messages .-0
+              let
+                  line-num $ .-lineNum error
+                  line-pos $ .-linePos error
+                  lines $ .split-lines code
+                  message $ str line-num "\" "
+                    nth lines $ dec line-num
+                    , &newline
+                      .join-str
+                        repeat "\" " $ +
+                          count $ str line-num
+                          , line-pos
+                        , "\""
+                      , "\"^ " (.-message error)
+                js/console.error $ str "\"WGSL Error:" &newline message
+                flipped js/setTimeout 1000 $ fn ()
+                  hud! "\"error" $ str "\"WGSL Error:" &newline message
         |main! $ quote
           defn main! () (hint-fn async)
             if dev? $ load-console-formatter!
@@ -87,9 +107,12 @@
             paintApp
             renderControl
             startControlLoop 10 onControlEvent
+            set! js/window.__lagopusHandleCompilationInfo handle-compilation
             set! js/window.onresize $ fn (e) (paintApp)
         |reload! $ quote
-          defn reload! () (paintApp) (println "\"Reloaded.")
+          defn reload! () $ if (nil? build-errors)
+            do (render-app!) (paintApp) (println "\"Reloaded.") (hud! "\"ok~" "\"OK")
+            hud! "\"error" build-errors
         |render-app! $ quote
           defn render-app! () $ let
               tree $ comp-container
@@ -102,3 +125,5 @@
           "\"@triadica/lagopus/lib/control.mjs" :refer $ paintApp onControlEvent
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev?
+          "\"bottom-tip" :default hud!
+          "\"./calcit.build-errors" :default build-errors
