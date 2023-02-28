@@ -7,21 +7,21 @@
     |lagopus.alias $ {}
       :defs $ {}
         |convert-records-data $ quote
-          defn convert-records-data (data fields ? collect!)
-            if (some? collect!)
-              if (list? data)
-                &doseq (x data) (convert-records-data x fields collect!)
-                collect! $ let
-                    o $ js-object
-                  &doseq (k fields)
-                    aset o (turn-string k)
-                      to-js-data $ &record:get data k
-                  , o
-              let
-                  buffer $ js-array
-                  collect! $ fn (y) (.!push buffer y)
-                convert-records-data data fields collect!
-                , buffer
+          defn convert-records-data (data fields write!)
+            if (list? data)
+              &doseq (x data) (convert-records-data x fields write!)
+              &doseq (k fields)
+                let
+                    item $ &record:get data k
+                  if (list? item)
+                    &doseq (x item) (write! x)
+                    write! item
+        |count-recursive $ quote
+          defn count-recursive (xs)
+            if (list? xs)
+              reduce xs 0 $ fn (acc y)
+                &+ acc $ count-recursive y
+              , 1
         |group $ quote
           defn group (a & children) (alias-js/group nil & children)
         |object $ quote
@@ -30,13 +30,25 @@
                 attrs-list $ &map:get options :attrs-list
                 fields $ map attrs-list
                   fn (o) (&map:get o :field)
-              alias-js/object $ js-object
-                :shader $ &map:get options :shader
-                :topology $ &map:get options :topology
-                :attrsList $ to-js-data attrs-list
-                :data $ convert-records-data (&map:get options :data) fields
+                data $ &map:get options :data
+                vertices-size $ count-recursive data
+                buffer-size $ &*
+                  reduce attrs-list 0 $ fn (acc x)
+                    &+ acc $ &map:get x :size
+                  , vertices-size
+                vertices $ new js/Float32Array buffer-size
+                *idx $ atom 0
+                write! $ fn (x)
+                  let
+                      idx @*idx
+                    aset vertices idx x
+                    swap! *idx inc
+              convert-records-data (&map:get options :data) fields write!
+              assert (&= buffer-size @*idx) "\"buffer size guessed correctly"
+              createRenderer (&map:get options :shader) (&map:get options :topology) (to-js-data attrs-list) vertices-size vertices
       :ns $ quote
         ns lagopus.alias $ :require ("\"@triadica/lagopus/lib/alias.mjs" :as alias-js)
+          "\"@triadica/lagopus/lib/render.mjs" :refer $ createRenderer
     |lagopus.comp.container $ {}
       :defs $ {}
         |Vertex $ quote (defrecord Vertex :position :color)
@@ -60,16 +72,22 @@
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/triangle.wgsl" :default triangle-wgsl
+    |lagopus.config $ {}
+      :defs $ {}
+        |dev? $ quote
+          def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
+      :ns $ quote (ns lagopus.config)
     |lagopus.main $ {}
       :defs $ {}
         |main! $ quote
           defn main! () (hint-fn async)
+            if dev? $ load-console-formatter!
             js-await $ initializeContext
             render-app!
             paintApp
             renderControl
             startControlLoop 10 onControlEvent
-            set! js/window.onresize $ fn () (paintApp)
+            set! js/window.onresize $ fn (e) (paintApp)
         |reload! $ quote
           defn reload! () (paintApp) (println "\"Reloaded.")
         |render-app! $ quote
@@ -83,3 +101,4 @@
           "\"@triadica/lagopus/lib/render.mjs" :refer $ initializeContext
           "\"@triadica/lagopus/lib/control.mjs" :refer $ paintApp onControlEvent
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
+          lagopus.config :refer $ dev?
