@@ -145,10 +145,10 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.1-a1":
-  version "0.0.1-a1"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.1-a1.tgz#97994e2c24b63e3590cca4212a513fdcab74f77d"
-  integrity sha512-iztBQ6lEdOcYQ/JUYS0CW4iHTnJsktOSb3S6HqBfyJRU6ROV8UR93AaXXLzjX7HVowmb5Jc5k2nGOHRq1psRvg==
+"@triadica/lagopus@^0.0.1-a3":
+  version "0.0.1-a3"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.1-a3.tgz#d339594ea8937b6221699369822a64fb069748f2"
+  integrity sha512-9GyQDuCqNp20mK/wcOx1feT7u+1KdHsS6f4WcPASnKhHG5GSUFnze6cOOpnDX0N9UhsvVazG152m4V9xReXG1Q==
   dependencies:
     "@triadica/touch-control" "^0.0.1-a3"
 

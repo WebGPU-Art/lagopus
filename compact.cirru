@@ -1,52 +1,129 @@
 
-{} (:package |app)
-  :configs $ {} (:init-fn |app.main/main!) (:reload-fn |app.main/reload!) (:version |0.0.1)
+{} (:package |lagopus)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.1)
     :modules $ []
   :entries $ {}
   :files $ {}
-    |app.comp.container $ {}
+    |lagopus.alias $ {}
       :defs $ {}
-        |comp-container $ quote
-          defn comp-container () $ group (js-object)
-            object $ w-js-log
-              js-object (:shader triangle-wgsl) (:topology "\"triangle-list")
-                :attrsList $ js-array
-                  js-object (:field "\"position") (:format "\"float32x4") (:size 4)
-                  js-object (:field "\"color") (:format "\"float32x4") (:size 4)
-                :data $ js-array
-                  js-object
-                    :position $ js-array -100 -100 0.3 1
-                    :color $ js-array 1 0 0 1
-                  js-object
-                    :position $ js-array 0 100 100 1
-                    :color $ js-array 1 1 0 1
-                  js-object
-                    :position $ js-array 100 -100 -100 1
-                    :color $ js-array 0 0 1 1
+        |convert-records-data $ quote
+          defn convert-records-data (data fields write!)
+            if (list? data)
+              &doseq (x data) (convert-records-data x fields write!)
+              &doseq (k fields)
+                let
+                    item $ &record:get data k
+                  if (list? item)
+                    &doseq (x item) (write! x)
+                    write! item
+        |count-recursive $ quote
+          defn count-recursive (xs)
+            if (list? xs)
+              reduce xs 0 $ fn (acc y)
+                &+ acc $ count-recursive y
+              , 1
+        |group $ quote
+          defn group (a & children) (alias-js/group nil & children)
+        |object $ quote
+          defn object (options)
+            let
+                attrs-list $ &map:get options :attrs-list
+                fields $ map attrs-list
+                  fn (o) (&map:get o :field)
+                data $ &map:get options :data
+                vertices-size $ count-recursive data
+                buffer-size $ &*
+                  reduce attrs-list 0 $ fn (acc x)
+                    &+ acc $ &map:get x :size
+                  , vertices-size
+                vertices $ new js/Float32Array buffer-size
+                *idx $ atom 0
+                write! $ fn (x)
+                  let
+                      idx @*idx
+                    aset vertices idx x
+                    swap! *idx inc
+              convert-records-data (&map:get options :data) fields write!
+              assert (&= buffer-size @*idx) "\"buffer size guessed correctly"
+              createRenderer (&map:get options :shader) (&map:get options :topology) (to-js-data attrs-list) vertices-size vertices
       :ns $ quote
-        ns app.comp.container $ :require
-          "\"@triadica/lagopus/lib/alias.mjs" :refer $ group object
-          "\"../shaders/triangle.wgsl" :default triangle-wgsl
-    |app.main $ {}
+        ns lagopus.alias $ :require ("\"@triadica/lagopus/lib/alias.mjs" :as alias-js)
+          "\"@triadica/lagopus/lib/render.mjs" :refer $ createRenderer
+    |lagopus.comp.container $ {}
       :defs $ {}
+        |Vertex $ quote (defrecord Vertex :position :color)
+        |comp-container $ quote
+          defn comp-container () $ group nil
+            object $ {} (:shader triangle-wgsl) (:topology "\"triangle-list")
+              :attrs-list $ []
+                {} (:field :position) (:format "\"float32x4") (:size 4)
+                {} (:field :color) (:format "\"float32x4") (:size 4)
+              :data $ []
+                %{} Vertex
+                  :position $ [] -100 -100 0.3 1
+                  :color $ [] 1 0 0 1
+                %{} Vertex
+                  :position $ [] 0 100 100 1
+                  :color $ [] 1 1 0 1
+                %{} Vertex
+                  :position $ [] 100 -100 -100 1
+                  :color $ [] 0 0 1 1
+      :ns $ quote
+        ns lagopus.comp.container $ :require
+          lagopus.alias :refer $ group object
+          "\"../shaders/triangle.wgsl" :default triangle-wgsl
+    |lagopus.config $ {}
+      :defs $ {}
+        |dev? $ quote
+          def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
+      :ns $ quote (ns lagopus.config)
+    |lagopus.main $ {}
+      :defs $ {}
+        |handle-compilation $ quote
+          defn handle-compilation (info code)
+            if-let
+              error $ -> info .-messages .-0
+              let
+                  line-num $ .-lineNum error
+                  line-pos $ .-linePos error
+                  lines $ .split-lines code
+                  message $ str line-num "\" "
+                    nth lines $ dec line-num
+                    , &newline
+                      .join-str
+                        repeat "\" " $ +
+                          count $ str line-num
+                          , line-pos
+                        , "\""
+                      , "\"^ " (.-message error)
+                js/console.error $ str "\"WGSL Error:" &newline message
+                flipped js/setTimeout 1000 $ fn ()
+                  hud! "\"error" $ str "\"WGSL Error:" &newline message
         |main! $ quote
           defn main! () (hint-fn async)
+            if dev? $ load-console-formatter!
             js-await $ initializeContext
             render-app!
             paintApp
             renderControl
             startControlLoop 10 onControlEvent
-            set! js/window.onresize $ fn () (paintApp)
+            set! js/window.__lagopusHandleCompilationInfo handle-compilation
+            set! js/window.onresize $ fn (e) (paintApp)
         |reload! $ quote
-          defn reload! () (paintApp) (println "\"Reloaded.")
+          defn reload! () $ if (nil? build-errors)
+            do (render-app!) (paintApp) (println "\"Reloaded.") (hud! "\"ok~" "\"OK")
+            hud! "\"error" build-errors
         |render-app! $ quote
           defn render-app! () $ let
               tree $ comp-container
             .!reset atomLagopusTree tree
       :ns $ quote
-        ns app.main $ :require
-          app.comp.container :refer $ comp-container
+        ns lagopus.main $ :require
+          lagopus.comp.container :refer $ comp-container
           "\"@triadica/lagopus/lib/global.mjs" :refer $ atomLagopusTree
           "\"@triadica/lagopus/lib/render.mjs" :refer $ initializeContext
           "\"@triadica/lagopus/lib/control.mjs" :refer $ paintApp onControlEvent
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
+          lagopus.config :refer $ dev?
+          "\"bottom-tip" :default hud!
+          "\"./calcit.build-errors" :default build-errors
