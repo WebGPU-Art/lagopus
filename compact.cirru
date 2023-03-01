@@ -45,29 +45,63 @@
                     swap! *idx inc
               convert-records-data (&map:get options :data) fields write!
               assert (&= buffer-size @*idx) "\"buffer size guessed correctly"
-              createRenderer (&map:get options :shader) (&map:get options :topology) (to-js-data attrs-list) vertices-size vertices
+              ; js/console.log vertices-size buffer-size vertices
+              createRenderer
+                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective)
+                turn-string $ &map:get options :topology
+                to-js-data attrs-list
+                , vertices-size vertices
+        |wgsl-perspective $ quote
+          def wgsl-perspective $ inline-shader "\"perspective"
+        |wgsl-simplex $ quote
+          def wgsl-simplex $ inline-shader "\"simplex"
       :ns $ quote
         ns lagopus.alias $ :require ("\"@triadica/lagopus/lib/alias.mjs" :as alias-js)
           "\"@triadica/lagopus/lib/render.mjs" :refer $ createRenderer
+          lagopus.config :refer $ inline-shader
     |lagopus.comp.container $ {}
       :defs $ {}
         |Vertex $ quote (defrecord Vertex :position :color)
         |comp-container $ quote
           defn comp-container () $ group nil
-            object $ {} (:shader triangle-wgsl) (:topology "\"triangle-list")
+            object $ {} (:shader triangle-wgsl)
+              :topology $ do :line-strip :triangle-list
               :attrs-list $ []
                 {} (:field :position) (:format "\"float32x4") (:size 4)
                 {} (:field :color) (:format "\"float32x4") (:size 4)
-              :data $ []
-                %{} Vertex
-                  :position $ [] -100 -100 0.3 1
-                  :color $ [] 1 0 0 1
-                %{} Vertex
-                  :position $ [] 0 100 100 1
-                  :color $ [] 1 1 0 1
-                %{} Vertex
-                  :position $ [] 100 -100 -100 1
-                  :color $ [] 0 0 1 1
+              :data $ let
+                  size 200
+                  d 32
+                -> (range-bothway size)
+                  map $ fn (x)
+                    -> (range-bothway size)
+                      map $ fn (y)
+                        let
+                            x0 (* d x) 
+                            x1 (+ x0 d) 
+                            y0 (* d y) 
+                            y1 $ + y0 d
+                          []
+                            []
+                              %{} Vertex
+                                :position $ [] x0 0 y0 1
+                                :color $ [] 1 0 0 1
+                              %{} Vertex
+                                :position $ [] x1 0 y0 1
+                                :color $ [] 1 0 0 1
+                              %{} Vertex
+                                :position $ [] x1 0 y1 1
+                                :color $ [] 1 0 0 1
+                            []
+                              %{} Vertex
+                                :position $ [] x0 0 y0 1
+                                :color $ [] 1 0 0 1
+                              %{} Vertex
+                                :position $ [] x1 0 y1 1
+                                :color $ [] 1 0 0 1
+                              %{} Vertex
+                                :position $ [] x0 0 y1 1
+                                :color $ [] 1 0 0 1
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -76,6 +110,9 @@
       :defs $ {}
         |dev? $ quote
           def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
+        |inline-shader $ quote
+          defmacro inline-shader (path)
+            read-file $ str "\"shaders/" path "\".wgsl"
       :ns $ quote (ns lagopus.config)
     |lagopus.main $ {}
       :defs $ {}

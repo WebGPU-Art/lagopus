@@ -12,48 +12,18 @@ struct UBO {
 @group(0) @binding(0)
 var<uniform> uniforms: UBO;
 
-// perspective
+const ALL_HEIGHT: f32 = 600.0;
 
-struct PointResult {
-  pointPosition: vec3<f32>,
-  r: f32,
-  s: f32,
-};
+{{perspective}}
 
-fn transform_perspective(p: vec3<f32>) -> PointResult {
-  let forward = uniforms.forward;
-  let upward = uniforms.upward;
-  let rightward = uniforms.rightward;
-  let lookDistance = uniforms.lookDistance;
-  let cameraPosition = uniforms.cameraPosition;
-
-  let moved_point: vec3<f32> = p - cameraPosition;
-
-  let s: f32 = uniforms.coneBackScale;
-
-  let r: f32 = dot(moved_point, forward) / lookDistance;
-
-  // if (r < (s * -0.9)) {
-  //   // make it disappear with depth test since it's probably behind the camera
-  //   return PointResult(vec3(0.0, 0.0, 10000.), r, s);
-  // }
-
-  let screen_scale: f32 = (s + 1.0) / (r + s);
-  let y_next: f32 = dot(moved_point, upward) * screen_scale;
-  let x_next: f32 = dot(moved_point, rightward) * screen_scale;
-  let z_next: f32 = r;
-
-  return PointResult(
-    vec3(x_next, y_next / uniforms.viewportRatio, z_next),
-    r, s
-  );
-}
+{{simplex}}
 
 // main
 
 struct VertexOut {
     @builtin(position) position : vec4<f32>,
     @location(0) color : vec4<f32>,
+    @location(1) h: f32,
 };
 
 @vertex
@@ -63,17 +33,29 @@ fn vertex_main(
 ) -> VertexOut
 {
   var output: VertexOut;
-  let p = transform_perspective(position.xyz).pointPosition;
+  let h1 = simplexNoise2(vec2<f32>(position.x, position.z) * 0.0002) * ALL_HEIGHT * 0.6;
+  let h2 = simplexNoise2(vec2<f32>(position.x, position.z) * 0.002) * ALL_HEIGHT * 0.25;
+  let h3 = simplexNoise2(vec2<f32>(position.x, position.z) * 0.008) * ALL_HEIGHT * 0.05;
+  let h4 = simplexNoise2(vec2<f32>(position.x, position.z) * 0.01) * ALL_HEIGHT * 0.05;
+  let h5 = simplexNoise2(vec2<f32>(position.x, position.z) * 0.02) * ALL_HEIGHT * 0.05;
+  let h = h1 + h2 + h3 + h4 + h5;
+  let p1 = vec3<f32>(position.x, h, position.z);
+  let p = transform_perspective(p1.xyz).pointPosition;
   let scale: f32 = 0.002;
   output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
   // output.position = position;
   output.color = color;
+  output.h = h;
   return output;
 }
 
 @fragment
 fn fragment_main(fragData: VertexOut) -> @location(0) vec4<f32>
 {
-    return fragData.color;
+    // return fragData.color;
     // return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+    let h = fragData.h;
+    let a = 0.7 - (h / ALL_HEIGHT * 0.4 + 0.4);
+    // return vec4<f32>(1.0, 1.0, 1.0, 1.0);
+    return vec4<f32>(a, a, a, 1.0);
 }
