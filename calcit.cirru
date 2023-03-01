@@ -597,26 +597,16 @@
                               |T $ {} (:at 1677608528674) (:by |rJG4IHzWf) (:text "|\"WGSL Error:") (:type :leaf)
                               |X $ {} (:at 1677608523623) (:by |rJG4IHzWf) (:text |&newline) (:type :leaf)
                               |b $ {} (:at 1677608520938) (:by |rJG4IHzWf) (:text |message) (:type :leaf)
-                      |b $ {} (:at 1677608803551) (:by |rJG4IHzWf) (:type :expr)
+                      |h $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:type :expr)
                         :data $ {}
-                          |D $ {} (:at 1677608805890) (:by |rJG4IHzWf) (:text |flipped) (:type :leaf)
-                          |L $ {} (:at 1677608809294) (:by |rJG4IHzWf) (:text |js/setTimeout) (:type :leaf)
-                          |P $ {} (:at 1677609120653) (:by |rJG4IHzWf) (:text |1000) (:type :leaf)
-                          |T $ {} (:at 1677608811108) (:by |rJG4IHzWf) (:type :expr)
+                          |T $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:text |hud!) (:type :leaf)
+                          |b $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:text "|\"error") (:type :leaf)
+                          |h $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:type :expr)
                             :data $ {}
-                              |D $ {} (:at 1677608811750) (:by |rJG4IHzWf) (:text |fn) (:type :leaf)
-                              |L $ {} (:at 1677608812074) (:by |rJG4IHzWf) (:type :expr)
-                                :data $ {}
-                              |T $ {} (:at 1677608595558) (:by |rJG4IHzWf) (:type :expr)
-                                :data $ {}
-                                  |T $ {} (:at 1677608598148) (:by |rJG4IHzWf) (:text |hud!) (:type :leaf)
-                                  |X $ {} (:at 1677608709674) (:by |rJG4IHzWf) (:text "|\"error") (:type :leaf)
-                                  |b $ {} (:at 1677608601769) (:by |rJG4IHzWf) (:type :expr)
-                                    :data $ {}
-                                      |T $ {} (:at 1677608601769) (:by |rJG4IHzWf) (:text |str) (:type :leaf)
-                                      |b $ {} (:at 1677608601769) (:by |rJG4IHzWf) (:text "|\"WGSL Error:") (:type :leaf)
-                                      |h $ {} (:at 1677608601769) (:by |rJG4IHzWf) (:text |&newline) (:type :leaf)
-                                      |l $ {} (:at 1677608601769) (:by |rJG4IHzWf) (:text |message) (:type :leaf)
+                              |T $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:text |str) (:type :leaf)
+                              |b $ {} (:at 1677686187032) (:by |rJG4IHzWf) (:text "|\"WGSL Errors:") (:type :leaf)
+                              |h $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:text |&newline) (:type :leaf)
+                              |l $ {} (:at 1677686138091) (:by |rJG4IHzWf) (:text |message) (:type :leaf)
           |main! $ {} (:at 1677432887802) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1677432887802) (:by |rJG4IHzWf) (:text |defn) (:type :leaf)

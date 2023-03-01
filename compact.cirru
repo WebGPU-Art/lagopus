@@ -97,8 +97,7 @@
                         , "\""
                       , "\"^ " (.-message error)
                 js/console.error $ str "\"WGSL Error:" &newline message
-                flipped js/setTimeout 1000 $ fn ()
-                  hud! "\"error" $ str "\"WGSL Error:" &newline message
+                hud! "\"error" $ str "\"WGSL Errors:" &newline message
         |main! $ quote
           defn main! () (hint-fn async)
             if dev? $ load-console-formatter!
