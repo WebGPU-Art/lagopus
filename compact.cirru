@@ -71,24 +71,40 @@
       :defs $ {}
         |Vertex $ quote (defrecord Vertex :position :color)
         |comp-container $ quote
-          defn comp-container () $ group nil
-            object $ {} (:shader triangle-wgsl)
+          defn comp-container (store)
+            group nil
+              comp-button
+                {}
+                  :position $ [] 40 260 0
+                  :color $ [] 0.6 0.6 0.9 1
+                fn (e d!) (d! :tab :mountains)
+              comp-button
+                {}
+                  :position $ [] 0 260 0
+                  :color $ [] 0.6 0.6 0.9 1
+                fn (e d!) (d! :tab :bends)
+              case-default (:tab store) (group nil)
+                :mountains $ comp-mountains
+                :bends $ group nil
+        |comp-mountains $ quote
+          defn comp-mountains () $ object
+            {} (:shader triangle-wgsl)
               :topology $ do :line-strip :triangle-list
               :attrs-list $ []
                 {} (:field :position) (:format "\"float32x4") (:size 4)
                 {} (:field :color) (:format "\"float32x4") (:size 4)
               :data $ let
-                  size 200
+                  size 100
                   d 32
                 -> (range-bothway size)
                   map $ fn (x)
                     -> (range-bothway size)
                       map $ fn (y)
                         let
-                            x0 (* d x) 
-                            x1 (+ x0 d) 
-                            y0 (* d y) 
-                            y1 $ + y0 d
+                            x0 $ &* d x
+                            x1 $ &+ x0 d
+                            y0 $ &* d y
+                            y1 $ &+ y0 d
                           []
                             []
                               %{} Vertex
@@ -110,11 +126,6 @@
                               %{} Vertex
                                 :position $ [] x0 0 y1 1
                                 :color $ [] 1 0 0 1
-            comp-button
-              {}
-                :position $ [] 0 60 0
-                :color $ [] 0.6 0.6 0.9 1
-              fn (e d!) (println "\"Click")
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -130,10 +141,19 @@
       :ns $ quote (ns lagopus.config)
     |lagopus.main $ {}
       :defs $ {}
+        |*store $ quote
+          defatom *store $ {} (:tab :mountains)
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
-          defn dispatch! (op data) (js/console.warn "\"TODO dispatch" op)
+          defn dispatch! (op data)
+            if dev? $ js/console.log op data
+            let
+                store @*store
+                next-store $ case-default op
+                  do (js/console.warn ":unknown op" op data) store
+                  :tab $ assoc store :tab data
+              if (not= next-store store) (reset! *store next-store)
         |handle-compilation $ quote
           defn handle-compilation (info code)
             if-let
@@ -158,22 +178,26 @@
             if dev? $ load-console-formatter!
             js-await $ initializeContext
             render-app!
-            paintApp
             renderControl
             startControlLoop 10 onControlEvent
             set! js/window.__lagopusHandleCompilationInfo handle-compilation
             set! js/window.onresize $ fn (e) (paintApp)
+            add-watch *store :change $ fn (next store) (render-app!)
             setupMouseEvents canvas
         |reload! $ quote
           defn reload! () $ if (nil? build-errors)
-            do (render-app!) (paintApp) (println "\"Reloaded.") (hud! "\"ok~" "\"OK")
+            do (render-app!) (remove-watch *store :change)
+              add-watch *store :change $ fn (next store) (render-app!)
+              println "\"Reloaded."
+              hud! "\"ok~" "\"OK"
             hud! "\"error" build-errors
         |render-app! $ quote
           defn render-app! () $ let
-              tree $ comp-container
+              tree $ comp-container @*store
             .!reset atomLagopusTree tree
             .!reset atomObjectsTree tree
             .!reset atomProxiedDispatch dispatch!
+            paintApp
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
