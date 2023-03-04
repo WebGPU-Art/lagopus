@@ -1,7 +1,7 @@
 
 {} (:package |lagopus)
   :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.1)
-    :modules $ []
+    :modules $ [] |memof/
   :entries $ {}
   :files $ {}
     |lagopus.alias $ {}
@@ -73,21 +73,9 @@
           def color-default $ [] 1 0 0 1
         |comp-container $ quote
           defn comp-container (store)
-            group nil
-              comp-button
-                {}
-                  :position $ [] 40 260 0
-                  :color $ [] 0.9 0.4 0.5 1
-                  :size 20
-                fn (e d!) (d! :tab :mountains)
-              comp-button
-                {}
-                  :position $ [] 0 260 0
-                  :color $ [] 0.5 0.5 0.9 1
-                  :size 20
-                fn (e d!) (d! :tab :bends)
+            group nil (memof1-call comp-tabs)
               case-default (:tab store) (group nil)
-                :mountains $ comp-mountains
+                :mountains $ memof1-call comp-mountains
                 :bends $ group nil
         |comp-mountains $ quote
           defn comp-mountains () $ object
@@ -129,11 +117,26 @@
                               {}
                                 :position $ [] x0 0 y1 1
                                 :color color-default
+        |comp-tabs $ quote
+          defn comp-tabs () $ group nil
+            comp-button
+              {}
+                :position $ [] 40 260 0
+                :color $ [] 0.9 0.4 0.5 1
+                :size 20
+              fn (e d!) (d! :tab :mountains)
+            comp-button
+              {}
+                :position $ [] 0 260 0
+                :color $ [] 0.5 0.5 0.9 1
+                :size 20
+              fn (e d!) (d! :tab :bends)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/triangle.wgsl" :default triangle-wgsl
           lagopus.comp.button :refer $ comp-button
+          memof.once :refer $ memof1-call
     |lagopus.config $ {}
       :defs $ {}
         |dev? $ quote
