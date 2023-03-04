@@ -59,6 +59,14 @@
         ns lagopus.alias $ :require ("\"@triadica/lagopus/lib/alias.mjs" :as alias-js)
           "\"@triadica/lagopus/lib/render.mjs" :refer $ createRenderer
           lagopus.config :refer $ inline-shader
+    |lagopus.comp.button $ {}
+      :defs $ {}
+        |comp-button $ quote
+          defn comp-button (props on-click)
+            compButton (to-js-data props) on-click
+      :ns $ quote
+        ns lagopus.comp.button $ :require
+          "\"@triadica/lagopus/lib/comp/bottom.mjs" :refer $ compButton
     |lagopus.comp.container $ {}
       :defs $ {}
         |Vertex $ quote (defrecord Vertex :position :color)
@@ -102,10 +110,16 @@
                               %{} Vertex
                                 :position $ [] x0 0 y1 1
                                 :color $ [] 1 0 0 1
+            comp-button
+              {}
+                :position $ [] 0 60 0
+                :color $ [] 0.6 0.6 0.9 1
+              fn (e d!) (println "\"Click")
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/triangle.wgsl" :default triangle-wgsl
+          lagopus.comp.button :refer $ comp-button
     |lagopus.config $ {}
       :defs $ {}
         |dev? $ quote
@@ -116,6 +130,10 @@
       :ns $ quote (ns lagopus.config)
     |lagopus.main $ {}
       :defs $ {}
+        |canvas $ quote
+          def canvas $ js/document.querySelector "\"canvas"
+        |dispatch! $ quote
+          defn dispatch! (op data) (js/console.warn "\"TODO dispatch" op)
         |handle-compilation $ quote
           defn handle-compilation (info code)
             if-let
@@ -145,6 +163,7 @@
             startControlLoop 10 onControlEvent
             set! js/window.__lagopusHandleCompilationInfo handle-compilation
             set! js/window.onresize $ fn (e) (paintApp)
+            setupMouseEvents canvas
         |reload! $ quote
           defn reload! () $ if (nil? build-errors)
             do (render-app!) (paintApp) (println "\"Reloaded.") (hud! "\"ok~" "\"OK")
@@ -153,12 +172,15 @@
           defn render-app! () $ let
               tree $ comp-container
             .!reset atomLagopusTree tree
+            .!reset atomObjectsTree tree
+            .!reset atomProxiedDispatch dispatch!
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
-          "\"@triadica/lagopus/lib/global.mjs" :refer $ atomLagopusTree
+          "\"@triadica/lagopus/lib/global.mjs" :refer $ atomLagopusTree atomProxiedDispatch atomObjectsTree
           "\"@triadica/lagopus/lib/render.mjs" :refer $ initializeContext
           "\"@triadica/lagopus/lib/control.mjs" :refer $ paintApp onControlEvent
+          "\"@triadica/lagopus/lib/events.mjs" :refer $ setupMouseEvents
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev?
           "\"bottom-tip" :default hud!
