@@ -12,7 +12,7 @@
               &doseq (x data) (convert-records-data x fields write!)
               &doseq (k fields)
                 let
-                    item $ &record:get data k
+                    item $ &map:get data k
                   if (list? item)
                     &doseq (x item) (write! x)
                     write! item
@@ -69,19 +69,22 @@
           "\"@triadica/lagopus/lib/comp/bottom.mjs" :refer $ compButton
     |lagopus.comp.container $ {}
       :defs $ {}
-        |Vertex $ quote (defrecord Vertex :position :color)
+        |color-default $ quote
+          def color-default $ [] 1 0 0 1
         |comp-container $ quote
           defn comp-container (store)
             group nil
               comp-button
                 {}
                   :position $ [] 40 260 0
-                  :color $ [] 0.6 0.6 0.9 1
+                  :color $ [] 0.9 0.4 0.5 1
+                  :size 20
                 fn (e d!) (d! :tab :mountains)
               comp-button
                 {}
                   :position $ [] 0 260 0
-                  :color $ [] 0.6 0.6 0.9 1
+                  :color $ [] 0.5 0.5 0.9 1
+                  :size 20
                 fn (e d!) (d! :tab :bends)
               case-default (:tab store) (group nil)
                 :mountains $ comp-mountains
@@ -94,7 +97,7 @@
                 {} (:field :position) (:format "\"float32x4") (:size 4)
                 {} (:field :color) (:format "\"float32x4") (:size 4)
               :data $ let
-                  size 100
+                  size 80
                   d 32
                 -> (range-bothway size)
                   map $ fn (x)
@@ -107,25 +110,25 @@
                             y1 $ &+ y0 d
                           []
                             []
-                              %{} Vertex
+                              {}
                                 :position $ [] x0 0 y0 1
-                                :color $ [] 1 0 0 1
-                              %{} Vertex
+                                :color color-default
+                              {}
                                 :position $ [] x1 0 y0 1
-                                :color $ [] 1 0 0 1
-                              %{} Vertex
+                                :color color-default
+                              {}
                                 :position $ [] x1 0 y1 1
-                                :color $ [] 1 0 0 1
+                                :color color-default
                             []
-                              %{} Vertex
+                              {}
                                 :position $ [] x0 0 y0 1
-                                :color $ [] 1 0 0 1
-                              %{} Vertex
+                                :color color-default
+                              {}
                                 :position $ [] x1 0 y1 1
-                                :color $ [] 1 0 0 1
-                              %{} Vertex
+                                :color color-default
+                              {}
                                 :position $ [] x0 0 y1 1
-                                :color $ [] 1 0 0 1
+                                :color color-default
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
