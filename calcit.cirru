@@ -125,7 +125,7 @@
                   |h $ {} (:at 1677524741900) (:by |rJG4IHzWf) (:text |children) (:type :leaf)
               |l $ {} (:at 1677524744753) (:by |rJG4IHzWf) (:type :expr)
                 :data $ {}
-                  |T $ {} (:at 1677524747367) (:by |rJG4IHzWf) (:text |alias-js/group) (:type :leaf)
+                  |T $ {} (:at 1678027206900) (:by |rJG4IHzWf) (:text |lagopus/group) (:type :leaf)
                   |b $ {} (:at 1677524759879) (:by |rJG4IHzWf) (:text |nil) (:type :leaf)
                   |e $ {} (:at 1677524767075) (:by |rJG4IHzWf) (:text |&) (:type :leaf)
                   |h $ {} (:at 1677524765874) (:by |rJG4IHzWf) (:text |children) (:type :leaf)
@@ -338,18 +338,18 @@
             |h $ {} (:at 1677524688054) (:by |rJG4IHzWf) (:type :expr)
               :data $ {}
                 |T $ {} (:at 1677524689918) (:by |rJG4IHzWf) (:text |:require) (:type :leaf)
-                |b $ {} (:at 1677524690143) (:by |rJG4IHzWf) (:type :expr)
-                  :data $ {}
-                    |T $ {} (:at 1677524709233) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/alias.mjs") (:type :leaf)
-                    |b $ {} (:at 1677524713040) (:by |rJG4IHzWf) (:text |:as) (:type :leaf)
-                    |h $ {} (:at 1677524729109) (:by |rJG4IHzWf) (:text |alias-js) (:type :leaf)
                 |h $ {} (:at 1677524690143) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
-                    |T $ {} (:at 1677604789140) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/render.mjs") (:type :leaf)
+                    |T $ {} (:at 1678027173099) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus") (:type :leaf)
                     |b $ {} (:at 1677604793708) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
                     |h $ {} (:at 1677604794051) (:by |rJG4IHzWf) (:type :expr)
                       :data $ {}
                         |T $ {} (:at 1677604796202) (:by |rJG4IHzWf) (:text |createRenderer) (:type :leaf)
+                |j $ {} (:at 1677524690143) (:by |rJG4IHzWf) (:type :expr)
+                  :data $ {}
+                    |T $ {} (:at 1678027173099) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus") (:type :leaf)
+                    |b $ {} (:at 1678027181656) (:by |rJG4IHzWf) (:text |:as) (:type :leaf)
+                    |h $ {} (:at 1678027184530) (:by |rJG4IHzWf) (:text |lagopus) (:type :leaf)
                 |l $ {} (:at 1677692491341) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
                     |T $ {} (:at 1677692505336) (:by |rJG4IHzWf) (:text |lagopus.config) (:type :leaf)
@@ -385,7 +385,7 @@
                 |D $ {} (:at 1677932666815) (:by |rJG4IHzWf) (:text |:require) (:type :leaf)
                 |T $ {} (:at 1677932009141) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
-                    |T $ {} (:at 1677932683923) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/comp/bottom.mjs") (:type :leaf)
+                    |T $ {} (:at 1678026958737) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus") (:type :leaf)
                     |b $ {} (:at 1677932017710) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
                     |h $ {} (:at 1677932017909) (:by |rJG4IHzWf) (:type :expr)
                       :data $ {}
@@ -1106,7 +1106,7 @@
                           |T $ {} (:at 1677604731253) (:by |rJG4IHzWf) (:text |e) (:type :leaf)
                       |h $ {} (:at 1677433354368) (:by |rJG4IHzWf) (:type :expr)
                         :data $ {}
-                          |T $ {} (:at 1677433357003) (:by |rJG4IHzWf) (:text |paintApp) (:type :leaf)
+                          |T $ {} (:at 1678027099048) (:by |rJG4IHzWf) (:text |paintLagopusTree) (:type :leaf)
               |uT $ {} (:at 1677948445310) (:by |rJG4IHzWf) (:type :expr)
                 :data $ {}
                   |T $ {} (:at 1677948447140) (:by |rJG4IHzWf) (:text |add-watch) (:type :leaf)
@@ -1197,24 +1197,11 @@
                             :data $ {}
                               |T $ {} (:at 1677433144499) (:by |rJG4IHzWf) (:text |comp-container) (:type :leaf)
                               |b $ {} (:at 1677948595311) (:by |rJG4IHzWf) (:text |@*store) (:type :leaf)
-                  |h $ {} (:at 1677433148155) (:by |rJG4IHzWf) (:type :expr)
+                  |l $ {} (:at 1678027054995) (:by |rJG4IHzWf) (:type :expr)
                     :data $ {}
-                      |T $ {} (:at 1677433154750) (:by |rJG4IHzWf) (:text |.!reset) (:type :leaf)
-                      |b $ {} (:at 1677433159214) (:by |rJG4IHzWf) (:text |atomLagopusTree) (:type :leaf)
-                      |h $ {} (:at 1677433161427) (:by |rJG4IHzWf) (:text |tree) (:type :leaf)
-                  |i $ {} (:at 1677932443224) (:by |rJG4IHzWf) (:type :expr)
-                    :data $ {}
-                      |T $ {} (:at 1677932443224) (:by |rJG4IHzWf) (:text |.!reset) (:type :leaf)
-                      |b $ {} (:at 1677932443224) (:by |rJG4IHzWf) (:text |atomObjectsTree) (:type :leaf)
-                      |h $ {} (:at 1677932443224) (:by |rJG4IHzWf) (:text |tree) (:type :leaf)
-                  |j $ {} (:at 1677932406329) (:by |rJG4IHzWf) (:type :expr)
-                    :data $ {}
-                      |D $ {} (:at 1677932409745) (:by |rJG4IHzWf) (:text |.!reset) (:type :leaf)
-                      |T $ {} (:at 1677932407060) (:by |rJG4IHzWf) (:text |atomProxiedDispatch) (:type :leaf)
-                      |b $ {} (:at 1677932412202) (:by |rJG4IHzWf) (:text |dispatch!) (:type :leaf)
-                  |n $ {} (:at 1677948699924) (:by |rJG4IHzWf) (:type :expr)
-                    :data $ {}
-                      |T $ {} (:at 1677948699924) (:by |rJG4IHzWf) (:text |paintApp) (:type :leaf)
+                      |T $ {} (:at 1678027058925) (:by |rJG4IHzWf) (:text |renderLagopusTree) (:type :leaf)
+                      |b $ {} (:at 1678027060738) (:by |rJG4IHzWf) (:text |tree) (:type :leaf)
+                      |h $ {} (:at 1678027062952) (:by |rJG4IHzWf) (:text |dispatch!) (:type :leaf)
         :ns $ {} (:at 1677432884829) (:by |rJG4IHzWf) (:type :expr)
           :data $ {}
             |T $ {} (:at 1677432884829) (:by |rJG4IHzWf) (:text |ns) (:type :leaf)
@@ -1229,37 +1216,17 @@
                     |h $ {} (:at 1677433119637) (:by |rJG4IHzWf) (:type :expr)
                       :data $ {}
                         |T $ {} (:at 1677433121299) (:by |rJG4IHzWf) (:text |comp-container) (:type :leaf)
-                |h $ {} (:at 1677433163121) (:by |rJG4IHzWf) (:type :expr)
+                |e $ {} (:at 1678027004911) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
-                    |T $ {} (:at 1677433180869) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/global.mjs") (:type :leaf)
-                    |b $ {} (:at 1677433181608) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
-                    |h $ {} (:at 1677433181967) (:by |rJG4IHzWf) (:type :expr)
+                    |T $ {} (:at 1678027011285) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus") (:type :leaf)
+                    |b $ {} (:at 1678027012149) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
+                    |h $ {} (:at 1678027012727) (:by |rJG4IHzWf) (:type :expr)
                       :data $ {}
-                        |T $ {} (:at 1677433183174) (:by |rJG4IHzWf) (:text |atomLagopusTree) (:type :leaf)
-                        |b $ {} (:at 1677932417467) (:by |rJG4IHzWf) (:text |atomProxiedDispatch) (:type :leaf)
-                        |h $ {} (:at 1677932480716) (:by |rJG4IHzWf) (:text |atomObjectsTree) (:type :leaf)
-                |l $ {} (:at 1677433163121) (:by |rJG4IHzWf) (:type :expr)
-                  :data $ {}
-                    |T $ {} (:at 1677433223219) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/render.mjs") (:type :leaf)
-                    |b $ {} (:at 1677433181608) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
-                    |h $ {} (:at 1677433181967) (:by |rJG4IHzWf) (:type :expr)
-                      :data $ {}
-                        |T $ {} (:at 1677433224428) (:by |rJG4IHzWf) (:text |initializeContext) (:type :leaf)
-                |o $ {} (:at 1677433254802) (:by |rJG4IHzWf) (:type :expr)
-                  :data $ {}
-                    |5 $ {} (:at 1677433266703) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/control.mjs") (:type :leaf)
-                    |D $ {} (:at 1677433260183) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
-                    |T $ {} (:at 1677433256928) (:by |rJG4IHzWf) (:type :expr)
-                      :data $ {}
-                        |T $ {} (:at 1677433255543) (:by |rJG4IHzWf) (:text |paintApp) (:type :leaf)
-                        |b $ {} (:at 1677433274495) (:by |rJG4IHzWf) (:text |onControlEvent) (:type :leaf)
-                |p $ {} (:at 1677433254802) (:by |rJG4IHzWf) (:type :expr)
-                  :data $ {}
-                    |5 $ {} (:at 1677933016026) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/events.mjs") (:type :leaf)
-                    |D $ {} (:at 1677433260183) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
-                    |T $ {} (:at 1677433256928) (:by |rJG4IHzWf) (:type :expr)
-                      :data $ {}
-                        |T $ {} (:at 1677933018759) (:by |rJG4IHzWf) (:text |setupMouseEvents) (:type :leaf)
+                        |T $ {} (:at 1678027015751) (:by |rJG4IHzWf) (:text |setupMouseEvents) (:type :leaf)
+                        |b $ {} (:at 1678027018501) (:by |rJG4IHzWf) (:text |onControlEvent) (:type :leaf)
+                        |h $ {} (:at 1678027026259) (:by |rJG4IHzWf) (:text |paintLagopusTree) (:type :leaf)
+                        |l $ {} (:at 1678027030023) (:by |rJG4IHzWf) (:text |renderLagopusTree) (:type :leaf)
+                        |o $ {} (:at 1678027037402) (:by |rJG4IHzWf) (:text |initializeContext) (:type :leaf)
                 |q $ {} (:at 1677433288307) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
                     |T $ {} (:at 1677433295405) (:by |rJG4IHzWf) (:text "|\"@triadica/touch-control") (:type :leaf)

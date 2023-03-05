@@ -23,7 +23,7 @@
                 &+ acc $ count-recursive y
               , 1
         |group $ quote
-          defn group (a & children) (alias-js/group nil & children)
+          defn group (a & children) (lagopus/group nil & children)
         |object $ quote
           defn object (options)
             let
@@ -56,8 +56,9 @@
         |wgsl-simplex $ quote
           def wgsl-simplex $ inline-shader "\"simplex"
       :ns $ quote
-        ns lagopus.alias $ :require ("\"@triadica/lagopus/lib/alias.mjs" :as alias-js)
-          "\"@triadica/lagopus/lib/render.mjs" :refer $ createRenderer
+        ns lagopus.alias $ :require
+          "\"@triadica/lagopus" :refer $ createRenderer
+          "\"@triadica/lagopus" :as lagopus
           lagopus.config :refer $ inline-shader
     |lagopus.comp.button $ {}
       :defs $ {}
@@ -66,7 +67,7 @@
             compButton (to-js-data props) on-click
       :ns $ quote
         ns lagopus.comp.button $ :require
-          "\"@triadica/lagopus/lib/comp/bottom.mjs" :refer $ compButton
+          "\"@triadica/lagopus" :refer $ compButton
     |lagopus.comp.container $ {}
       :defs $ {}
         |color-default $ quote
@@ -187,7 +188,7 @@
             renderControl
             startControlLoop 10 onControlEvent
             set! js/window.__lagopusHandleCompilationInfo handle-compilation
-            set! js/window.onresize $ fn (e) (paintApp)
+            set! js/window.onresize $ fn (e) (paintLagopusTree)
             add-watch *store :change $ fn (next store) (render-app!)
             setupMouseEvents canvas
         |reload! $ quote
@@ -200,17 +201,11 @@
         |render-app! $ quote
           defn render-app! () $ let
               tree $ comp-container @*store
-            .!reset atomLagopusTree tree
-            .!reset atomObjectsTree tree
-            .!reset atomProxiedDispatch dispatch!
-            paintApp
+            renderLagopusTree tree dispatch!
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
-          "\"@triadica/lagopus/lib/global.mjs" :refer $ atomLagopusTree atomProxiedDispatch atomObjectsTree
-          "\"@triadica/lagopus/lib/render.mjs" :refer $ initializeContext
-          "\"@triadica/lagopus/lib/control.mjs" :refer $ paintApp onControlEvent
-          "\"@triadica/lagopus/lib/events.mjs" :refer $ setupMouseEvents
+          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev?
           "\"bottom-tip" :default hud!
