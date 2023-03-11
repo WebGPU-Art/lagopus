@@ -145,18 +145,18 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.1-a5":
-  version "0.0.1-a5"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.1-a5.tgz#c8e5d8511e29abb2d00dd75a542efdf5886acff2"
-  integrity sha512-FbGYI85dOIChWE2sFUHCCDVRrFzHllO5fUZvy86a0tZciq87XJieoIGD4KwSZqLcY/FQ9SFKXacg0v8Fih9dsA==
+"@triadica/lagopus@^0.0.1-a6":
+  version "0.0.1-a6"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.1-a6.tgz#85b45b10b1ba37afb0e73e5d4f21070f6412f437"
+  integrity sha512-PfvQ8vL6+MJXZ6fHfeGLJ9an4TVWGMjPe4+oBoaUo3d3+8iSSrtozIJmPAaUoPLFdjqURTrY+1EKx+0llBJWuA==
   dependencies:
-    "@triadica/touch-control" "^0.0.1-a3"
+    "@triadica/touch-control" "^0.0.2"
     ismobilejs "^1.1.1"
 
-"@triadica/touch-control@^0.0.1-a3":
-  version "0.0.1-a3"
-  resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.1-a3.tgz#cbe049773ae8b566ba0b28cd038cfad7ea3f0918"
-  integrity sha512-/Jm7PwbrbHTW9YNP8uo043qnNw1LjLtWro6EADLattNe18FOJ7L08B2zfgFhx5L9uLuQNHE3ghAJ2S7QF3/6Dw==
+"@triadica/touch-control@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.2.tgz#782368adee18c1937dbbf1d401f35aaa9fe47e87"
+  integrity sha512-U7W0kqfgmD+qumYn38mIy4aC16s8bIc00eIt7vW3kLXokkTu2edVmXmfXkaJE93skkd49WXUeMEt6iKTIQ+uXA==
 
 "@types/estree@^1.0.0":
   version "1.0.0"
@@ -343,9 +343,9 @@ resolve@^1.22.1:
     supports-preserve-symlinks-flag "^1.0.0"
 
 rollup@^3.10.0:
-  version "3.18.0"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.18.0.tgz#2354ba63ba66d6a09c652c3ea0dbcd9dad72bbde"
-  integrity sha512-J8C6VfEBjkvYPESMQYxKHxNOh4A5a3FlP+0BETGo34HEcE4eTlgCrO2+eWzlu2a/sHs2QUkZco+wscH7jhhgWg==
+  version "3.19.1"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.19.1.tgz#2b3a31ac1ff9f3afab2e523fa687fef5b0ee20fc"
+  integrity sha512-lAbrdN7neYCg/8WaoWn/ckzCtz+jr70GFfYdlf50OF7387HTg+wiuiqJRFYawwSPpqfqDNYqK7smY/ks2iAudg==
   optionalDependencies:
     fsevents "~2.3.2"
 
