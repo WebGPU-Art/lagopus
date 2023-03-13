@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@calcit/procs@^0.6.23":
-  version "0.6.23"
-  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.6.23.tgz#1568826e2275dd1a895bab19465514e7146f893f"
-  integrity sha512-qsNFmxZPsaa+D+p+oQhzRy8UOtpwQNpQF2wbCWgaxHKfvmvzt2fLFmZkSSUmY8ksmFb1rdK9zSbXK7U4/MO+uw==
+"@calcit/procs@^0.6.24":
+  version "0.6.24"
+  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.6.24.tgz#2cfa35bb0e333da1f8036afe6d59e0774d4d10c8"
+  integrity sha512-cOXZXG/RtupozDGD0TdjAF7ELCR1p1Z7P0SA2DM58njHd01ezsy1XlaIopt5Mc0daOxrkvzixzmDgc8BLsab8g==
   dependencies:
     "@calcit/ternary-tree" "0.0.19"
     "@cirru/parser.ts" "^0.0.6"
@@ -145,10 +145,10 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.1-a6":
-  version "0.0.1-a6"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.1-a6.tgz#85b45b10b1ba37afb0e73e5d4f21070f6412f437"
-  integrity sha512-PfvQ8vL6+MJXZ6fHfeGLJ9an4TVWGMjPe4+oBoaUo3d3+8iSSrtozIJmPAaUoPLFdjqURTrY+1EKx+0llBJWuA==
+"@triadica/lagopus@^0.0.1-a7":
+  version "0.0.1-a7"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.1-a7.tgz#84079503c415674ac3068d824fa14a1ec1910a6f"
+  integrity sha512-lz4ju5nHSfcNE0ZUZXDV9wTfOVrOjdSnUcz1CMR/tcl55g1X8zveIpPQkXZ+7SvLO/sjHbmyXIAKLSQ+l5DcbA==
   dependencies:
     "@triadica/touch-control" "^0.0.2"
     ismobilejs "^1.1.1"

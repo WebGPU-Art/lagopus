@@ -1,7 +1,7 @@
 
 {} (:package |lagopus)
   :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.1)
-    :modules $ [] |memof/
+    :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
     |lagopus.alias $ {}
@@ -72,19 +72,48 @@
       :defs $ {}
         |color-default $ quote
           def color-default $ [] 1 0 0 1
+        |comp-city $ quote
+          defn comp-city () $ object
+            {} (:shader city-wgsl)
+              :topology $ do :line-strip :triangle-list :line-strip
+              :attrs-list $ []
+                {} (:field :position) (:format "\"float32x2") (:size 2)
+                {} (:field :normal-idx) (:format "\"uint32") (:size 1)
+                {} (:field :idx) (:format "\"uint32") (:size 1)
+              :data $ let
+                  size 20
+                  d 32
+                  d2 20
+                -> (range-bothway size)
+                  map $ fn (x)
+                    -> (range-bothway size)
+                      map $ fn (y)
+                        let
+                            x0 $ &* d x
+                            y0 $ &* d y
+                            p0 $ [] x0 y0
+                          []
+                            []
+                              {} (:position p0) (:normal-idx 0) (:idx 0)
+                              {} (:position p0) (:normal-idx 0) (:idx 1)
+                              {} (:position p0) (:normal-idx 0) (:idx 2)
+                            []
+                              {} (:position p0) (:normal-idx 0) (:idx 0)
+                              {} (:position p0) (:normal-idx 0) (:idx 3)
+                              {} (:position p0) (:normal-idx 0) (:idx 2)
         |comp-container $ quote
           defn comp-container (store)
             group nil (memof1-call comp-tabs)
               case-default (:tab store) (group nil)
                 :mountains $ memof1-call comp-mountains
+                :city $ comp-city
                 :bends $ group nil
         |comp-mountains $ quote
           defn comp-mountains () $ object
-            {} (:shader triangle-wgsl)
+            {} (:shader mountains-wgsl)
               :topology $ do :line-strip :triangle-list
               :attrs-list $ []
-                {} (:field :position) (:format "\"float32x4") (:size 4)
-                {} (:field :color) (:format "\"float32x4") (:size 4)
+                {} (:field :position) (:format "\"float32x2") (:size 2)
               :data $ let
                   size 80
                   d 32
@@ -99,25 +128,13 @@
                             y1 $ &+ y0 d
                           []
                             []
-                              {}
-                                :position $ [] x0 0 y0 1
-                                :color color-default
-                              {}
-                                :position $ [] x1 0 y0 1
-                                :color color-default
-                              {}
-                                :position $ [] x1 0 y1 1
-                                :color color-default
+                              {} $ :position ([] x0 y0)
+                              {} $ :position ([] x1 y0)
+                              {} $ :position ([] x1 y1)
                             []
-                              {}
-                                :position $ [] x0 0 y0 1
-                                :color color-default
-                              {}
-                                :position $ [] x1 0 y1 1
-                                :color color-default
-                              {}
-                                :position $ [] x0 0 y1 1
-                                :color color-default
+                              {} $ :position ([] x0 y0)
+                              {} $ :position ([] x1 y1)
+                              {} $ :position ([] x0 y1)
         |comp-tabs $ quote
           defn comp-tabs () $ group nil
             comp-button
@@ -135,9 +152,11 @@
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
-          "\"../shaders/triangle.wgsl" :default triangle-wgsl
+          "\"../shaders/mountains.wgsl" :default mountains-wgsl
+          "\"../shaders/city.wgsl" :default city-wgsl
           lagopus.comp.button :refer $ comp-button
           memof.once :refer $ memof1-call
+          quaternion.core :refer $ c+
     |lagopus.config $ {}
       :defs $ {}
         |dev? $ quote
@@ -149,7 +168,7 @@
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
-          defatom *store $ {} (:tab :mountains)
+          defatom *store $ {} (:tab :city)
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
@@ -193,7 +212,7 @@
             setupMouseEvents canvas
         |reload! $ quote
           defn reload! () $ if (nil? build-errors)
-            do (render-app!) (remove-watch *store :change)
+            do (reset-memof1-caches!) (render-app!) (remove-watch *store :change)
               add-watch *store :change $ fn (next store) (render-app!)
               println "\"Reloaded."
               hud! "\"ok~" "\"OK"
@@ -210,3 +229,4 @@
           lagopus.config :refer $ dev?
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
+          memof.once :refer $ reset-memof1-caches!
