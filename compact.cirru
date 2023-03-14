@@ -75,15 +75,14 @@
         |comp-city $ quote
           defn comp-city () $ object
             {} (:shader city-wgsl)
-              :topology $ do :line-strip :triangle-list :line-strip
+              :topology $ do :line-strip :triangle-list
               :attrs-list $ []
                 {} (:field :position) (:format "\"float32x2") (:size 2)
-                {} (:field :normal-idx) (:format "\"uint32") (:size 1)
-                {} (:field :idx) (:format "\"uint32") (:size 1)
+                {} (:field :normal-idx) (:format "\"float32") (:size 1)
+                {} (:field :idx) (:format "\"float32") (:size 1)
               :data $ let
-                  size 20
-                  d 32
-                  d2 20
+                  size 40
+                  d 160
                 -> (range-bothway size)
                   map $ fn (x)
                     -> (range-bothway size)
@@ -99,8 +98,48 @@
                               {} (:position p0) (:normal-idx 0) (:idx 2)
                             []
                               {} (:position p0) (:normal-idx 0) (:idx 0)
-                              {} (:position p0) (:normal-idx 0) (:idx 3)
                               {} (:position p0) (:normal-idx 0) (:idx 2)
+                              {} (:position p0) (:normal-idx 0) (:idx 3)
+                            []
+                              {} (:position p0) (:normal-idx 1) (:idx 0)
+                              {} (:position p0) (:normal-idx 1) (:idx 1)
+                              {} (:position p0) (:normal-idx 1) (:idx 5)
+                            []
+                              {} (:position p0) (:normal-idx 1) (:idx 0)
+                              {} (:position p0) (:normal-idx 1) (:idx 5)
+                              {} (:position p0) (:normal-idx 1) (:idx 4)
+                            []
+                              {} (:position p0) (:normal-idx 2) (:idx 1)
+                              {} (:position p0) (:normal-idx 2) (:idx 2)
+                              {} (:position p0) (:normal-idx 2) (:idx 6)
+                            []
+                              {} (:position p0) (:normal-idx 2) (:idx 1)
+                              {} (:position p0) (:normal-idx 2) (:idx 6)
+                              {} (:position p0) (:normal-idx 2) (:idx 5)
+                            []
+                              {} (:position p0) (:normal-idx 3) (:idx 2)
+                              {} (:position p0) (:normal-idx 3) (:idx 3)
+                              {} (:position p0) (:normal-idx 3) (:idx 6)
+                            []
+                              {} (:position p0) (:normal-idx 3) (:idx 3)
+                              {} (:position p0) (:normal-idx 3) (:idx 7)
+                              {} (:position p0) (:normal-idx 3) (:idx 6)
+                            []
+                              {} (:position p0) (:normal-idx 4) (:idx 0)
+                              {} (:position p0) (:normal-idx 4) (:idx 3)
+                              {} (:position p0) (:normal-idx 4) (:idx 4)
+                            []
+                              {} (:position p0) (:normal-idx 4) (:idx 3)
+                              {} (:position p0) (:normal-idx 4) (:idx 4)
+                              {} (:position p0) (:normal-idx 4) (:idx 7)
+                            []
+                              {} (:position p0) (:normal-idx 5) (:idx 4)
+                              {} (:position p0) (:normal-idx 5) (:idx 5)
+                              {} (:position p0) (:normal-idx 5) (:idx 6)
+                            []
+                              {} (:position p0) (:normal-idx 5) (:idx 4)
+                              {} (:position p0) (:normal-idx 5) (:idx 6)
+                              {} (:position p0) (:normal-idx 5) (:idx 7)
         |comp-container $ quote
           defn comp-container (store)
             group nil (memof1-call comp-tabs)
@@ -149,6 +188,12 @@
                 :color $ [] 0.5 0.5 0.9 1
                 :size 20
               fn (e d!) (d! :tab :bends)
+            comp-button
+              {}
+                :position $ [] 80 260 0
+                :color $ [] 0.8 0.9 0.2 1
+                :size 20
+              fn (e d!) (d! :tab :city)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object

@@ -19,10 +19,10 @@ fn transform_perspective(p: vec3<f32>) -> PointResult {
 
   let r: f32 = dot(moved_point, forward) / lookDistance;
 
-  // if (r < (s * -0.9)) {
-  //   // make it disappear with depth test since it's probably behind the camera
-  //   return PointResult(vec3(0.0, 0.0, 10000.), r, s);
-  // }
+  if (r < (s * -0.9)) {
+    // make it disappear with depth test since it's probably behind the camera
+    return PointResult(vec3(0.0, 0.0, 10000.), r, s);
+  }
 
   let screen_scale: f32 = (s + 1.0) / (r + s);
   let y_next: f32 = dot(moved_point, upward) * screen_scale;
