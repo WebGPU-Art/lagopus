@@ -6,16 +6,15 @@
   :files $ {}
     |lagopus.alias $ {}
       :defs $ {}
-        |convert-records-data $ quote
-          defn convert-records-data (data fields write!)
+        |collect-from-records! $ quote
+          defn collect-from-records! (data field write!)
             if (list? data)
-              &doseq (x data) (convert-records-data x fields write!)
-              &doseq (k fields)
-                let
-                    item $ &map:get data k
-                  if (list? item)
-                    &doseq (x item) (write! x)
-                    write! item
+              &doseq (x data) (collect-from-records! x field write!)
+              let
+                  xs $ &map:get data field
+                if (list? xs)
+                  &doseq (x xs) (write! x )
+                  write! xs
         |count-recursive $ quote
           defn count-recursive (xs)
             if (list? xs)
@@ -28,36 +27,39 @@
           defn object (options)
             let
                 attrs-list $ &map:get options :attrs-list
-                fields $ map attrs-list
-                  fn (o) (&map:get o :field)
                 data $ &map:get options :data
                 vertices-size $ count-recursive data
-                buffer-size $ &*
-                  reduce attrs-list 0 $ fn (acc x)
-                    &+ acc $ &map:get x :size
-                  , vertices-size
-                vertices $ new js/Float32Array buffer-size
-                *idx $ atom 0
-                write! $ fn (x)
-                  let
-                      idx @*idx
-                    aset vertices idx x
-                    swap! *idx inc
-              convert-records-data (&map:get options :data) fields write!
-              assert (&= buffer-size @*idx) "\"buffer size guessed correctly"
-              ; js/console.log vertices-size buffer-size vertices
+                indices $ &map:get options :indices
+                buffers $ js-array &
+                  map attrs-list $ fn (attr)
+                    let
+                        buffer $ newBufferFormatLength (&map:get attr :format) vertices-size
+                        *idx $ atom 0
+                        field $ &map:get attr :field
+                        write! $ fn (x)
+                          let
+                              idx @*idx
+                            aset buffer idx x
+                            swap! *idx inc
+                      collect-from-records! data field write! 
+                      ; js/console.log @*idx $ .-length buffer
+                      ; assert
+                        &= @*idx $ .-length buffer
+                        , "\"buffer size guessed correctly"
+                      , buffer
+              ; js/console.log vertices-size buffers
               createRenderer
                 -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective)
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
-                , vertices-size vertices
+                , vertices-size buffers $ if (some? indices) (u32buffer indices) nil
         |wgsl-perspective $ quote
           def wgsl-perspective $ inline-shader "\"perspective"
         |wgsl-simplex $ quote
           def wgsl-simplex $ inline-shader "\"simplex"
       :ns $ quote
         ns lagopus.alias $ :require
-          "\"@triadica/lagopus" :refer $ createRenderer
+          "\"@triadica/lagopus" :refer $ createRenderer u32buffer newBufferFormatLength
           "\"@triadica/lagopus" :as lagopus
           lagopus.config :refer $ inline-shader
     |lagopus.comp.button $ {}
