@@ -6,6 +6,11 @@
   :files $ {}
     |lagopus.alias $ {}
       :defs $ {}
+        |collect-array! $ quote
+          defn collect-array! (indices collect!)
+            if (list? indices)
+              &doseq (x indices) (collect-array! x collect!)
+              collect! indices
         |collect-from-records! $ quote
           defn collect-from-records! (data field write!)
             if (list? data)
@@ -52,7 +57,12 @@
                 -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective)
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
-                , vertices-size buffers $ if (some? indices) (u32buffer indices) nil
+                , vertices-size buffers nil $ if (some? indices)
+                  u32buffer $ let
+                      *arr $ js-array
+                      collect! $ fn (x) (.!push *arr x )
+                    collect-array! indices collect!
+                    , *arr
         |wgsl-perspective $ quote
           def wgsl-perspective $ inline-shader "\"perspective"
         |wgsl-simplex $ quote
@@ -74,6 +84,22 @@
       :defs $ {}
         |color-default $ quote
           def color-default $ [] 1 0 0 1
+        |comp-bube $ quote
+          defn comp-bube () $ object
+            {} (:shader cube-wgsl)
+              :topology $ do :line-strip :triangle-list
+              :attrs-list $ []
+                {} (:field :position) (:format "\"float32x3") (:size 3)
+              :data $ []
+                {} $ :position ([] 0 0 0)
+                {} $ :position ([] 0 100 0)
+                {} $ :position ([] 0 100 100)
+                {} $ :position ([] 0 0 100)
+                {} $ :position ([] 100 0 0)
+                {} $ :position ([] 100 100 0)
+                {} $ :position ([] 100 100 100)
+                {} $ :position ([] 100 0 100)
+              :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
         |comp-city $ quote
           defn comp-city () $ object
             {} (:shader city-wgsl)
@@ -147,8 +173,9 @@
             group nil (memof1-call comp-tabs)
               case-default (:tab store) (group nil)
                 :mountains $ memof1-call comp-mountains
-                :city $ comp-city
+                :city $ memof1-call comp-city
                 :bends $ group nil
+                :cube $ comp-bube
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -196,11 +223,18 @@
                 :color $ [] 0.8 0.9 0.2 1
                 :size 20
               fn (e d!) (d! :tab :city)
+            comp-button
+              {}
+                :position $ [] 120 260 0
+                :color $ [] 0.3 0.9 0.2 1
+                :size 20
+              fn (e d!) (d! :tab :cube)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
+          "\"../shaders/cube.wgsl" :default cube-wgsl
           lagopus.comp.button :refer $ comp-button
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
@@ -215,7 +249,7 @@
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
-          defatom *store $ {} (:tab :city)
+          defatom *store $ {} (:tab :cube)
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
