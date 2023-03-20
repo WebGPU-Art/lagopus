@@ -6,6 +6,15 @@
   :files $ {}
     |lagopus.alias $ {}
       :defs $ {}
+        |buffer-format $ quote
+          defn buffer-format (format)
+            case-default format
+              if (string? format) format $ do (js/console.warn "\"Unknown format" format) "\"float32"
+              :float32 "\"float32"
+              :float32x2 "\"float32x2"
+              :float32x3 "\"float32x3"
+              :float32x4 "\"float32x4"
+              :uint32 "\"uint32"
         |collect-array! $ quote
           defn collect-array! (indices collect!)
             if (list? indices)
@@ -38,7 +47,9 @@
                 buffers $ js-array &
                   map attrs-list $ fn (attr)
                     let
-                        buffer $ newBufferFormatLength (&map:get attr :format) vertices-size
+                        buffer $ newBufferFormatLength
+                          buffer-format $ &map:get attr :format
+                          , vertices-size
                         *idx $ atom 0
                         field $ &map:get attr :field
                         write! $ fn (x)
@@ -54,7 +65,7 @@
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
-                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective)
+                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors)
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
                 , vertices-size buffers nil $ if (some? indices)
@@ -63,6 +74,8 @@
                       collect! $ fn (x) (.!push *arr x )
                     collect-array! indices collect!
                     , *arr
+        |wgsl-colors $ quote
+          def wgsl-colors $ inline-shader "\"colors"
         |wgsl-perspective $ quote
           def wgsl-perspective $ inline-shader "\"perspective"
         |wgsl-simplex $ quote
@@ -84,22 +97,6 @@
       :defs $ {}
         |color-default $ quote
           def color-default $ [] 1 0 0 1
-        |comp-bube $ quote
-          defn comp-bube () $ object
-            {} (:shader cube-wgsl)
-              :topology $ do :line-strip :triangle-list
-              :attrs-list $ []
-                {} (:field :position) (:format "\"float32x3") (:size 3)
-              :data $ []
-                {} $ :position ([] 0 0 0)
-                {} $ :position ([] 0 100 0)
-                {} $ :position ([] 0 100 100)
-                {} $ :position ([] 0 0 100)
-                {} $ :position ([] 100 0 0)
-                {} $ :position ([] 100 100 0)
-                {} $ :position ([] 100 100 100)
-                {} $ :position ([] 100 0 100)
-              :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
         |comp-city $ quote
           defn comp-city () $ object
             {} (:shader city-wgsl)
@@ -175,7 +172,24 @@
                 :mountains $ memof1-call comp-mountains
                 :city $ memof1-call comp-city
                 :bends $ group nil
-                :cube $ comp-bube
+                :cube $ comp-cube
+                :ribbon $ comp-ribbon
+        |comp-cube $ quote
+          defn comp-cube () $ object
+            {} (:shader cube-wgsl)
+              :topology $ do :line-strip :triangle-list
+              :attrs-list $ []
+                {} (:field :position) (:format "\"float32x3") (:size 3)
+              :data $ []
+                {} $ :position ([] 0 0 0)
+                {} $ :position ([] 0 100 0)
+                {} $ :position ([] 0 100 100)
+                {} $ :position ([] 0 0 100)
+                {} $ :position ([] 100 0 0)
+                {} $ :position ([] 100 100 0)
+                {} $ :position ([] 100 100 100)
+                {} $ :position ([] 100 0 100)
+              :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -203,6 +217,21 @@
                               {} $ :position ([] x0 y0)
                               {} $ :position ([] x1 y1)
                               {} $ :position ([] x0 y1)
+        |comp-ribbon $ quote
+          defn comp-ribbon () $ comp-curves
+            {} (; :topology :line-strip)
+              :curves $ []
+                -> (range 400)
+                  map $ fn (idx)
+                    let
+                        angle $ * 0.1 idx
+                        r 40
+                      {}
+                        :position $ []
+                          * r $ cos angle
+                          * 0.6 idx
+                          * r $ sin angle
+                        :width 2
         |comp-tabs $ quote
           defn comp-tabs () $ group nil
             comp-button
@@ -229,6 +258,12 @@
                 :color $ [] 0.3 0.9 0.2 1
                 :size 20
               fn (e d!) (d! :tab :cube)
+            comp-button
+              {}
+                :position $ [] 160 260 0
+                :color $ [] 0.8 0.0 0.9 1
+                :size 20
+              fn (e d!) (d! :tab :ribbon)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -236,8 +271,63 @@
           "\"../shaders/city.wgsl" :default city-wgsl
           "\"../shaders/cube.wgsl" :default cube-wgsl
           lagopus.comp.button :refer $ comp-button
+          lagopus.comp.curves :refer $ comp-curves
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
+    |lagopus.comp.curves $ {}
+      :defs $ {}
+        |build-curve-points $ quote
+          defn build-curve-points (points curve-ratio)
+            let
+                size $ count points
+              ->
+                range $ dec size
+                map $ fn (idx)
+                  let
+                      idx+1 $ inc idx
+                      p-raw $ nth points idx
+                      q-raw $ nth points idx+1
+                      q2-raw $ nth points (inc idx+1)
+                      p $ &map:get p-raw :position
+                      q $ &map:get q-raw :position
+                      q2 $ if (some? q2-raw) (&map:get q2-raw :position)
+                      direction $ &v- q p
+                      direction2 $ if (some? q2) (&v- q2 q) direction
+                      p-width $ either (&map:get p-raw :width) 1
+                      q-width $ either (&map:get q-raw :width) 1
+                      ratio $ &/ idx size
+                      ratio+1 $ &/ idx+1 size
+                    []
+                      {} (:position p) (:brush 0) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
+                      {} (:position q) (:brush 0) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
+                      {} (:position p) (:brush 1) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
+                      {} (:position q) (:brush 0) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
+                      {} (:position q) (:brush 1) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
+                      {} (:position p) (:brush 1) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
+        |comp-curves $ quote
+          defn comp-curves (options)
+            let
+                curves $ either (&map:get options :curves) ([])
+              object $ {}
+                :shader $ either (&map:get options :shader) curves-wgsl
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ []
+                  {} (:field :position) (:format :float32x3) (:size 3)
+                  {} (:field :brush) (:format :uint32) (:size 1)
+                  {} (:field :direction) (:format :float32x3) (:size 3)
+                  {} (:field :curve_ratio) (:format :float32) (:size 1)
+                  {} (:field :color_index) (:format :uint32) (:size 1)
+                  {} (:field :width) (:format :float32) (:size 1)
+                :data $ let
+                    size $ count curves
+                  map-indexed curves $ fn (idx c)
+                    build-curve-points c $ &/ idx size
+      :ns $ quote
+        ns lagopus.comp.curves $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+          "\"../shaders/curves.wgsl" :default curves-wgsl
     |lagopus.config $ {}
       :defs $ {}
         |dev? $ quote
@@ -249,7 +339,7 @@
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
-          defatom *store $ {} (:tab :cube)
+          defatom *store $ {} (:tab :ribbon)
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
