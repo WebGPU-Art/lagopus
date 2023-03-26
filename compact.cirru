@@ -378,7 +378,8 @@
             renderControl
             startControlLoop 10 onControlEvent
             set! js/window.__lagopusHandleCompilationInfo handle-compilation
-            set! js/window.onresize $ fn (e) (paintLagopusTree)
+            set! js/window.onresize $ fn (e) (resetCanvasHeight canvas) (paintLagopusTree)
+            resetCanvasHeight canvas
             add-watch *store :change $ fn (next store) (render-app!)
             setupMouseEvents canvas
         |reload! $ quote
@@ -395,7 +396,7 @@
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
-          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext
+          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev?
           "\"bottom-tip" :default hud!
