@@ -102,9 +102,9 @@
             {} (:shader city-wgsl)
               :topology $ do :line-strip :triangle-list
               :attrs-list $ []
-                {} (:field :position) (:format "\"float32x2") (:size 2)
-                {} (:field :normal-idx) (:format "\"float32") (:size 1)
-                {} (:field :idx) (:format "\"float32") (:size 1)
+                {} (:field :position) (:format "\"float32x2")
+                {} (:field :normal-idx) (:format "\"float32")
+                {} (:field :idx) (:format "\"float32")
               :data $ let
                   size 40
                   d 160
@@ -179,7 +179,7 @@
             {} (:shader cube-wgsl)
               :topology $ do :line-strip :triangle-list
               :attrs-list $ []
-                {} (:field :position) (:format "\"float32x3") (:size 3)
+                {} (:field :position) (:format "\"float32x3")
               :data $ []
                 {} $ :position ([] 0 0 0)
                 {} $ :position ([] 0 100 0)
@@ -195,7 +195,7 @@
             {} (:shader mountains-wgsl)
               :topology $ do :line-strip :triangle-list
               :attrs-list $ []
-                {} (:field :position) (:format "\"float32x2") (:size 2)
+                {} (:field :position) (:format "\"float32x2")
               :data $ let
                   size 80
                   d 32
@@ -312,12 +312,12 @@
                 :shader $ either (&map:get options :shader) curves-wgsl
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ []
-                  {} (:field :position) (:format :float32x3) (:size 3)
-                  {} (:field :brush) (:format :uint32) (:size 1)
-                  {} (:field :direction) (:format :float32x3) (:size 3)
-                  {} (:field :curve_ratio) (:format :float32) (:size 1)
-                  {} (:field :color_index) (:format :uint32) (:size 1)
-                  {} (:field :width) (:format :float32) (:size 1)
+                  {} (:field :position) (:format :float32x3)
+                  {} (:field :brush) (:format :uint32)
+                  {} (:field :direction) (:format :float32x3)
+                  {} (:field :curve_ratio) (:format :float32)
+                  {} (:field :color_index) (:format :uint32)
+                  {} (:field :width) (:format :float32)
                 :data $ let
                     size $ count curves
                   map-indexed curves $ fn (idx c)
