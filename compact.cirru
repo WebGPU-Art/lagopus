@@ -174,6 +174,7 @@
                 :bends $ group nil
                 :cube $ comp-cube
                 :ribbon $ comp-ribbon
+                :necklace $ comp-necklace
         |comp-cube $ quote
           defn comp-cube () $ object
             {} (:shader cube-wgsl)
@@ -217,6 +218,16 @@
                               {} $ :position ([] x0 y0)
                               {} $ :position ([] x1 y1)
                               {} $ :position ([] x0 y1)
+        |comp-necklace $ quote
+          defn comp-necklace () $ comp-spots
+            {} (; :topology :line-strip) (:radius 6) (:vertex-count 12)
+              :points $ -> (range 100)
+                map $ fn (idx)
+                  let
+                      r $ * idx 4
+                    [] r
+                      * r $ cos (* 0.1 idx)
+                      * r $ sin (* 0.1 idx)
         |comp-ribbon $ quote
           defn comp-ribbon () $ comp-curves
             {} (; :topology :line-strip)
@@ -264,6 +275,12 @@
                 :color $ [] 0.8 0.0 0.9 1
                 :size 20
               fn (e d!) (d! :tab :ribbon)
+            comp-button
+              {}
+                :position $ [] 200 260 0
+                :color $ [] 0.2 0.9 0.6 1
+                :size 20
+              fn (e d!) (d! :tab :necklace)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -272,6 +289,7 @@
           "\"../shaders/cube.wgsl" :default cube-wgsl
           lagopus.comp.button :refer $ comp-button
           lagopus.comp.curves :refer $ comp-curves
+          lagopus.comp.spots :refer $ comp-spots
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
     |lagopus.comp.curves $ {}
@@ -328,6 +346,42 @@
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
           "\"../shaders/curves.wgsl" :default curves-wgsl
+    |lagopus.comp.spots $ {}
+      :defs $ {}
+        |comp-spots $ quote
+          defn comp-spots (options)
+            let
+                points $ either (&map:get options :points) ([])
+                color $ either (&map:get options :color) ([] 0.8 0.8 1)
+                radius $ either (&map:get options :radius) 12
+                vertex-count $ &max 3
+                  either (&map:get options :vertex-count) 8
+              object $ {}
+                :shader $ either (&map:get options :shader) spots-wgsl
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ []
+                  {} (:field :base) (:format :float32x3)
+                  {} (:field :color) (:format :float32x3)
+                  {} (:field :radius) (:format :float32)
+                  {} (:field :vertex-count) (:format :uint32)
+                  {} (:field :idx) (:format :uint32)
+                :data $ -> points
+                  map $ fn (base)
+                    ->
+                      range $ - vertex-count 2
+                      map $ fn (idx)
+                        []
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:idx 0)
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count)
+                            :idx $ + 1 idx
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count)
+                            :idx $ + 2 idx
+      :ns $ quote
+        ns lagopus.comp.spots $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+          "\"../shaders/spots.wgsl" :default spots-wgsl
     |lagopus.config $ {}
       :defs $ {}
         |dev? $ quote
