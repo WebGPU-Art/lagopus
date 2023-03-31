@@ -1,7 +1,7 @@
 // perspective
 
 struct PointResult {
-  pointPosition: vec3<f32>,
+  point_position: vec3<f32>,
   r: f32,
   s: f32,
 };

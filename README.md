@@ -24,6 +24,22 @@ comp-curves $ {} (; :topology :line-strip)
             :width 2
 ```
 
+```cirru
+lagopus.comp.spots :refer $ comp-spots
+
+comp-spots $ {} (; :topology :line-strip)
+  :radius 6
+  :vertex-count 8
+  :shift 12
+  :points $ -> (range 80)
+    map $ fn (idx)
+      let
+          r $ * idx 4
+        [] r
+          * r $ cos (* 0.1129 idx)
+          * r $ sin (* 0.123 idx)
+```
+
 ### Workflow
 
 https://github.com/calcit-lang/respo-calcit-workflow

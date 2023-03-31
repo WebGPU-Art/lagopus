@@ -38,7 +38,7 @@ fn vertex_main(
   let h5 = simplexNoise2(vec2<f32>(position.x, position.y) * 0.02) * ALL_HEIGHT * 0.05;
   let h = h1 + h2 + h3 + h4 + h5 - 300.0;
   let p1 = vec3<f32>(position.x, h, position.y);
-  let p = transform_perspective(p1.xyz).pointPosition;
+  let p = transform_perspective(p1.xyz).point_position;
   let scale: f32 = 0.002;
   output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
   // output.position = position;

@@ -63,7 +63,7 @@ fn vertex_main(
     p1 += vec3<f32>(13.0, 200.0, 13.0);
   }
 
-  let p = transform_perspective(p1.xyz).pointPosition;
+  let p = transform_perspective(p1.xyz).point_position;
   let scale: f32 = 0.002;
   output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
   // output.position = position;

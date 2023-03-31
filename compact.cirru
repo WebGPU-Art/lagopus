@@ -65,7 +65,7 @@
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
-                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors)
+                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand)
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
                 , vertices-size buffers nil $ if (some? indices)
@@ -75,11 +75,13 @@
                     collect-array! indices collect!
                     , *arr
         |wgsl-colors $ quote
-          def wgsl-colors $ inline-shader "\"colors"
+          def wgsl-colors $ inline-shader "\"lagopus-colors"
         |wgsl-perspective $ quote
-          def wgsl-perspective $ inline-shader "\"perspective"
+          def wgsl-perspective $ inline-shader "\"lagopus-perspective"
+        |wgsl-rand $ quote
+          def wgsl-rand $ inline-shader "\"lagopus-rand"
         |wgsl-simplex $ quote
-          def wgsl-simplex $ inline-shader "\"simplex"
+          def wgsl-simplex $ inline-shader "\"lagopus-simplex"
       :ns $ quote
         ns lagopus.alias $ :require
           "\"@triadica/lagopus" :refer $ createRenderer u32buffer newBufferFormatLength
@@ -220,14 +222,14 @@
                               {} $ :position ([] x0 y1)
         |comp-necklace $ quote
           defn comp-necklace () $ comp-spots
-            {} (; :topology :line-strip) (:radius 6) (:vertex-count 12)
-              :points $ -> (range 100)
+            {} (; :topology :line-strip) (:radius 6) (:vertex-count 8) (:shift 12)
+              :points $ -> (range 80)
                 map $ fn (idx)
                   let
                       r $ * idx 4
                     [] r
-                      * r $ cos (* 0.1 idx)
-                      * r $ sin (* 0.1 idx)
+                      * r $ cos (* 0.1129 idx)
+                      * r $ sin (* 0.123 idx)
         |comp-ribbon $ quote
           defn comp-ribbon () $ comp-curves
             {} (; :topology :line-strip)
@@ -354,6 +356,7 @@
                 points $ either (&map:get options :points) ([])
                 color $ either (&map:get options :color) ([] 0.8 0.8 1)
                 radius $ either (&map:get options :radius) 12
+                shift $ either (&map:get options :shift) 40
                 vertex-count $ &max 3
                   either (&map:get options :vertex-count) 8
               object $ {}
@@ -364,18 +367,20 @@
                   {} (:field :color) (:format :float32x3)
                   {} (:field :radius) (:format :float32)
                   {} (:field :vertex-count) (:format :uint32)
-                  {} (:field :idx) (:format :uint32)
+                  {} (:field :angle-idx) (:format :uint32)
+                  {} (:field :shift) (:format :float32)
+                  {} (:field :spot-idx) (:format :uint32)
                 :data $ -> points
-                  map $ fn (base)
+                  map-indexed $ fn (spot-idx base)
                     ->
                       range $ - vertex-count 2
-                      map $ fn (idx)
+                      map $ fn (angle-idx)
                         []
-                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:idx 0)
-                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count)
-                            :idx $ + 1 idx
-                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count)
-                            :idx $ + 2 idx
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx) (:angle-idx 0)
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
+                            :angle-idx $ + 1 angle-idx
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
+                            :angle-idx $ + 2 angle-idx
       :ns $ quote
         ns lagopus.comp.spots $ :require
           lagopus.config :refer $ inline-shader
