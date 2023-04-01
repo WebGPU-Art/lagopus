@@ -10,14 +10,14 @@ fn transform_perspective(p: vec3<f32>) -> PointResult {
   let forward = uniforms.forward;
   let upward = uniforms.upward;
   let rightward = uniforms.rightward;
-  let lookDistance = uniforms.lookDistance;
-  let cameraPosition = uniforms.cameraPosition;
+  let look_distance = uniforms.look_distance;
+  let camera_position = uniforms.camera_position;
 
-  let moved_point: vec3<f32> = p - cameraPosition;
+  let moved_point: vec3<f32> = p - camera_position;
 
-  let s: f32 = uniforms.coneBackScale;
+  let s: f32 = uniforms.cone_back_scale;
 
-  let r: f32 = dot(moved_point, forward) / lookDistance;
+  let r: f32 = dot(moved_point, forward) / look_distance;
 
   if (r < (s * -0.9)) {
     // make it disappear with depth test since it's probably behind the camera
@@ -30,7 +30,7 @@ fn transform_perspective(p: vec3<f32>) -> PointResult {
   let z_next: f32 = r;
 
   return PointResult(
-    vec3(x_next, y_next / uniforms.viewportRatio, z_next),
+    vec3(x_next, y_next / uniforms.viewport_ratio, z_next),
     r, s
   );
 }

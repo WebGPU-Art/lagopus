@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.2-a1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.2)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -418,29 +418,11 @@
                   do (js/console.warn ":unknown op" op data) store
                   :tab $ assoc store :tab data
               if (not= next-store store) (reset! *store next-store)
-        |handle-compilation $ quote
-          defn handle-compilation (info code)
-            if-let
-              error $ -> info .-messages .-0
-              let
-                  line-num $ .-lineNum error
-                  line-pos $ .-linePos error
-                  lines $ .split-lines code
-                  message $ str line-num "\" "
-                    nth lines $ dec line-num
-                    , &newline
-                      .join-str
-                        repeat "\" " $ +
-                          count $ str line-num
-                          , line-pos
-                        , "\""
-                      , "\"^ " (.-message error)
-                js/console.error $ str "\"WGSL Error:" &newline message
-                hud! "\"error" $ str "\"WGSL Errors:" &newline message
         |main! $ quote
           defn main! () (hint-fn async)
             if dev? $ load-console-formatter!
             js-await $ initializeContext
+            reset-clear-color! $ {} (:r 0.4) (:g 0.4) (:b 0.4) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
@@ -466,6 +448,34 @@
           "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev?
+          lagopus.util :refer $ handle-compilation reset-clear-color!
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
           memof.once :refer $ reset-memof1-caches!
+    |lagopus.util $ {}
+      :defs $ {}
+        |handle-compilation $ quote
+          defn handle-compilation (info code)
+            if-let
+              error $ -> info .-messages .-0
+              let
+                  line-num $ .-lineNum error
+                  line-pos $ .-linePos error
+                  lines $ .split-lines code
+                  message $ str line-num "\" "
+                    nth lines $ dec line-num
+                    , &newline
+                      .join-str
+                        repeat "\" " $ +
+                          count $ str line-num
+                          , line-pos
+                        , "\""
+                      , "\"^ " (.-message error)
+                js/console.error $ str "\"WGSL Error:" &newline message
+                hud! "\"error" $ str "\"WGSL Errors:" &newline message
+        |reset-clear-color! $ quote
+          defn reset-clear-color! (color)
+            .!reset atomClearColor $ to-js-data color
+      :ns $ quote
+        ns lagopus.util $ :require ("\"bottom-tip" :default hud!)
+          "\"@triadica/lagopus/lib/global" :refer $ atomClearColor

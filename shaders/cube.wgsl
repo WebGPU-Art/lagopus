@@ -1,12 +1,12 @@
 struct UBO {
-  coneBackScale: f32,
-  viewportRatio: f32,
-  lookDistance: f32,
+  cone_back_scale: f32,
+  viewport_ratio: f32,
+  look_distance: f32,
   forward: vec3<f32>,
   // direction up overhead, better unit vector
   upward: vec3<f32>,
   rightward: vec3<f32>,
-  cameraPosition: vec3<f32>,
+  camera_position: vec3<f32>,
 };
 
 @group(0) @binding(0)
@@ -25,9 +25,8 @@ struct VertexOut {
 
 @vertex
 fn vertex_main(
-    @location(0) position: vec3<f32>,
-) -> VertexOut
-{
+  @location(0) position: vec3<f32>,
+) -> VertexOut {
   var output: VertexOut;
   let p1 = position;
   let p = transform_perspective(p1.xyz).point_position;
@@ -43,9 +42,8 @@ const middle: f32 = 50.0;
 const limit: f32 = 48.0;
 
 @fragment
-fn fragment_main(fragData: VertexOut) -> @location(0) vec4<f32>
-{
-  let p = fragData.original;
+fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
+  let p = vtx_out.original;
   let x_far = abs(p.x - middle) > limit;
   let y_far = abs(p.y - middle) > limit;
   let z_far = abs(p.z - middle) > limit;
