@@ -1,6 +1,6 @@
 
 {}
-  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.0.1)
+  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.0.2-a1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :ir $ {} (:package |lagopus)
@@ -3186,20 +3186,80 @@
               |b $ {} (:at 1677692440520) (:by |rJG4IHzWf) (:text |inline-shader) (:type :leaf)
               |h $ {} (:at 1677692440520) (:by |rJG4IHzWf) (:type :expr)
                 :data $ {}
-                  |T $ {} (:at 1677692448017) (:by |rJG4IHzWf) (:text |path) (:type :leaf)
-              |l $ {} (:at 1677692452080) (:by |rJG4IHzWf) (:type :expr)
+                  |T $ {} (:at 1680328661108) (:by |rJG4IHzWf) (:text |name) (:type :leaf)
+              |o $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
                 :data $ {}
-                  |T $ {} (:at 1677692522637) (:by |rJG4IHzWf) (:text |read-file) (:type :leaf)
-                  |b $ {} (:at 1677692456154) (:by |rJG4IHzWf) (:type :expr)
+                  |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |let) (:type :leaf)
+                  |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
                     :data $ {}
-                      |D $ {} (:at 1677692458583) (:by |rJG4IHzWf) (:text |str) (:type :leaf)
-                      |L $ {} (:at 1677692463151) (:by |rJG4IHzWf) (:text "|\"shaders/") (:type :leaf)
-                      |T $ {} (:at 1677692455592) (:by |rJG4IHzWf) (:text |path) (:type :leaf)
-                      |b $ {} (:at 1677692479319) (:by |rJG4IHzWf) (:text "|\".wgsl") (:type :leaf)
+                      |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                        :data $ {}
+                          |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |shader) (:type :leaf)
+                          |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                            :data $ {}
+                              |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |if) (:type :leaf)
+                              |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                :data $ {}
+                                  |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |blank?) (:type :leaf)
+                                  |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |calcit-dirname) (:type :leaf)
+                              |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                :data $ {}
+                                  |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |str) (:type :leaf)
+                                  |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text "|\"shaders/") (:type :leaf)
+                                  |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |name) (:type :leaf)
+                                  |l $ {} (:at 1680328726124) (:by |rJG4IHzWf) (:text "|\".wgsl") (:type :leaf)
+                              |l $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                :data $ {}
+                                  |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |let) (:type :leaf)
+                                  |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                    :data $ {}
+                                      |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                        :data $ {}
+                                          |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |dir) (:type :leaf)
+                                          |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                            :data $ {}
+                                              |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |if) (:type :leaf)
+                                              |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                                :data $ {}
+                                                  |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |.ends-with?) (:type :leaf)
+                                                  |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |calcit-dirname) (:type :leaf)
+                                                  |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text "|\"/") (:type :leaf)
+                                              |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |calcit-dirname) (:type :leaf)
+                                              |l $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                                :data $ {}
+                                                  |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |str) (:type :leaf)
+                                                  |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |calcit-dirname) (:type :leaf)
+                                                  |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text "|\"/") (:type :leaf)
+                                  |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                                    :data $ {}
+                                      |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |str) (:type :leaf)
+                                      |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |dir) (:type :leaf)
+                                      |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text "|\"shaders/") (:type :leaf)
+                                      |l $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |name) (:type :leaf)
+                                      |o $ {} (:at 1680328712695) (:by |rJG4IHzWf) (:text "|\".wgsl") (:type :leaf)
+                  |h $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                    :data $ {}
+                      |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |println) (:type :leaf)
+                      |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text "|\"reading shader file:") (:type :leaf)
+                      |h $ {} (:at 1680328677360) (:by |rJG4IHzWf) (:text |shader) (:type :leaf)
+                  |l $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:type :expr)
+                    :data $ {}
+                      |T $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |read-file) (:type :leaf)
+                      |b $ {} (:at 1680328504578) (:by |rJG4IHzWf) (:text |shader) (:type :leaf)
         :ns $ {} (:at 1677605429745) (:by |rJG4IHzWf) (:type :expr)
           :data $ {}
             |T $ {} (:at 1677605429745) (:by |rJG4IHzWf) (:text |ns) (:type :leaf)
             |b $ {} (:at 1677605429745) (:by |rJG4IHzWf) (:text |lagopus.config) (:type :leaf)
+            |h $ {} (:at 1680328516521) (:by |rJG4IHzWf) (:type :expr)
+              :data $ {}
+                |T $ {} (:at 1680328519288) (:by |rJG4IHzWf) (:text |:require) (:type :leaf)
+                |b $ {} (:at 1680328519656) (:by |rJG4IHzWf) (:type :expr)
+                  :data $ {}
+                    |T $ {} (:at 1680328650786) (:by |rJG4IHzWf) (:text |lagopus.$meta) (:type :leaf)
+                    |b $ {} (:at 1680328519656) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
+                    |h $ {} (:at 1680328519656) (:by |rJG4IHzWf) (:type :expr)
+                      :data $ {}
+                        |T $ {} (:at 1680328519656) (:by |rJG4IHzWf) (:text |calcit-dirname) (:type :leaf)
       |lagopus.main $ {}
         :configs $ {}
         :defs $ {}

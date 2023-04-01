@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.2-a1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -392,9 +392,17 @@
         |dev? $ quote
           def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
         |inline-shader $ quote
-          defmacro inline-shader (path)
-            read-file $ str "\"shaders/" path "\".wgsl"
-      :ns $ quote (ns lagopus.config)
+          defmacro inline-shader (name)
+            let
+                shader $ if (blank? calcit-dirname) (str "\"shaders/" name "\".wgsl")
+                  let
+                      dir $ if (.ends-with? calcit-dirname "\"/") calcit-dirname (str calcit-dirname "\"/")
+                    str dir "\"shaders/" name "\".wgsl"
+              println "\"reading shader file:" shader
+              read-file shader
+      :ns $ quote
+        ns lagopus.config $ :require
+          lagopus.$meta :refer $ calcit-dirname
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote

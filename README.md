@@ -1,8 +1,8 @@
-## Lagopus binding fpr Calcit
+## Lagopus binding for Calcit
 
-> wraps on [Lagopus](https://github.com/Triadica/lagopus), to play with WebGPU.
+> wraps on [Lagopus.ts](https://github.com/Triadica/lagopus.ts), to play with WebGPU.
 
-Demo https://r.tiye.me/Triadica/lagopus.calcit .
+Demo https://r.tiye.me/Triadica/lagopus/ .
 
 ### APIs
 
@@ -39,10 +39,6 @@ comp-spots $ {} (; :topology :line-strip)
           * r $ cos (* 0.1129 idx)
           * r $ sin (* 0.123 idx)
 ```
-
-### Workflow
-
-https://github.com/calcit-lang/respo-calcit-workflow
 
 ### Resources
 
