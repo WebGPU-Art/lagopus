@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.2)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.3)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -171,6 +171,8 @@
           defn comp-container (store)
             group nil (memof1-call comp-tabs)
               case-default (:tab store) (group nil)
+                :axis $ comp-axis
+                  {} (:n 20) (:unit 20)
                 :mountains $ memof1-call comp-mountains
                 :city $ memof1-call comp-city
                 :bends $ group nil
@@ -249,16 +251,16 @@
           defn comp-tabs () $ group nil
             comp-button
               {}
+                :position $ [] 0 260 0
+                :color $ [] 0.5 0.5 0.9 1
+                :size 20
+              fn (e d!) (d! :tab :axis)
+            comp-button
+              {}
                 :position $ [] 40 260 0
                 :color $ [] 0.9 0.4 0.5 1
                 :size 20
               fn (e d!) (d! :tab :mountains)
-            comp-button
-              {}
-                :position $ [] 0 260 0
-                :color $ [] 0.5 0.5 0.9 1
-                :size 20
-              fn (e d!) (d! :tab :bends)
             comp-button
               {}
                 :position $ [] 80 260 0
@@ -290,7 +292,7 @@
           "\"../shaders/city.wgsl" :default city-wgsl
           "\"../shaders/cube.wgsl" :default cube-wgsl
           lagopus.comp.button :refer $ comp-button
-          lagopus.comp.curves :refer $ comp-curves
+          lagopus.comp.curves :refer $ comp-curves comp-axis
           lagopus.comp.spots :refer $ comp-spots
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
@@ -324,6 +326,28 @@
                       {} (:position q) (:brush 0) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
                       {} (:position q) (:brush 1) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
                       {} (:position p) (:brush 1) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
+        |comp-axis $ quote
+          defn comp-axis (? options)
+            let
+                n $ either (get options :n) 20
+                unit $ either (get options :unit) 20
+              comp-curves $ {} (; :topology :line-strip)
+                :curves $ []
+                  -> (range-bothway n)
+                    map $ fn (n)
+                      {}
+                        :position $ [] (* n unit) 0 0
+                        :width 2
+                  -> (range-bothway n)
+                    map $ fn (n)
+                      {}
+                        :position $ [] 0 (* n unit) 0
+                        :width 2
+                  -> (range-bothway n)
+                    map $ fn (n)
+                      {}
+                        :position $ [] 0 0 (* n unit)
+                        :width 2
         |comp-curves $ quote
           defn comp-curves (options)
             let

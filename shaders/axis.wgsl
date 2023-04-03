@@ -65,6 +65,5 @@ const limit: f32 = 48.0;
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
-  // return vec4<f32>(vtx_out.color, 1.0);
-  return vec4(0.7, 0.7, 0.7, 1);
+  return vec4<f32>(vtx_out.color, 1.0);
 }

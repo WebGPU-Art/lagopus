@@ -40,6 +40,12 @@ comp-spots $ {} (; :topology :line-strip)
           * r $ sin (* 0.123 idx)
 ```
 
+```cirru
+laopus.comp.curves :refer $ comp-axis
+
+comp-axis $ {} (:n 20)
+  :unit 20
+```
 ### Resources
 
 Shader functions from https://gist.github.com/munrocket/236ed5ba7e409b8bdf1ff6eca5dcdc39
