@@ -158,6 +158,29 @@ comp-sphere $ {} (; :topology :line-strip)
   :radius 160
 ```
 
+### Shader functions
+
+`{{perspective}}`
+
+- `fn transform_perspective(p: vec3<f32>) -> PointResult`
+
+`{{colors}}`
+
+- `fn hsl2rgb(hsl: vec3<f32>) -> vec3<f32>`
+- `fn hsl(h: f32, s: f32, l: f32) -> vec3<f32>`
+
+`{{rand}}`
+
+- `fn rand(n: f32) -> f32`
+- `fn rand_balanced(n: f32) -> f32`
+- `fn noise(p: f32) -> f32`
+- `fn rand2(n: vec2<f32>) -> f32`
+- `fn noise2(n: vec2<f32>) -> f32`
+
+`{{simplex}}`
+
+- `fn simplexNoise2(v: vec2<f32>) -> f32`
+
 ### Resources
 
 Shader functions from https://gist.github.com/munrocket/236ed5ba7e409b8bdf1ff6eca5dcdc39
