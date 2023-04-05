@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.4)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.5)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -75,12 +75,14 @@
                 -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand)
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
-                , vertices-size buffers nil $ if (some? indices)
-                  u32buffer $ let
-                      *arr $ js-array
-                      collect! $ fn (x) (.!push *arr x )
-                    collect-array! indices collect!
-                    , *arr
+                , vertices-size buffers nil
+                  if (some? indices)
+                    u32buffer $ let
+                        *arr $ js-array
+                        collect! $ fn (x) (.!push *arr x )
+                      collect-array! indices collect!
+                      , *arr
+                  &map:get options :add-uniform
         |wgsl-colors $ quote
           def wgsl-colors $ inline-shader "\"lagopus-colors"
         |wgsl-perspective $ quote
@@ -188,6 +190,7 @@
                 :necklace $ comp-necklace
                 :sphere $ comp-sphere
                   {} (; :topology :line-strip) (:iteration 4) (:radius 160)
+                    :color $ [] 0.6 0.9 0.7
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -447,6 +450,7 @@
                 base $ either (&map:get options :position) ([] 0 0 0)
                 radius $ either (&map:get options :radius) 40
                 iteration $ either (&map:get options :iteration) 2
+                color $ either (&map:get options :color) ([] 0.6 0.8 0.76)
                 *counter $ atom 0
               object $ {}
                 :shader $ either (&map:get options :shader) sphere-wgsl
@@ -455,7 +459,7 @@
                 :data $ -> unit-triangles
                   map $ fn (xs)
                     build-sphere-triangles base radius iteration *counter (nth xs 0) (nth xs 1) (nth xs 2)
-                  w-js-log
+                :add-uniform $ fn () (js-array & color 1)
         |pick-radian-middle $ quote
           defn pick-radian-middle (p0 p1)
             let

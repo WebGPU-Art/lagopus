@@ -8,6 +8,10 @@ struct UBO {
   upward: vec3<f32>,
   rightward: vec3<f32>,
   camera_position: vec3<f32>,
+  _pad: u32,
+
+  // custom
+  color: vec3<f32>,
 };
 
 @group(0) @binding(0)
@@ -24,6 +28,7 @@ var<uniform> uniforms: UBO;
 struct VertexOut {
   @builtin(position) position: vec4<f32>,
   @location(0) idx: f32,
+  @location(1) color: vec3<f32>,
 };
 
 const PI = 3.14159265358979323846264338327950288;
@@ -39,12 +44,13 @@ fn vertex_main(
   let scale: f32 = 0.002;
   output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
   output.idx = f32(idx);
+  output.color = uniforms.color;
   return output;
 }
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
   let a = rand(vtx_out.idx);
-  let color = hsl(0.6, 0.8, 0.76 + a*0.04);
-  return vec4(color, 1.0);
+  let color = hsl(vtx_out.color.x, vtx_out.color.y, vtx_out.color.z + a*0.04);
+  return vec4(color.xyz, 1.0);
 }
