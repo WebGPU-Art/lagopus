@@ -16,8 +16,8 @@ object $ {}
   :shader demo-wgsl
   :topology :triangle-list
   :attrs-list $ []
-    {} (:field :position) (:format :float32x3)
-    {} (:field :color) (:format :float32x3)
+    :: :float32x3 :position
+    :: :float32x3 :color
   :data $ []
     {}
       :position $ [] 0 0 0
@@ -33,6 +33,7 @@ object $ {}
 - `:shader` custom shader file string
 - `:topology` topology symbol, `:triangle-list` or `:line-strip`
 - `:attrs-list` list of attributes, each attribute is a map with `:field` and `:format` keys
+  - an alternative way is to write in `{} (:field :position) (:format :float32x3)` format
 - `:data` list of data, each data is a map with keys matching `:attrs-list`, nested list is supported
 
 Shader file should obey the some rules rules:

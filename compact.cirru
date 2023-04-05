@@ -35,12 +35,19 @@
               reduce xs 0 $ fn (acc y)
                 &+ acc $ count-recursive y
               , 1
+        |expand-attr $ quote
+          defn expand-attr (x)
+            if (tuple? x)
+              {}
+                :field $ &tuple:nth x 1
+                :format $ &tuple:nth x 0
+              , x
         |group $ quote
           defn group (a & children) (lagopus/group nil & children)
         |object $ quote
           defn object (options)
             let
-                attrs-list $ &map:get options :attrs-list
+                attrs-list $ map (&map:get options :attrs-list) expand-attr
                 data $ &map:get options :data
                 vertices-size $ count-recursive data
                 indices $ &map:get options :indices
@@ -103,10 +110,7 @@
           defn comp-city () $ object
             {} (:shader city-wgsl)
               :topology $ do :line-strip :triangle-list
-              :attrs-list $ []
-                {} (:field :position) (:format "\"float32x2")
-                {} (:field :normal-idx) (:format "\"float32")
-                {} (:field :idx) (:format "\"float32")
+              :attrs-list $ [] (:: :float32x2 :position) (:: :float32 :normal-idx) (:: :float32 :idx)
               :data $ let
                   size 40
                   d 160
@@ -355,13 +359,7 @@
               object $ {}
                 :shader $ either (&map:get options :shader) curves-wgsl
                 :topology $ either (&map:get options :topology) :triangle-list
-                :attrs-list $ []
-                  {} (:field :position) (:format :float32x3)
-                  {} (:field :brush) (:format :uint32)
-                  {} (:field :direction) (:format :float32x3)
-                  {} (:field :curve_ratio) (:format :float32)
-                  {} (:field :color_index) (:format :uint32)
-                  {} (:field :width) (:format :float32)
+                :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
                     size $ count curves
                   map-indexed curves $ fn (idx c)
@@ -386,14 +384,7 @@
               object $ {}
                 :shader $ either (&map:get options :shader) spots-wgsl
                 :topology $ either (&map:get options :topology) :triangle-list
-                :attrs-list $ []
-                  {} (:field :base) (:format :float32x3)
-                  {} (:field :color) (:format :float32x3)
-                  {} (:field :radius) (:format :float32)
-                  {} (:field :vertex-count) (:format :uint32)
-                  {} (:field :angle-idx) (:format :uint32)
-                  {} (:field :shift) (:format :float32)
-                  {} (:field :spot-idx) (:format :uint32)
+                :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ -> points
                   map-indexed $ fn (spot-idx base)
                     ->
