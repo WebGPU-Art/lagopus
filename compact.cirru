@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.3)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -65,7 +65,7 @@
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
-                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors)
+                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand)
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
                 , vertices-size buffers nil $ if (some? indices)
@@ -75,11 +75,13 @@
                     collect-array! indices collect!
                     , *arr
         |wgsl-colors $ quote
-          def wgsl-colors $ inline-shader "\"colors"
+          def wgsl-colors $ inline-shader "\"lagopus-colors"
         |wgsl-perspective $ quote
-          def wgsl-perspective $ inline-shader "\"perspective"
+          def wgsl-perspective $ inline-shader "\"lagopus-perspective"
+        |wgsl-rand $ quote
+          def wgsl-rand $ inline-shader "\"lagopus-rand"
         |wgsl-simplex $ quote
-          def wgsl-simplex $ inline-shader "\"simplex"
+          def wgsl-simplex $ inline-shader "\"lagopus-simplex"
       :ns $ quote
         ns lagopus.alias $ :require
           "\"@triadica/lagopus" :refer $ createRenderer u32buffer newBufferFormatLength
@@ -169,11 +171,14 @@
           defn comp-container (store)
             group nil (memof1-call comp-tabs)
               case-default (:tab store) (group nil)
+                :axis $ comp-axis
+                  {} (:n 20) (:unit 20)
                 :mountains $ memof1-call comp-mountains
                 :city $ memof1-call comp-city
                 :bends $ group nil
                 :cube $ comp-cube
                 :ribbon $ comp-ribbon
+                :necklace $ comp-necklace
         |comp-cube $ quote
           defn comp-cube () $ object
             {} (:shader cube-wgsl)
@@ -217,6 +222,16 @@
                               {} $ :position ([] x0 y0)
                               {} $ :position ([] x1 y1)
                               {} $ :position ([] x0 y1)
+        |comp-necklace $ quote
+          defn comp-necklace () $ comp-spots
+            {} (; :topology :line-strip) (:radius 6) (:vertex-count 8) (:shift 12)
+              :points $ -> (range 80)
+                map $ fn (idx)
+                  let
+                      r $ * idx 4
+                    [] r
+                      * r $ cos (* 0.1129 idx)
+                      * r $ sin (* 0.123 idx)
         |comp-ribbon $ quote
           defn comp-ribbon () $ comp-curves
             {} (; :topology :line-strip)
@@ -236,16 +251,16 @@
           defn comp-tabs () $ group nil
             comp-button
               {}
+                :position $ [] 0 260 0
+                :color $ [] 0.5 0.5 0.9 1
+                :size 20
+              fn (e d!) (d! :tab :axis)
+            comp-button
+              {}
                 :position $ [] 40 260 0
                 :color $ [] 0.9 0.4 0.5 1
                 :size 20
               fn (e d!) (d! :tab :mountains)
-            comp-button
-              {}
-                :position $ [] 0 260 0
-                :color $ [] 0.5 0.5 0.9 1
-                :size 20
-              fn (e d!) (d! :tab :bends)
             comp-button
               {}
                 :position $ [] 80 260 0
@@ -264,6 +279,12 @@
                 :color $ [] 0.8 0.0 0.9 1
                 :size 20
               fn (e d!) (d! :tab :ribbon)
+            comp-button
+              {}
+                :position $ [] 200 260 0
+                :color $ [] 0.2 0.9 0.6 1
+                :size 20
+              fn (e d!) (d! :tab :necklace)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -271,7 +292,8 @@
           "\"../shaders/city.wgsl" :default city-wgsl
           "\"../shaders/cube.wgsl" :default cube-wgsl
           lagopus.comp.button :refer $ comp-button
-          lagopus.comp.curves :refer $ comp-curves
+          lagopus.comp.curves :refer $ comp-curves comp-axis
+          lagopus.comp.spots :refer $ comp-spots
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
     |lagopus.comp.curves $ {}
@@ -304,6 +326,28 @@
                       {} (:position q) (:brush 0) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
                       {} (:position q) (:brush 1) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
                       {} (:position p) (:brush 1) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
+        |comp-axis $ quote
+          defn comp-axis (? options)
+            let
+                n $ either (get options :n) 20
+                unit $ either (get options :unit) 20
+              comp-curves $ {} (; :topology :line-strip)
+                :curves $ []
+                  -> (range-bothway n)
+                    map $ fn (n)
+                      {}
+                        :position $ [] (* n unit) 0 0
+                        :width 2
+                  -> (range-bothway n)
+                    map $ fn (n)
+                      {}
+                        :position $ [] 0 (* n unit) 0
+                        :width 2
+                  -> (range-bothway n)
+                    map $ fn (n)
+                      {}
+                        :position $ [] 0 0 (* n unit)
+                        :width 2
         |comp-curves $ quote
           defn comp-curves (options)
             let
@@ -328,14 +372,61 @@
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
           "\"../shaders/curves.wgsl" :default curves-wgsl
+    |lagopus.comp.spots $ {}
+      :defs $ {}
+        |comp-spots $ quote
+          defn comp-spots (options)
+            let
+                points $ either (&map:get options :points) ([])
+                color $ either (&map:get options :color) ([] 0.8 0.8 1)
+                radius $ either (&map:get options :radius) 12
+                shift $ either (&map:get options :shift) 40
+                vertex-count $ &max 3
+                  either (&map:get options :vertex-count) 8
+              object $ {}
+                :shader $ either (&map:get options :shader) spots-wgsl
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ []
+                  {} (:field :base) (:format :float32x3)
+                  {} (:field :color) (:format :float32x3)
+                  {} (:field :radius) (:format :float32)
+                  {} (:field :vertex-count) (:format :uint32)
+                  {} (:field :angle-idx) (:format :uint32)
+                  {} (:field :shift) (:format :float32)
+                  {} (:field :spot-idx) (:format :uint32)
+                :data $ -> points
+                  map-indexed $ fn (spot-idx base)
+                    ->
+                      range $ - vertex-count 2
+                      map $ fn (angle-idx)
+                        []
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx) (:angle-idx 0)
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
+                            :angle-idx $ + 1 angle-idx
+                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
+                            :angle-idx $ + 2 angle-idx
+      :ns $ quote
+        ns lagopus.comp.spots $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+          "\"../shaders/spots.wgsl" :default spots-wgsl
     |lagopus.config $ {}
       :defs $ {}
         |dev? $ quote
           def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
         |inline-shader $ quote
-          defmacro inline-shader (path)
-            read-file $ str "\"shaders/" path "\".wgsl"
-      :ns $ quote (ns lagopus.config)
+          defmacro inline-shader (name)
+            let
+                shader $ if (blank? calcit-dirname) (str "\"shaders/" name "\".wgsl")
+                  let
+                      dir $ if (.ends-with? calcit-dirname "\"/") calcit-dirname (str calcit-dirname "\"/")
+                    str dir "\"shaders/" name "\".wgsl"
+              println "\"reading shader file:" shader
+              read-file shader
+      :ns $ quote
+        ns lagopus.config $ :require
+          lagopus.$meta :refer $ calcit-dirname
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
@@ -351,29 +442,11 @@
                   do (js/console.warn ":unknown op" op data) store
                   :tab $ assoc store :tab data
               if (not= next-store store) (reset! *store next-store)
-        |handle-compilation $ quote
-          defn handle-compilation (info code)
-            if-let
-              error $ -> info .-messages .-0
-              let
-                  line-num $ .-lineNum error
-                  line-pos $ .-linePos error
-                  lines $ .split-lines code
-                  message $ str line-num "\" "
-                    nth lines $ dec line-num
-                    , &newline
-                      .join-str
-                        repeat "\" " $ +
-                          count $ str line-num
-                          , line-pos
-                        , "\""
-                      , "\"^ " (.-message error)
-                js/console.error $ str "\"WGSL Error:" &newline message
-                hud! "\"error" $ str "\"WGSL Errors:" &newline message
         |main! $ quote
           defn main! () (hint-fn async)
             if dev? $ load-console-formatter!
             js-await $ initializeContext
+            reset-clear-color! $ {} (:r 0.4) (:g 0.4) (:b 0.4) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
@@ -399,6 +472,34 @@
           "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev?
+          lagopus.util :refer $ handle-compilation reset-clear-color!
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
           memof.once :refer $ reset-memof1-caches!
+    |lagopus.util $ {}
+      :defs $ {}
+        |handle-compilation $ quote
+          defn handle-compilation (info code)
+            if-let
+              error $ -> info .-messages .-0
+              let
+                  line-num $ .-lineNum error
+                  line-pos $ .-linePos error
+                  lines $ .split-lines code
+                  message $ str line-num "\" "
+                    nth lines $ dec line-num
+                    , &newline
+                      .join-str
+                        repeat "\" " $ +
+                          count $ str line-num
+                          , line-pos
+                        , "\""
+                      , "\"^ " (.-message error)
+                js/console.error $ str "\"WGSL Error:" &newline message
+                hud! "\"error" $ str "\"WGSL Errors:" &newline message
+        |reset-clear-color! $ quote
+          defn reset-clear-color! (color)
+            .!reset atomClearColor $ to-js-data color
+      :ns $ quote
+        ns lagopus.util $ :require ("\"bottom-tip" :default hud!)
+          "\"@triadica/lagopus/lib/global" :refer $ atomClearColor

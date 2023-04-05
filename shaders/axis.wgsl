@@ -14,27 +14,49 @@ var<uniform> uniforms: UBO;
 
 {{perspective}}
 
-{{simplex}}
+{{colors}}
 
 // main
 
 struct VertexOut {
   @builtin(position) position : vec4<f32>,
   @location(0) original: vec3<f32>,
+  @location(1) ratio: f32,
+  @location(2) color: vec3<f32>,
 };
 
 @vertex
 fn vertex_main(
   @location(0) position: vec3<f32>,
+  @location(1) brush: u32,
+  @location(2) direction: vec3<f32>,
+  @location(3) curve_ratio: f32,
+  @location(4) color_index: u32,
+  @location(5) width: f32,
 ) -> VertexOut {
   var output: VertexOut;
-  let p1 = position;
+
+  var p1 = position;
+
+  var next = cross(direction, uniforms.forward);
+  if (length(next) < 0.0001) {
+    // if parallel, use leftward
+    next = -next;
+  }
+  let brush_direction = normalize(next);
+  if (brush == 1) {
+    p1 += brush_direction * width * 0.5;
+  } else {
+    p1 -= brush_direction * width * 0.5;
+  }
+
   let p = transform_perspective(p1.xyz).point_position;
   let scale: f32 = 0.002;
   output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
   output.original = position;
-  // output.position = position;
-  // output.h = 0.0;
+  output.ratio = curve_ratio;
+  output.color = hsl(fract(0.14 + curve_ratio), 1.0, 0.2 + 0.8 * fract(0.8 + f32(color_index) * 0.01));
+
   return output;
 }
 
@@ -43,14 +65,5 @@ const limit: f32 = 48.0;
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
-  let p = vtx_out.original;
-  let x_far = abs(p.x - middle) > limit;
-  let y_far = abs(p.y - middle) > limit;
-  let z_far = abs(p.z - middle) > limit;
-  let far = (x_far && y_far) || (y_far && z_far) || (z_far && x_far);
-  if (far) {
-    return vec4<f32>(1.0, 1.0, 1.0, 1.0);
-  } else {
-    return vec4<f32>(0.6, 0.6, 0.6, 1.0);
-  }
+  return vec4<f32>(vtx_out.color, 1.0);
 }
