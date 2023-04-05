@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.3)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.4)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -181,24 +181,11 @@
                 :city $ memof1-call comp-city
                 :bends $ group nil
                 :cube $ comp-cube
+                  {}
+                    :position $ [] 40 0 0
+                    :radius 40
                 :ribbon $ comp-ribbon
                 :necklace $ comp-necklace
-        |comp-cube $ quote
-          defn comp-cube () $ object
-            {} (:shader cube-wgsl)
-              :topology $ do :line-strip :triangle-list
-              :attrs-list $ []
-                {} (:field :position) (:format "\"float32x3")
-              :data $ []
-                {} $ :position ([] 0 0 0)
-                {} $ :position ([] 0 100 0)
-                {} $ :position ([] 0 100 100)
-                {} $ :position ([] 0 0 100)
-                {} $ :position ([] 100 0 0)
-                {} $ :position ([] 100 100 0)
-                {} $ :position ([] 100 100 100)
-                {} $ :position ([] 100 0 100)
-              :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -294,12 +281,63 @@
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
-          "\"../shaders/cube.wgsl" :default cube-wgsl
           lagopus.comp.button :refer $ comp-button
           lagopus.comp.curves :refer $ comp-curves comp-axis
           lagopus.comp.spots :refer $ comp-spots
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
+          lagopus.comp.cube :refer $ comp-cube
+    |lagopus.comp.cube $ {}
+      :defs $ {}
+        |comp-cube $ quote
+          defn comp-cube (options)
+            let
+                base $ either (&map:get options :position) ([] 0 0 0)
+                radius $ either (&map:get options :radius) 80
+              object $ {} (:shader cube-wgsl)
+                :topology $ do :line-strip :triangle-list
+                :attrs-list $ [] (:: :float32x3 :position) (:: :float32x3 :metrics)
+                :data $ []
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] -1 -1 -1) radius
+                    :metrics $ [] -1 -1 -1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] -1 1 -1) radius
+                    :metrics $ [] -1 1 -1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] -1 1 1) radius
+                    :metrics $ [] -1 1 1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] -1 -1 1) radius
+                    :metrics $ [] -1 -1 1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] 1 -1 -1) radius
+                    :metrics $ [] 1 -1 -1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] 1 1 -1) radius
+                    :metrics $ [] 1 1 -1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] 1 1 1) radius
+                    :metrics $ [] 1 1 1
+                  {}
+                    :position $ &v+ base
+                      v-scale ([] 1 -1 1) radius
+                    :metrics $ [] 1 -1 1
+                :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
+      :ns $ quote
+        ns lagopus.comp.cube $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v+
+          "\"../shaders/curves.wgsl" :default curves-wgsl
+          "\"../shaders/cube.wgsl" :default cube-wgsl
     |lagopus.comp.curves $ {}
       :defs $ {}
         |build-curve-points $ quote

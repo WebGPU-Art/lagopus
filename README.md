@@ -35,6 +35,7 @@ object $ {}
 - `:attrs-list` list of attributes, each attribute is a map with `:field` and `:format` keys
   - an alternative way is to write in `{} (:field :position) (:format :float32x3)` format
 - `:data` list of data, each data is a map with keys matching `:attrs-list`, nested list is supported
+- optional `:indices` list of indices, each index is a number. nested list is supported
 
 Shader file should obey the some rules rules:
 
@@ -84,16 +85,7 @@ const limit: f32 = 48.0;
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
-  let p = vtx_out.original;
-  let x_far = abs(p.x - middle) > limit;
-  let y_far = abs(p.y - middle) > limit;
-  let z_far = abs(p.z - middle) > limit;
-  let far = (x_far && y_far) || (y_far && z_far) || (z_far && x_far);
-  if (far) {
-    return vec4<f32>(1.0, 1.0, 1.0, 1.0);
-  } else {
-    return vec4<f32>(0.6, 0.6, 0.6, 1.0);
-  }
+  return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 }
 ```
 
@@ -138,6 +130,14 @@ laopus.comp.curves :refer $ comp-axis
 
 comp-axis $ {} (:n 20)
   :unit 20
+```
+
+```cirru
+lagopus.comp.cube :refer $ comp-cube
+
+comp-cube $ {}
+  :position $ [] 40 0 0
+  :radius 40
 ```
 
 ### Resources
