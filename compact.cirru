@@ -186,6 +186,8 @@
                     :radius 40
                 :ribbon $ comp-ribbon
                 :necklace $ comp-necklace
+                :sphere $ comp-sphere
+                  {} (; :topology :line-strip) (:iteration 4) (:radius 160)
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -276,6 +278,12 @@
                 :color $ [] 0.2 0.9 0.6 1
                 :size 20
               fn (e d!) (d! :tab :necklace)
+            comp-button
+              {}
+                :position $ [] 240 260 0
+                :color $ [] 0.2 0.9 0.6 1
+                :size 20
+              fn (e d!) (d! :tab :sphere)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -287,6 +295,7 @@
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+
           lagopus.comp.cube :refer $ comp-cube
+          lagopus.comp.sphere :refer $ comp-sphere
     |lagopus.comp.cube $ {}
       :defs $ {}
         |comp-cube $ quote
@@ -408,6 +417,69 @@
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
           "\"../shaders/curves.wgsl" :default curves-wgsl
+    |lagopus.comp.sphere $ {}
+      :defs $ {}
+        |build-sphere-triangles $ quote
+          defn build-sphere-triangles (base radius depth *counter p0 p1 p2) (; "\"based on knowledge from https://www.danielsieger.com/blog/2021/03/27/generating-spheres.html")
+            if (<= depth 0)
+              let
+                  idx $ deref *counter
+                swap! *counter inc
+                []
+                  {} (:idx idx)
+                    :position $ &v+ base (v-scale p0 radius)
+                  {} (:idx idx)
+                    :position $ &v+ base (v-scale p1 radius)
+                  {} (:idx idx)
+                    :position $ &v+ base (v-scale p2 radius)
+              let
+                  p01 $ pick-radian-middle p0 p1
+                  p02 $ pick-radian-middle p0 p2
+                  p12 $ pick-radian-middle p1 p2
+                []
+                  build-sphere-triangles base radius (dec depth) *counter p0 p01 p02
+                  build-sphere-triangles base radius (dec depth) *counter p1 p01 p12
+                  build-sphere-triangles base radius (dec depth) *counter p2 p02 p12
+                  build-sphere-triangles base radius (dec depth) *counter p01 p12 p02
+        |comp-sphere $ quote
+          defn comp-sphere (options)
+            let
+                base $ either (&map:get options :position) ([] 0 0 0)
+                radius $ either (&map:get options :radius) 40
+                iteration $ either (&map:get options :iteration) 2
+                *counter $ atom 0
+              object $ {}
+                :shader $ either (&map:get options :shader) sphere-wgsl
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
+                :data $ -> unit-triangles
+                  map $ fn (xs)
+                    build-sphere-triangles base radius iteration *counter (nth xs 0) (nth xs 1) (nth xs 2)
+                  w-js-log
+        |pick-radian-middle $ quote
+          defn pick-radian-middle (p0 p1)
+            let
+                p-mid $ v-scale (&v+ p0 p1) 0.5
+                l $ v-length p-mid
+                ratio $ &/ 1 l
+                p-mid-unit $ v-scale p-mid ratio
+              , p-mid-unit
+        |unit-triangles $ quote
+          def unit-triangles $ []
+            [] ([] 1 0 0) ([] 0 1 0) ([] 0 0 1)
+            [] ([] 1 0 0) ([] 0 1 0) ([] 0 0 -1)
+            [] ([] 1 0 0) ([] 0 -1 0) ([] 0 0 1)
+            [] ([] 1 0 0) ([] 0 -1 0) ([] 0 0 -1)
+            [] ([] -1 0 0) ([] 0 1 0) ([] 0 0 1)
+            [] ([] -1 0 0) ([] 0 1 0) ([] 0 0 -1)
+            [] ([] -1 0 0) ([] 0 -1 0) ([] 0 0 1)
+            [] ([] -1 0 0) ([] 0 -1 0) ([] 0 0 -1)
+      :ns $ quote
+        ns lagopus.comp.sphere $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length
+          "\"../shaders/sphere.wgsl" :default sphere-wgsl
     |lagopus.comp.spots $ {}
       :defs $ {}
         |comp-spots $ quote

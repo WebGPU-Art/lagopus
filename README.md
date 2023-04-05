@@ -91,6 +91,8 @@ fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
 
 ### Components
 
+Curves
+
 ```cirru
 lagopus.comp.curves :refer $ comp-curves
 
@@ -109,6 +111,8 @@ comp-curves $ {} (; :topology :line-strip)
             :width 2
 ```
 
+Spots
+
 ```cirru
 lagopus.comp.spots :refer $ comp-spots
 
@@ -125,6 +129,8 @@ comp-spots $ {} (; :topology :line-strip)
           * r $ sin (* 0.123 idx)
 ```
 
+Axis:
+
 ```cirru
 laopus.comp.curves :refer $ comp-axis
 
@@ -132,12 +138,24 @@ comp-axis $ {} (:n 20)
   :unit 20
 ```
 
+Cube
+
 ```cirru
 lagopus.comp.cube :refer $ comp-cube
 
 comp-cube $ {}
   :position $ [] 40 0 0
   :radius 40
+```
+
+Sphere
+
+```cirru
+lagopus.comp.sphere :refer $ comp-sphere
+
+comp-sphere $ {} (; :topology :line-strip)
+  :iteration 4
+  :radius 160
 ```
 
 ### Resources
