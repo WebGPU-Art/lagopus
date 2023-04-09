@@ -518,6 +518,8 @@
           "\"../shaders/spots.wgsl" :default spots-wgsl
     |lagopus.config $ {}
       :defs $ {}
+        |bloom? $ quote
+          def bloom? $ = "\"true" (get-env "\"bloom" "\"false")
         |dev? $ quote
           def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
         |inline-shader $ quote
@@ -529,9 +531,12 @@
                     str dir "\"shaders/" name "\".wgsl"
               println "\"reading shader file:" shader
               read-file shader
+        |mobile-info $ quote
+          def mobile-info $ ismobile js/window.navigator
       :ns $ quote
         ns lagopus.config $ :require
           lagopus.$meta :refer $ calcit-dirname
+          "\"ismobilejs" :default ismobile
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
@@ -549,14 +554,18 @@
               if (not= next-store store) (reset! *store next-store)
         |main! $ quote
           defn main! () (hint-fn async)
+            if
+              and bloom? $ not (.-any mobile-info)
+              enableBloom
             if dev? $ load-console-formatter!
             js-await $ initializeContext
+            initializeCanvasTextures
             reset-clear-color! $ {} (:r 0.4) (:g 0.4) (:b 0.4) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
-            set! js/window.__lagopusHandleCompilationInfo handle-compilation
-            set! js/window.onresize $ fn (e) (resetCanvasHeight canvas) (paintLagopusTree)
+            registerShaderResult handle-compilation
+            set! js/window.onresize $ fn (e) (resetCanvasHeight canvas) (initializeCanvasTextures) (paintLagopusTree)
             resetCanvasHeight canvas
             add-watch *store :change $ fn (next store) (render-app!)
             setupMouseEvents canvas
@@ -574,9 +583,9 @@
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
-          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight
+          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight initializeCanvasTextures registerShaderResult enableBloom
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
-          lagopus.config :refer $ dev?
+          lagopus.config :refer $ dev? mobile-info bloom?
           lagopus.util :refer $ handle-compilation reset-clear-color!
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
