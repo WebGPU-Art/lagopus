@@ -565,8 +565,8 @@
             renderControl
             startControlLoop 10 onControlEvent
             registerShaderResult handle-compilation
-            set! js/window.onresize $ fn (e) (resetCanvasHeight canvas) (initializeCanvasTextures) (paintLagopusTree)
-            resetCanvasHeight canvas
+            set! js/window.onresize $ fn (e) (resetCanvasSize canvas) (initializeCanvasTextures) (paintLagopusTree)
+            resetCanvasSize canvas
             add-watch *store :change $ fn (next store) (render-app!)
             setupMouseEvents canvas
         |reload! $ quote
@@ -583,7 +583,7 @@
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
-          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight initializeCanvasTextures registerShaderResult enableBloom
+          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasSize initializeCanvasTextures registerShaderResult enableBloom
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
           lagopus.config :refer $ dev? mobile-info bloom?
           lagopus.util :refer $ handle-compilation reset-clear-color!

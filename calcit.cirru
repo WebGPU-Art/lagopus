@@ -4531,7 +4531,7 @@
                           |T $ {} (:at 1677604731253) (:by |rJG4IHzWf) (:text |e) (:type :leaf)
                       |e $ {} (:at 1679819899455) (:by |rJG4IHzWf) (:type :expr)
                         :data $ {}
-                          |T $ {} (:at 1679819904072) (:by |rJG4IHzWf) (:text |resetCanvasHeight) (:type :leaf)
+                          |T $ {} (:at 1681238466427) (:by |rJG4IHzWf) (:text |resetCanvasSize) (:type :leaf)
                           |b $ {} (:at 1679819936880) (:by |rJG4IHzWf) (:text |canvas) (:type :leaf)
                       |f $ {} (:at 1681058275210) (:by |rJG4IHzWf) (:type :expr)
                         :data $ {}
@@ -4541,7 +4541,7 @@
                           |T $ {} (:at 1678027099048) (:by |rJG4IHzWf) (:text |paintLagopusTree) (:type :leaf)
               |uD $ {} (:at 1679819952782) (:by |rJG4IHzWf) (:type :expr)
                 :data $ {}
-                  |T $ {} (:at 1679819952782) (:by |rJG4IHzWf) (:text |resetCanvasHeight) (:type :leaf)
+                  |T $ {} (:at 1681238468273) (:by |rJG4IHzWf) (:text |resetCanvasSize) (:type :leaf)
                   |b $ {} (:at 1679819952782) (:by |rJG4IHzWf) (:text |canvas) (:type :leaf)
               |uT $ {} (:at 1677948445310) (:by |rJG4IHzWf) (:type :expr)
                 :data $ {}
@@ -4666,7 +4666,7 @@
                         |h $ {} (:at 1678027026259) (:by |rJG4IHzWf) (:text |paintLagopusTree) (:type :leaf)
                         |l $ {} (:at 1678027030023) (:by |rJG4IHzWf) (:text |renderLagopusTree) (:type :leaf)
                         |o $ {} (:at 1678027037402) (:by |rJG4IHzWf) (:text |initializeContext) (:type :leaf)
-                        |q $ {} (:at 1679819906900) (:by |rJG4IHzWf) (:text |resetCanvasHeight) (:type :leaf)
+                        |q $ {} (:at 1681238472799) (:by |rJG4IHzWf) (:text |resetCanvasSize) (:type :leaf)
                         |s $ {} (:at 1681058264772) (:by |rJG4IHzWf) (:text |initializeCanvasTextures) (:type :leaf)
                         |sT $ {} (:at 1681059468858) (:by |rJG4IHzWf) (:text |registerShaderResult) (:type :leaf)
                         |t $ {} (:at 1681058356577) (:by |rJG4IHzWf) (:text |enableBloom) (:type :leaf)
