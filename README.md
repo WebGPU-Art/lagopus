@@ -158,6 +158,22 @@ comp-sphere $ {} (; :topology :line-strip)
   :radius 160
 ```
 
+Plate
+
+```cirru
+lagopus.comp.plate :refer $ comp-plate
+
+comp-plate $ {} (; :topology :line-strip)
+  :iteration 20
+  :radius 160
+  :color $ [] 0.04 0.8 0.6
+  :transformer $ fn (i)
+    v+ i $ [] 0 0 -10
+  ; :x-direction $ [] 1 0 0
+  ; :y-direction $ [] 0 1 0
+  :chromatism 0.14
+```
+
 ### Shader functions
 
 `{{perspective}}`
