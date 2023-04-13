@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.6)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.7)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -44,6 +44,9 @@
               , x
         |group $ quote
           defn group (a & children) (lagopus/group nil & children)
+        |inject-shader-snippets $ quote
+          defn inject-shader-snippets (code)
+            -> code (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand) (.!replace "\"{{rotation}}" wgsl-rotation)
         |object $ quote
           defn object (options)
             let
@@ -72,7 +75,7 @@
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
-                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand)
+                inject-shader-snippets $ &map:get options :shader
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
                 , vertices-size buffers nil
@@ -89,6 +92,8 @@
           def wgsl-perspective $ inline-shader "\"lagopus-perspective"
         |wgsl-rand $ quote
           def wgsl-rand $ inline-shader "\"lagopus-rand"
+        |wgsl-rotation $ quote
+          def wgsl-rotation $ inline-shader "\"lagopus-rotation"
         |wgsl-simplex $ quote
           def wgsl-simplex $ inline-shader "\"lagopus-simplex"
       :ns $ quote
@@ -461,7 +466,7 @@
                 transformer $ either (&map:get options :transformer) identity
                 chromatism $ either (&map:get options :chromatism) 0.1
               object $ {}
-                :shader $ either (&map:get options :shader) plate-wgsl
+                :shader $ either (&map:get options :shader) wgsl-plate
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ -> (range 6)
@@ -526,12 +531,13 @@
                 :add-uniform $ fn () (js-array & color chromatism)
         |sqrt-3 $ quote
           def sqrt-3 $ sqrt 3
+        |wgsl-plate $ quote
+          def wgsl-plate $ inline-shader "\"plate"
       :ns $ quote
         ns lagopus.comp.plate $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length v+
-          "\"../shaders/plate.wgsl" :default plate-wgsl
     |lagopus.comp.sphere $ {}
       :defs $ {}
         |build-sphere-triangles $ quote
@@ -702,6 +708,47 @@
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
           memof.once :refer $ reset-memof1-caches!
+    |lagopus.math $ {}
+      :defs $ {}
+        |fibo-grid-n $ quote
+          defn fibo-grid-n (n total)
+            let
+                z $ dec
+                  &/
+                    dec $ &* 2 n
+                    , total
+                t $ sqrt
+                  &- 1 $ &* z z
+                t2 $ * 2 &PI n phi
+                x $ &* t (js/Math.cos t2)
+                y $ &* t (js/Math.sin t2)
+              [] x y z
+        |fibo-grid-range $ quote
+          defn fibo-grid-range (total)
+            -> (range total)
+              map $ fn (n)
+                fibo-grid-n (inc n) total
+        |phi $ quote
+          def phi $ * 0.5
+            dec $ sqrt 5
+        |rotate-3d-fn $ quote
+          defn rotate-3d-fn (origin axis angle)
+            let
+                axis-0 $ v-normalize axis
+                cos-d $ js/Math.cos angle
+                sin-d $ js/Math.sin angle
+              defn rotate-3d-apply (p)
+                let
+                    p-v $ &v- p origin
+                    h $ v-dot axis-0 p-v
+                    h-v $ v-scale axis-0 h
+                    flat-p-v $ &v- p-v h-v
+                    rot-direction $ v-normalize (v-cross flat-p-v axis-0)
+                    rot-v $ v-scale rot-direction (v-length flat-p-v)
+                  v+ origin h-v (v-scale flat-p-v cos-d) (v-scale rot-v sin-d)
+      :ns $ quote
+        ns lagopus.math $ :require
+          quaternion.core :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
     |lagopus.util $ {}
       :defs $ {}
         |handle-compilation $ quote
