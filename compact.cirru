@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.5)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.6)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -191,6 +191,14 @@
                 :sphere $ comp-sphere
                   {} (; :topology :line-strip) (:iteration 4) (:radius 160)
                     :color $ [] 0.6 0.9 0.7
+                :plate $ comp-plate
+                  {} (; :topology :line-strip) (:iteration 20) (:radius 160)
+                    :color $ [] 0.04 0.8 0.6
+                    :transformer $ fn (i)
+                      v+ i $ [] 0 0 -10
+                    ; :x-direction $ [] 1 0 0
+                    ; :y-direction $ [] 0 1 0
+                    :chromatism 0.14
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -287,6 +295,12 @@
                 :color $ [] 0.2 0.9 0.6 1
                 :size 20
               fn (e d!) (d! :tab :sphere)
+            comp-button
+              {}
+                :position $ [] 280 260 0
+                :color $ [] 0.9 0.4 0.6 1
+                :size 20
+              fn (e d!) (d! :tab :plate)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -296,9 +310,10 @@
           lagopus.comp.curves :refer $ comp-curves comp-axis
           lagopus.comp.spots :refer $ comp-spots
           memof.once :refer $ memof1-call
-          quaternion.core :refer $ c+
+          quaternion.core :refer $ c+ v+
           lagopus.comp.cube :refer $ comp-cube
           lagopus.comp.sphere :refer $ comp-sphere
+          lagopus.comp.plate :refer $ comp-plate
     |lagopus.comp.cube $ {}
       :defs $ {}
         |comp-cube $ quote
@@ -420,6 +435,103 @@
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
           "\"../shaders/curves.wgsl" :default curves-wgsl
+    |lagopus.comp.plate $ {}
+      :defs $ {}
+        |calc-ratio $ quote
+          defn calc-ratio (p)
+            let
+                x $ nth p 0
+                y $ nth p 1
+                px $ &+ x (&* 0.5 y)
+                py $ * 0.5 sqrt-3 y
+                radian $ js/Math.atan2 py px
+              &* 0.5 $ &* sqrt-3
+                cos $ &- radian (&/ &PI 6)
+        |comp-plate $ quote
+          defn comp-plate (options)
+            let
+                base $ either (&map:get options :position) ([] 0 0 0)
+                x-direction $ either (&map:get options :x-direction) ([] 1 0 0)
+                y-direction $ either (&map:get options :y-direction) ([] 0 1 0)
+                radius $ either (&map:get options :radius) 80
+                iteration $ either (&map:get options :iteration) 4
+                color $ either (&map:get options :color) ([] 0.6 0.8 0.76)
+                *counter $ atom 0
+                r-unit $ &/ radius iteration
+                transformer $ either (&map:get options :transformer) identity
+                chromatism $ either (&map:get options :chromatism) 0.1
+              object $ {}
+                :shader $ either (&map:get options :shader) plate-wgsl
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
+                :data $ -> (range 6)
+                  map $ fn (section-idx)
+                    let
+                        angle $ &* section-idx (&/ &PI 3)
+                        angle-next $ &* (inc section-idx) (&/ &PI 3)
+                        unit-x $ v-scale
+                          &v+
+                            v-scale x-direction $ cos angle
+                            v-scale y-direction $ sin angle
+                          , r-unit 
+                        unit-y $ v-scale
+                          &v+
+                            v-scale x-direction $ cos angle-next
+                            v-scale y-direction $ sin angle-next
+                          , r-unit
+                      -> (range iteration)
+                        map $ fn (idx)
+                          ->
+                            range $ &- iteration idx
+                            map $ fn (j)
+                              let
+                                  c @*counter
+                                  c1 $ inc c
+                                  p0 $ [] idx j
+                                  p1 $ [] (inc idx) j
+                                  p2 $ [] idx (inc j)
+                                  p3 $ [] (inc idx) (inc j)
+                                  s0 $ calc-ratio p0
+                                  s1 $ calc-ratio p1
+                                  s2 $ calc-ratio p2
+                                  s3 $ calc-ratio p3
+                                  ps0 $ &v+ base
+                                    transformer $ &v+
+                                      v-scale unit-x $ &* s0 (nth p0 0)
+                                      v-scale unit-y $ &* s0 (nth p0 1)
+                                  ps1 $ &v+ base
+                                    transformer $ &v+
+                                      v-scale unit-x $ &* s1 (nth p1 0)
+                                      v-scale unit-y $ &* s1 (nth p1 1)
+                                  ps2 $ &v+ base
+                                    transformer $ &v+
+                                      v-scale unit-x $ &* s2 (nth p2 0)
+                                      v-scale unit-y $ &* s2 (nth p2 1)
+                                  ps3 $ &v+ base
+                                    transformer $ &v+
+                                      v-scale unit-x $ &* s3 (nth p3 0)
+                                      v-scale unit-y $ &* s3 (nth p3 1)
+                                swap! *counter &+ 2
+                                []
+                                  {} (:position ps0) (:idx c)
+                                  {} (:position ps1) (:idx c)
+                                  {} (:position ps2) (:idx c)
+                                  if
+                                    &< (&+ idx j) (dec iteration)
+                                    []
+                                      {} (:position ps3) (:idx c1)
+                                      {} (:position ps1) (:idx c1)
+                                      {} (:position ps2) (:idx c1)
+                                    []
+                :add-uniform $ fn () (js-array & color chromatism)
+        |sqrt-3 $ quote
+          def sqrt-3 $ sqrt 3
+      :ns $ quote
+        ns lagopus.comp.plate $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length v+
+          "\"../shaders/plate.wgsl" :default plate-wgsl
     |lagopus.comp.sphere $ {}
       :defs $ {}
         |build-sphere-triangles $ quote
@@ -518,6 +630,8 @@
           "\"../shaders/spots.wgsl" :default spots-wgsl
     |lagopus.config $ {}
       :defs $ {}
+        |bloom? $ quote
+          def bloom? $ = "\"true" (get-env "\"bloom" "\"false")
         |dev? $ quote
           def dev? $ &= "\"dev" (get-env "\"mode" "\"release")
         |inline-shader $ quote
@@ -529,13 +643,16 @@
                     str dir "\"shaders/" name "\".wgsl"
               println "\"reading shader file:" shader
               read-file shader
+        |mobile-info $ quote
+          def mobile-info $ ismobile js/window.navigator
       :ns $ quote
         ns lagopus.config $ :require
           lagopus.$meta :refer $ calcit-dirname
+          "\"ismobilejs" :default ismobile
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
-          defatom *store $ {} (:tab :ribbon)
+          defatom *store $ {} (:tab :plate)
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
@@ -549,15 +666,19 @@
               if (not= next-store store) (reset! *store next-store)
         |main! $ quote
           defn main! () (hint-fn async)
+            if
+              and bloom? $ not (.-any mobile-info)
+              enableBloom
             if dev? $ load-console-formatter!
             js-await $ initializeContext
+            initializeCanvasTextures
             reset-clear-color! $ {} (:r 0.4) (:g 0.4) (:b 0.4) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
-            set! js/window.__lagopusHandleCompilationInfo handle-compilation
-            set! js/window.onresize $ fn (e) (resetCanvasHeight canvas) (paintLagopusTree)
-            resetCanvasHeight canvas
+            registerShaderResult handle-compilation
+            set! js/window.onresize $ fn (e) (resetCanvasSize canvas) (initializeCanvasTextures) (paintLagopusTree)
+            resetCanvasSize canvas
             add-watch *store :change $ fn (next store) (render-app!)
             setupMouseEvents canvas
         |reload! $ quote
@@ -574,9 +695,9 @@
       :ns $ quote
         ns lagopus.main $ :require
           lagopus.comp.container :refer $ comp-container
-          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasHeight
+          "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasSize initializeCanvasTextures registerShaderResult enableBloom
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
-          lagopus.config :refer $ dev?
+          lagopus.config :refer $ dev? mobile-info bloom?
           lagopus.util :refer $ handle-compilation reset-clear-color!
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors

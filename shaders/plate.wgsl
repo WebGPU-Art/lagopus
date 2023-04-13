@@ -12,6 +12,7 @@ struct UBO {
 
   // custom
   color: vec3<f32>,
+  chromatism: f32
 };
 
 @group(0) @binding(0)
@@ -29,6 +30,7 @@ struct VertexOut {
   @builtin(position) position: vec4<f32>,
   @location(0) idx: f32,
   @location(1) color: vec3<f32>,
+  @location(2) chromatism: f32,
 };
 
 // const PI = 3.14159265358979323846264338327950288;
@@ -45,12 +47,13 @@ fn vertex_main(
   output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
   output.idx = f32(idx);
   output.color = uniforms.color;
+  output.chromatism = uniforms.chromatism;
   return output;
 }
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
   let a = rand(vtx_out.idx);
-  let color = hsl(vtx_out.color.x, vtx_out.color.y, vtx_out.color.z + a*0.04);
+  let color = hsl(vtx_out.color.x, vtx_out.color.y, vtx_out.color.z + a*vtx_out.chromatism);
   return vec4(color.xyz, 1.0);
 }
