@@ -655,6 +655,18 @@
         ns lagopus.config $ :require
           lagopus.$meta :refer $ calcit-dirname
           "\"ismobilejs" :default ismobile
+    |lagopus.cursor $ {}
+      :defs $ {}
+        |>> $ quote
+          defn >> (states k)
+            let
+                parent-cursor $ either (:cursor states) ([])
+                branch $ either (get states k) ({})
+              assoc branch :cursor $ conj parent-cursor k
+        |update-states $ quote
+          defn update-states (store cursor new-state)
+            assoc-in store ([] :states & cursor :data) new-state
+      :ns $ quote (ns lagopus.cursor)
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
@@ -666,9 +678,10 @@
             if dev? $ js/console.log op data
             let
                 store @*store
-                next-store $ case-default op
-                  do (js/console.warn ":unknown op" op data) store
-                  :tab $ assoc store :tab data
+                next-store $ if (list? op) (update-states store op data)
+                  case-default op
+                    do (js/console.warn ":unknown op" op data) store
+                    :tab $ assoc store :tab data
               if (not= next-store store) (reset! *store next-store)
         |main! $ quote
           defn main! () (hint-fn async)
@@ -708,6 +721,7 @@
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
           memof.once :refer $ reset-memof1-caches!
+          lagopus.cursor :refer $ update-states
     |lagopus.math $ {}
       :defs $ {}
         |fibo-grid-n $ quote
