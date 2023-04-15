@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.7)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.8)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -43,7 +43,12 @@
                 :format $ &tuple:nth x 0
               , x
         |group $ quote
-          defn group (a & children) (lagopus/group nil & children)
+          defn group (a & children)
+            if
+              not $ or (nil? a)
+                = a $ &{}
+              js/console.warn "\"group options is not used at current" a
+            lagopus/group nil & children
         |inject-shader-snippets $ quote
           defn inject-shader-snippets (code)
             -> code (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand) (.!replace "\"{{rotation}}" wgsl-rotation)
@@ -106,9 +111,23 @@
         |comp-button $ quote
           defn comp-button (props on-click)
             compButton (to-js-data props) on-click
+        |comp-drag-point $ quote
+          defn comp-drag-point (props on-drag)
+            compDragPoint (to-js-data props)
+              fn (move d!)
+                on-drag
+                  [] (.-0 move) (.-1 move) (.-2 move)
+                  , d! 
+        |comp-slider $ quote
+          defn comp-slider (props on-slide)
+            compSlider (to-js-data props)
+              fn (move d!)
+                on-slide
+                  [] (.-0 move) (.-1 move)
+                  , d!
       :ns $ quote
         ns lagopus.comp.button $ :require
-          "\"@triadica/lagopus" :refer $ compButton
+          "\"@triadica/lagopus" :refer $ compButton compSlider compDragPoint
     |lagopus.comp.container $ {}
       :defs $ {}
         |color-default $ quote
@@ -180,30 +199,50 @@
                               {} (:position p0) (:normal-idx 5) (:idx 7)
         |comp-container $ quote
           defn comp-container (store)
-            group nil (memof1-call comp-tabs)
-              case-default (:tab store) (group nil)
-                :axis $ comp-axis
-                  {} (:n 20) (:unit 20)
-                :mountains $ memof1-call comp-mountains
-                :city $ memof1-call comp-city
-                :bends $ group nil
-                :cube $ comp-cube
+            let
+                cursor $ []
+                states $ :states store
+              group nil (memof1-call comp-tabs)
+                case-default (:tab store) (group nil)
+                  :axis $ comp-axis
+                    {} (:n 20) (:unit 20)
+                  :mountains $ memof1-call comp-mountains
+                  :city $ memof1-call comp-city
+                  :bends $ group nil
+                  :cube $ comp-cube
+                    {}
+                      :position $ [] 40 0 0
+                      :radius 40
+                  :ribbon $ comp-ribbon
+                  :necklace $ comp-necklace
+                  :sphere $ comp-sphere
+                    {} (; :topology :line-strip) (:iteration 4) (:radius 160)
+                      :color $ [] 0.6 0.9 0.7
+                  :plate $ comp-plate
+                    {} (; :topology :line-strip) (:iteration 20) (:radius 160)
+                      :color $ [] 0.04 0.8 0.6
+                      :transformer $ fn (i)
+                        v+ i $ [] 0 0 -10
+                      ; :x-direction $ [] 1 0 0
+                      ; :y-direction $ [] 0 1 0
+                      :chromatism 0.14
+                  :control $ comp-control-demo (>> states :control)
+        |comp-control-demo $ quote
+          defn comp-control-demo (states)
+            let
+                cursor $ :cursor states
+                state $ either (:data states)
+                  {} $ :pos ([] 60 0 0)
+              group nil
+                comp-slider
+                  {} $ :position ([] 0 0 0)
+                  fn (change on-slide) (js/console.log "\"Slide" change)
+                comp-drag-point
                   {}
-                    :position $ [] 40 0 0
-                    :radius 40
-                :ribbon $ comp-ribbon
-                :necklace $ comp-necklace
-                :sphere $ comp-sphere
-                  {} (; :topology :line-strip) (:iteration 4) (:radius 160)
-                    :color $ [] 0.6 0.9 0.7
-                :plate $ comp-plate
-                  {} (; :topology :line-strip) (:iteration 20) (:radius 160)
-                    :color $ [] 0.04 0.8 0.6
-                    :transformer $ fn (i)
-                      v+ i $ [] 0 0 -10
-                    ; :x-direction $ [] 1 0 0
-                    ; :y-direction $ [] 0 1 0
-                    :chromatism 0.14
+                    :position $ :pos state
+                    :color $ [] 0.6 0.6 1.0 1.0
+                  fn (move d!)
+                    d! cursor $ assoc state :pos move
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -306,12 +345,18 @@
                 :color $ [] 0.9 0.4 0.6 1
                 :size 20
               fn (e d!) (d! :tab :plate)
+            comp-button
+              {}
+                :position $ [] 20 220 0
+                :color $ [] 0.7 0.8 0.9 1
+                :size 20
+              fn (e d!) (d! :tab :control)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
-          lagopus.comp.button :refer $ comp-button
+          lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
           lagopus.comp.curves :refer $ comp-curves comp-axis
           lagopus.comp.spots :refer $ comp-spots
           memof.once :refer $ memof1-call
@@ -319,6 +364,7 @@
           lagopus.comp.cube :refer $ comp-cube
           lagopus.comp.sphere :refer $ comp-sphere
           lagopus.comp.plate :refer $ comp-plate
+          lagopus.cursor :refer $ >>
     |lagopus.comp.cube $ {}
       :defs $ {}
         |comp-cube $ quote
@@ -670,7 +716,9 @@
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
-          defatom *store $ {} (:tab :plate)
+          defatom *store $ {}
+            :states $ {}
+            :tab :plate
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote

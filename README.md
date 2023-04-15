@@ -174,6 +174,38 @@ comp-plate $ {} (; :topology :line-strip)
   :chromatism 0.14
 ```
 
+Controls
+
+```cirru
+lagopus.comp.button :refer $ comp-button comp-slider comp-drag-button
+
+comp-button
+  {}
+    :position $ [] 240 260 0
+    :color $ [] 0.2 0.9 0.6 1
+    :size 20
+  fn (e d!)
+    d! :tab :sphere
+
+comp-slider
+  {} $ :position ([] 0 0 0)
+  fn (change on-slide)
+    js/console.log "\"Slide" change
+
+comp-drag-point
+  {}
+    :position $ :pos state
+    :color $ [] 0.6 0.6 1.0 1.0
+  fn (move d!)
+    d! cursor $ assoc state :pos move
+```
+
+Cursor
+
+```cirru
+lagopus.cursor :refer $ update-states >>
+```
+
 ### Shader functions
 
 `{{perspective}}`
