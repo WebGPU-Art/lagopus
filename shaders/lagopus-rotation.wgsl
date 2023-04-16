@@ -1,7 +1,7 @@
 
 // rotate around `axis` by angle `rot`
 // need to notice the direction of rotation, and the axis passes through origin point
-fn rotate_around(v: vec3<f32>, axis: vec3<f32>, rot: f32) -> vec3<f32> {
+fn rotate_around(v: vec3f, axis: vec3f, rot: f32) -> vec3f {
   var x = v.x;
   var y = v.y;
   var z = v.z;
@@ -9,7 +9,7 @@ fn rotate_around(v: vec3<f32>, axis: vec3<f32>, rot: f32) -> vec3<f32> {
   var b = axis.y;
   var c = axis.z;
   var r = (a * x + b * y + c * z) / (a * a + b * b + c * c);
-  var perpendicular = vec3<f32>(a * r, b * r, c * r);
+  var perpendicular = vec3f(a * r, b * r, c * r);
 
   var x_of_rot = v - perpendicular;
   if (length(x_of_rot) < 0.00001) {

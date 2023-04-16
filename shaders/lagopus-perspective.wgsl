@@ -1,19 +1,19 @@
 // perspective
 
 struct PointResult {
-  point_position: vec3<f32>,
+  point_position: vec3f,
   r: f32,
   s: f32,
 };
 
-fn transform_perspective(p: vec3<f32>) -> PointResult {
+fn transform_perspective(p: vec3f) -> PointResult {
   let forward = uniforms.forward;
   let upward = uniforms.upward;
   let rightward = uniforms.rightward;
   let look_distance = uniforms.look_distance;
   let camera_position = uniforms.camera_position;
 
-  let moved_point: vec3<f32> = p - camera_position;
+  let moved_point: vec3f = p - camera_position;
 
   let s: f32 = uniforms.cone_back_scale;
 

@@ -45,11 +45,11 @@ struct UBO {
   cone_back_scale: f32,
   viewport_ratio: f32,
   look_distance: f32,
-  forward: vec3<f32>,
+  forward: vec3f,
   // direction up overhead, better unit vector
-  upward: vec3<f32>,
-  rightward: vec3<f32>,
-  camera_position: vec3<f32>,
+  upward: vec3f,
+  rightward: vec3f,
+  camera_position: vec3f,
 };
 
 @group(0) @binding(0)
@@ -60,13 +60,13 @@ var<uniform> uniforms: UBO;
 
 // structure passing from Vertex to Fragment
 struct VertexOut {
-  @builtin(position) position : vec4<f32>,
-  @location(0) original: vec3<f32>,
+  @builtin(position) position: vec4f,
+  @location(0) original: vec3f,
 };
 
 @vertex
 fn vertex_main(
-  @location(0) position: vec3<f32>,
+  @location(0) position: vec3f,
 ) -> VertexOut {
 
   // use perspective function from `lagopus-perpective.wgsl`, handles parameters from Lagopus
@@ -84,8 +84,8 @@ const middle: f32 = 50.0;
 const limit: f32 = 48.0;
 
 @fragment
-fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
-  return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
+  return vec4f(0.0, 0.0, 0.0, 1.0);
 }
 ```
 
@@ -210,12 +210,12 @@ lagopus.cursor :refer $ update-states >>
 
 `{{perspective}}`
 
-- `fn transform_perspective(p: vec3<f32>) -> PointResult`
+- `fn transform_perspective(p: vec3f) -> PointResult`
 
 `{{colors}}`
 
-- `fn hsl2rgb(hsl: vec3<f32>) -> vec3<f32>`
-- `fn hsl(h: f32, s: f32, l: f32) -> vec3<f32>`
+- `fn hsl2rgb(hsl: vec3f) -> vec3f`
+- `fn hsl(h: f32, s: f32, l: f32) -> vec3f`
 
 `{{rand}}`
 

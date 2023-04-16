@@ -2,11 +2,11 @@ struct UBO {
   cone_back_scale: f32,
   viewport_ratio: f32,
   look_distance: f32,
-  forward: vec3<f32>,
+  forward: vec3f,
   // direction up overhead, better unit vector
-  upward: vec3<f32>,
-  rightward: vec3<f32>,
-  camera_position: vec3<f32>,
+  upward: vec3f,
+  rightward: vec3f,
+  camera_position: vec3f,
 };
 
 @group(0) @binding(0)
@@ -21,7 +21,7 @@ const ALL_HEIGHT: f32 = 2000.0;
 // main
 
 struct VertexOut {
-  @builtin(position) position: vec4<f32>,
+  @builtin(position) position: vec4f,
   @location(1) h: f32,
 };
 
@@ -39,28 +39,28 @@ fn vertex_main(
   let h4 = simplexNoise2(vec2<f32>(position.x, position.y) * 0.01) * ALL_HEIGHT * 0.05;
   let h5 = simplexNoise2(vec2<f32>(position.x, position.y) * 0.02) * ALL_HEIGHT * 0.05;
   let h = abs(h1 + h2 + h3 + h4 + h5) + 20.0;
-  var p1 = vec3<f32>(position.x, 0.0, position.y);
+  var p1 = vec3f(position.x, 0.0, position.y);
   let d = 70.0;
   let up = h;
   // let up = 100.0;
   if (idx < 0.5) {
-    p1 += vec3<f32>(-d, 0.0, -d);
+    p1 += vec3f(-d, 0.0, -d);
   } else if (idx < 1.5) {
-    p1 += vec3<f32>(d, 0.0, -d);
+    p1 += vec3f(d, 0.0, -d);
   } else if (idx < 2.5) {
-    p1 += vec3<f32>(d, 0.0, d);
+    p1 += vec3f(d, 0.0, d);
   } else if (idx < 3.5) {
-    p1 += vec3<f32>(-d, 0.0, d);
+    p1 += vec3f(-d, 0.0, d);
   } else if (idx < 4.5) {
-    p1 += vec3<f32>(-d, up, -d);
+    p1 += vec3f(-d, up, -d);
   } else if (idx < 5.5) {
-    p1 += vec3<f32>(d, up, -d);
+    p1 += vec3f(d, up, -d);
   } else if (idx < 6.5) {
-    p1 += vec3<f32>(d, up, d);
+    p1 += vec3f(d, up, d);
   } else if (idx < 7.5) {
-    p1 += vec3<f32>(-d, up, d);
+    p1 += vec3f(-d, up, d);
   } else {
-    p1 += vec3<f32>(13.0, 200.0, 13.0);
+    p1 += vec3f(13.0, 200.0, 13.0);
   }
 
   let p = transform_perspective(p1.xyz).point_position;
@@ -73,26 +73,26 @@ fn vertex_main(
 }
 
 @fragment
-fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
+fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
   // return vtx_out.color;
-  // return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+  // return vec4f(0.0, 0.0, 1.0, 1.0);
   let h = vtx_out.h;
 
   if (h < 0.5) {
-    return vec4<f32>(0.82, 0.82, 0.82, 1.0);
+    return vec4f(0.82, 0.82, 0.82, 1.0);
   } else if (h < 1.5) {
-    return vec4<f32>(0.88, 0.88, 0.88, 1.0);
+    return vec4f(0.88, 0.88, 0.88, 1.0);
   } else if (h < 2.5) {
-    return vec4<f32>(0.8, 0.8, 0.8, 1.0);
+    return vec4f(0.8, 0.8, 0.8, 1.0);
   } else if (h < 3.5) {
-    return vec4<f32>(0.75, 0.75, 0.75, 1.0);
+    return vec4f(0.75, 0.75, 0.75, 1.0);
   } else if (h < 4.5) {
-    return vec4<f32>(0.8, 0.8, 0.8, 1.0);
+    return vec4f(0.8, 0.8, 0.8, 1.0);
   } else {
-    return vec4<f32>(1.0, 1.0, 1.0, 1.0);
+    return vec4f(1.0, 1.0, 1.0, 1.0);
   }
 
   // let a = 0.7 - (h / ALL_HEIGHT * 0.4 + 0.4);
-  // return vec4<f32>(1.0, 1.0, 1.0, 1.0);
-  // return vec4<f32>(a, a, a, 1.0);
+  // return vec4f(1.0, 1.0, 1.0, 1.0);
+  // return vec4f(a, a, a, 1.0);
 }
