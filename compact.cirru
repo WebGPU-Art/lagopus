@@ -227,6 +227,7 @@
                       ; :y-direction $ [] 0 1 0
                       :chromatism 0.14
                   :control $ comp-control-demo (>> states :control)
+                  :stitch $ comp-stitch-demo
         |comp-control-demo $ quote
           defn comp-control-demo (states)
             let
@@ -295,6 +296,10 @@
                           * 0.6 idx
                           * r $ sin angle
                         :width 2
+        |comp-stitch-demo $ quote
+          defn comp-stitch-demo () $ group nil
+            comp-stitch $ {}
+              :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
         |comp-tabs $ quote
           defn comp-tabs () $ group nil
             comp-button
@@ -351,6 +356,12 @@
                 :color $ [] 0.7 0.8 0.9 1
                 :size 20
               fn (e d!) (d! :tab :control)
+            comp-button
+              {}
+                :position $ [] 60 220 0
+                :color $ [] 0.9 0.7 0.6 1
+                :size 20
+              fn (e d!) (d! :tab :stitch)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -365,6 +376,7 @@
           lagopus.comp.sphere :refer $ comp-sphere
           lagopus.comp.plate :refer $ comp-plate
           lagopus.cursor :refer $ >>
+          lagopus.comp.stitch :refer $ comp-stitch
     |lagopus.comp.cube $ {}
       :defs $ {}
         |comp-cube $ quote
@@ -680,6 +692,150 @@
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
           "\"../shaders/spots.wgsl" :default spots-wgsl
+    |lagopus.comp.stitch $ {}
+      :defs $ {}
+        |comp-stitch $ quote
+          defn comp-stitch (props)
+            let
+                chars $ either (:chars props) ([] 0x1111)
+                position $ either (:position props) ([] 0 0 0)
+                size 24
+                gap 4
+                s0 $ * 0.1 size
+              group ({})
+                object $ {} (:topology :triangle-list)
+                  :shader $ inline-shader "\"stitch-bg"
+                  :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
+                  :data $ map-indexed chars
+                    fn (idx c)
+                      ->
+                        [] ([] 0 0 0) ([] 1 0 0) ([] 1 -1 0) ([] 0 0 0) ([] 1 -1 0) ([] 0 -1 0)
+                        map $ fn (x)
+                          {} (:base position)
+                            :position $ &v+ (v-scale x size)
+                              v-scale
+                                [] (+ size gap) 0 0
+                                , idx
+                  :hit-region $ :hit-region props
+                object $ {} (:topology :triangle-list)
+                  :shader $ inline-shader "\"stitch-line"
+                  :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
+                  :data $ map-indexed chars
+                    fn (idx c)
+                      let
+                          pattern $ .!padStart
+                            .!slice (&number:display-by c 2) 2
+                            , 32 "\"0"
+                        -> stitch-strokes $ map
+                          fn (info)
+                            let
+                                x $ :position info
+                                data-idx $ :data info
+                              {} (:base position)
+                                :position $ &v+ (v-scale x s0)
+                                  v-scale
+                                    [] (+ size gap) 0 0
+                                    , idx
+                                :value $ if
+                                  = "\"1" $ get pattern data-idx
+                                  , 1 0
+        |stitch-strokes $ quote
+          def stitch-strokes $ let
+              shift 0.2
+            -> (range 4)
+              mapcat $ fn (i)
+                -> (range 4)
+                  mapcat $ fn (j)
+                    let
+                        base $ []
+                          + 1 $ * j 2
+                          - (* i -2) 1
+                          , shift
+                        base-bottom-right $ &v+ base ([] 2 -2 0)
+                        base-top-right $ &v+ base ([] 2 0 0)
+                        base-bottom-left $ &v+ base ([] 0 -2 0)
+                        base-idx $ * 2
+                          + (* i 4) j
+                        base-idx-next $ inc base-idx
+                      []
+                        {}
+                          :position $ &v+ base ([] -0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 -0.2 0)
+                          :data base-idx
+                        ; "\"next stroke"
+                        {}
+                          :position $ &v+ base-top-right ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 -0.2 0)
+                          :data base-idx-next
+      :ns $ quote
+        ns lagopus.comp.stitch $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ group object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
     |lagopus.config $ {}
       :defs $ {}
         |bloom? $ quote

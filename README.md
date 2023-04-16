@@ -200,6 +200,16 @@ comp-drag-point
     d! cursor $ assoc state :pos move
 ```
 
+Stitch
+
+```
+lagopus.comp.stitch :refer $ comp-stitch
+
+comp-stitch $ {}
+  :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
+  :position $ [] 0 0 0
+```
+
 Cursor
 
 ```cirru
