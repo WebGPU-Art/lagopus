@@ -114,7 +114,7 @@ comp-curves $ {} (; :topology :line-strip)
 Spots
 
 ```cirru
-lagopus.comp.spots :refer $ comp-spots
+lagopus.comp.spots :refer $ comp-spots comp-bubbles
 
 comp-spots $ {} (; :topology :line-strip)
   :radius 6
@@ -127,6 +127,11 @@ comp-spots $ {} (; :topology :line-strip)
         [] r
           * r $ cos (* 0.1129 idx)
           * r $ sin (* 0.123 idx)
+
+comp-bubbles $ {}
+  :bubbles $ -> (range 600)
+    map $ fn (idx)
+      [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area) (+ 6 $ rand 120)
 ```
 
 Axis:
@@ -202,7 +207,7 @@ comp-drag-point
 
 Stitch
 
-```
+```cirru
 lagopus.comp.stitch :refer $ comp-stitch
 
 comp-stitch $ {}

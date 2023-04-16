@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.8)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.9)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -132,6 +132,14 @@
       :defs $ {}
         |color-default $ quote
           def color-default $ [] 1 0 0 1
+        |comp-bubbles-demo $ quote
+          defn comp-bubbles-demo () $ let
+              area 2000
+            comp-bubbles $ {}
+              :bubbles $ -> (range 600)
+                map $ fn (idx)
+                  [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area)
+                    + 6 $ rand 120
         |comp-city $ quote
           defn comp-city () $ object
             {} (:shader city-wgsl)
@@ -228,6 +236,7 @@
                       :chromatism 0.14
                   :control $ comp-control-demo (>> states :control)
                   :stitch $ comp-stitch-demo
+                  :bubbles $ comp-bubbles-demo
         |comp-control-demo $ quote
           defn comp-control-demo (states)
             let
@@ -362,6 +371,12 @@
                 :color $ [] 0.9 0.7 0.6 1
                 :size 20
               fn (e d!) (d! :tab :stitch)
+            comp-button
+              {}
+                :position $ [] 100 220 0
+                :color $ [] 0.9 0.3 0.8 1
+                :size 20
+              fn (e d!) (d! :tab :bubbles)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
@@ -369,7 +384,7 @@
           "\"../shaders/city.wgsl" :default city-wgsl
           lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
           lagopus.comp.curves :refer $ comp-curves comp-axis
-          lagopus.comp.spots :refer $ comp-spots
+          lagopus.comp.spots :refer $ comp-spots comp-bubbles
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+ v+
           lagopus.comp.cube :refer $ comp-cube
@@ -377,6 +392,7 @@
           lagopus.comp.plate :refer $ comp-plate
           lagopus.cursor :refer $ >>
           lagopus.comp.stitch :refer $ comp-stitch
+          "\"@calcit/std" :refer $ rand-shift rand
     |lagopus.comp.cube $ {}
       :defs $ {}
         |comp-cube $ quote
@@ -662,6 +678,36 @@
           "\"../shaders/sphere.wgsl" :default sphere-wgsl
     |lagopus.comp.spots $ {}
       :defs $ {}
+        |comp-bubbles $ quote
+          defn comp-bubbles (options)
+            let
+                bubbles $ either (&map:get options :bubbles)
+                  [] $ [] 0 0 0 100
+              object $ {} (:shader bubbles-wgsl) (:topology :line-list)
+                :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
+                :data $ -> bubbles
+                  map $ fn (info)
+                    let
+                        position $ take info 3
+                        radius $ nth info 3
+                        size $ + 20
+                          * 8 $ sqrt radius
+                        step $ &/ (* 2 &PI) size
+                      -> (range size)
+                        map $ fn (idx)
+                          []
+                            let
+                                radian $ * step idx
+                              {} (:position position) (:radian radian)
+                                :arm $ []
+                                  * radius $ cos radian
+                                  * radius $ sin radian
+                            let
+                                radian $ * step (inc idx)
+                              {} (:position position) (:radian radian)
+                                :arm $ []
+                                  * radius $ cos radian
+                                  * radius $ sin radian
         |comp-spots $ quote
           defn comp-spots (options)
             let
@@ -690,7 +736,8 @@
         ns lagopus.comp.spots $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
-          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+          quaternion.core :refer $ &v+ v+ v-cross v-scale v-dot &v-
+          "\"../shaders/bubbles.wgsl" :default bubbles-wgsl
           "\"../shaders/spots.wgsl" :default spots-wgsl
     |lagopus.comp.stitch $ {}
       :defs $ {}
@@ -874,7 +921,7 @@
         |*store $ quote
           defatom *store $ {}
             :states $ {}
-            :tab :plate
+            :tab :bubbles
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
@@ -895,7 +942,7 @@
             if dev? $ load-console-formatter!
             js-await $ initializeContext
             initializeCanvasTextures
-            reset-clear-color! $ {} (:r 0.4) (:g 0.4) (:b 0.4) (:a 1)
+            reset-clear-color! $ {} (:r 0.18) (:g 0.2) (:b 0.36) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
