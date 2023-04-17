@@ -45,11 +45,11 @@ struct UBO {
   cone_back_scale: f32,
   viewport_ratio: f32,
   look_distance: f32,
-  forward: vec3<f32>,
+  forward: vec3f,
   // direction up overhead, better unit vector
-  upward: vec3<f32>,
-  rightward: vec3<f32>,
-  camera_position: vec3<f32>,
+  upward: vec3f,
+  rightward: vec3f,
+  camera_position: vec3f,
 };
 
 @group(0) @binding(0)
@@ -60,13 +60,13 @@ var<uniform> uniforms: UBO;
 
 // structure passing from Vertex to Fragment
 struct VertexOut {
-  @builtin(position) position : vec4<f32>,
-  @location(0) original: vec3<f32>,
+  @builtin(position) position: vec4f,
+  @location(0) original: vec3f,
 };
 
 @vertex
 fn vertex_main(
-  @location(0) position: vec3<f32>,
+  @location(0) position: vec3f,
 ) -> VertexOut {
 
   // use perspective function from `lagopus-perpective.wgsl`, handles parameters from Lagopus
@@ -84,8 +84,8 @@ const middle: f32 = 50.0;
 const limit: f32 = 48.0;
 
 @fragment
-fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4<f32> {
-  return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
+  return vec4f(0.0, 0.0, 0.0, 1.0);
 }
 ```
 
@@ -114,7 +114,7 @@ comp-curves $ {} (; :topology :line-strip)
 Spots
 
 ```cirru
-lagopus.comp.spots :refer $ comp-spots
+lagopus.comp.spots :refer $ comp-spots comp-bubbles
 
 comp-spots $ {} (; :topology :line-strip)
   :radius 6
@@ -127,6 +127,11 @@ comp-spots $ {} (; :topology :line-strip)
         [] r
           * r $ cos (* 0.1129 idx)
           * r $ sin (* 0.123 idx)
+
+comp-bubbles $ {}
+  :bubbles $ -> (range 600)
+    map $ fn (idx)
+      [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area) (+ 6 $ rand 120)
 ```
 
 Axis:
@@ -174,16 +179,58 @@ comp-plate $ {} (; :topology :line-strip)
   :chromatism 0.14
 ```
 
+Controls
+
+```cirru
+lagopus.comp.button :refer $ comp-button comp-slider comp-drag-button
+
+comp-button
+  {}
+    :position $ [] 240 260 0
+    :color $ [] 0.2 0.9 0.6 1
+    :size 20
+  fn (e d!)
+    d! :tab :sphere
+
+comp-slider
+  {} $ :position ([] 0 0 0)
+  fn (change on-slide)
+    js/console.log "\"Slide" change
+
+comp-drag-point
+  {}
+    :position $ :pos state
+    :color $ [] 0.6 0.6 1.0 1.0
+  fn (move d!)
+    d! cursor $ assoc state :pos move
+```
+
+Stitch
+
+```cirru
+lagopus.comp.stitch :refer $ comp-stitch
+
+comp-stitch $ {}
+  :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
+  :position $ [] 0 0 0
+```
+
+Cursor
+
+```cirru
+lagopus.cursor :refer $ update-states >>
+```
+
 ### Shader functions
 
 `{{perspective}}`
 
-- `fn transform_perspective(p: vec3<f32>) -> PointResult`
+- `fn transform_perspective(p: vec3f) -> PointResult`
 
 `{{colors}}`
 
-- `fn hsl2rgb(hsl: vec3<f32>) -> vec3<f32>`
-- `fn hsl(h: f32, s: f32, l: f32) -> vec3<f32>`
+- `fn hsl2rgb(hsl: vec3f) -> vec3f`
+- `fn hsl(h: f32, s: f32, l: f32) -> vec3f`
 
 `{{rand}}`
 

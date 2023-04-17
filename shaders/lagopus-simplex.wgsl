@@ -6,11 +6,11 @@ fn mod289(x: vec2<f32>) -> vec2<f32> {
     return x - floor(x * (1. / 289.)) * 289.;
 }
 
-fn mod289_3(x: vec3<f32>) -> vec3<f32> {
+fn mod289_3(x: vec3f) -> vec3f {
     return x - floor(x * (1. / 289.)) * 289.;
 }
 
-fn permute3(x: vec3<f32>) -> vec3<f32> {
+fn permute3(x: vec3f) -> vec3f {
     return mod289_3(((x * 34.) + 1.) * x);
 }
 

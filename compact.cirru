@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.6)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.9)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -43,7 +43,15 @@
                 :format $ &tuple:nth x 0
               , x
         |group $ quote
-          defn group (a & children) (lagopus/group nil & children)
+          defn group (a & children)
+            if
+              not $ or (nil? a)
+                = a $ &{}
+              js/console.warn "\"group options is not used at current" a
+            lagopus/group nil & children
+        |inject-shader-snippets $ quote
+          defn inject-shader-snippets (code)
+            -> code (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand) (.!replace "\"{{rotation}}" wgsl-rotation)
         |object $ quote
           defn object (options)
             let
@@ -72,7 +80,7 @@
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
-                -> (&map:get options :shader) (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand)
+                inject-shader-snippets $ &map:get options :shader
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
                 , vertices-size buffers nil
@@ -89,6 +97,8 @@
           def wgsl-perspective $ inline-shader "\"lagopus-perspective"
         |wgsl-rand $ quote
           def wgsl-rand $ inline-shader "\"lagopus-rand"
+        |wgsl-rotation $ quote
+          def wgsl-rotation $ inline-shader "\"lagopus-rotation"
         |wgsl-simplex $ quote
           def wgsl-simplex $ inline-shader "\"lagopus-simplex"
       :ns $ quote
@@ -101,13 +111,35 @@
         |comp-button $ quote
           defn comp-button (props on-click)
             compButton (to-js-data props) on-click
+        |comp-drag-point $ quote
+          defn comp-drag-point (props on-drag)
+            compDragPoint (to-js-data props)
+              fn (move d!)
+                on-drag
+                  [] (.-0 move) (.-1 move) (.-2 move)
+                  , d! 
+        |comp-slider $ quote
+          defn comp-slider (props on-slide)
+            compSlider (to-js-data props)
+              fn (move d!)
+                on-slide
+                  [] (.-0 move) (.-1 move)
+                  , d!
       :ns $ quote
         ns lagopus.comp.button $ :require
-          "\"@triadica/lagopus" :refer $ compButton
+          "\"@triadica/lagopus" :refer $ compButton compSlider compDragPoint
     |lagopus.comp.container $ {}
       :defs $ {}
         |color-default $ quote
           def color-default $ [] 1 0 0 1
+        |comp-bubbles-demo $ quote
+          defn comp-bubbles-demo () $ let
+              area 2000
+            comp-bubbles $ {}
+              :bubbles $ -> (range 600)
+                map $ fn (idx)
+                  [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area)
+                    + 6 $ rand 120
         |comp-city $ quote
           defn comp-city () $ object
             {} (:shader city-wgsl)
@@ -175,30 +207,52 @@
                               {} (:position p0) (:normal-idx 5) (:idx 7)
         |comp-container $ quote
           defn comp-container (store)
-            group nil (memof1-call comp-tabs)
-              case-default (:tab store) (group nil)
-                :axis $ comp-axis
-                  {} (:n 20) (:unit 20)
-                :mountains $ memof1-call comp-mountains
-                :city $ memof1-call comp-city
-                :bends $ group nil
-                :cube $ comp-cube
+            let
+                cursor $ []
+                states $ :states store
+              group nil (memof1-call comp-tabs)
+                case-default (:tab store) (group nil)
+                  :axis $ comp-axis
+                    {} (:n 20) (:unit 20)
+                  :mountains $ memof1-call comp-mountains
+                  :city $ memof1-call comp-city
+                  :bends $ group nil
+                  :cube $ comp-cube
+                    {}
+                      :position $ [] 40 0 0
+                      :radius 40
+                  :ribbon $ comp-ribbon
+                  :necklace $ comp-necklace
+                  :sphere $ comp-sphere
+                    {} (; :topology :line-strip) (:iteration 4) (:radius 160)
+                      :color $ [] 0.6 0.9 0.7
+                  :plate $ comp-plate
+                    {} (; :topology :line-strip) (:iteration 20) (:radius 160)
+                      :color $ [] 0.04 0.8 0.6
+                      :transformer $ fn (i)
+                        v+ i $ [] 0 0 -10
+                      ; :x-direction $ [] 1 0 0
+                      ; :y-direction $ [] 0 1 0
+                      :chromatism 0.14
+                  :control $ comp-control-demo (>> states :control)
+                  :stitch $ comp-stitch-demo
+                  :bubbles $ comp-bubbles-demo
+        |comp-control-demo $ quote
+          defn comp-control-demo (states)
+            let
+                cursor $ :cursor states
+                state $ either (:data states)
+                  {} $ :pos ([] 60 0 0)
+              group nil
+                comp-slider
+                  {} $ :position ([] 0 0 0)
+                  fn (change on-slide) (js/console.log "\"Slide" change)
+                comp-drag-point
                   {}
-                    :position $ [] 40 0 0
-                    :radius 40
-                :ribbon $ comp-ribbon
-                :necklace $ comp-necklace
-                :sphere $ comp-sphere
-                  {} (; :topology :line-strip) (:iteration 4) (:radius 160)
-                    :color $ [] 0.6 0.9 0.7
-                :plate $ comp-plate
-                  {} (; :topology :line-strip) (:iteration 20) (:radius 160)
-                    :color $ [] 0.04 0.8 0.6
-                    :transformer $ fn (i)
-                      v+ i $ [] 0 0 -10
-                    ; :x-direction $ [] 1 0 0
-                    ; :y-direction $ [] 0 1 0
-                    :chromatism 0.14
+                    :position $ :pos state
+                    :color $ [] 0.6 0.6 1.0 1.0
+                  fn (move d!)
+                    d! cursor $ assoc state :pos move
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -251,6 +305,10 @@
                           * 0.6 idx
                           * r $ sin angle
                         :width 2
+        |comp-stitch-demo $ quote
+          defn comp-stitch-demo () $ group nil
+            comp-stitch $ {}
+              :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
         |comp-tabs $ quote
           defn comp-tabs () $ group nil
             comp-button
@@ -301,19 +359,40 @@
                 :color $ [] 0.9 0.4 0.6 1
                 :size 20
               fn (e d!) (d! :tab :plate)
+            comp-button
+              {}
+                :position $ [] 20 220 0
+                :color $ [] 0.7 0.8 0.9 1
+                :size 20
+              fn (e d!) (d! :tab :control)
+            comp-button
+              {}
+                :position $ [] 60 220 0
+                :color $ [] 0.9 0.7 0.6 1
+                :size 20
+              fn (e d!) (d! :tab :stitch)
+            comp-button
+              {}
+                :position $ [] 100 220 0
+                :color $ [] 0.9 0.3 0.8 1
+                :size 20
+              fn (e d!) (d! :tab :bubbles)
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
-          lagopus.comp.button :refer $ comp-button
+          lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
           lagopus.comp.curves :refer $ comp-curves comp-axis
-          lagopus.comp.spots :refer $ comp-spots
+          lagopus.comp.spots :refer $ comp-spots comp-bubbles
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+ v+
           lagopus.comp.cube :refer $ comp-cube
           lagopus.comp.sphere :refer $ comp-sphere
           lagopus.comp.plate :refer $ comp-plate
+          lagopus.cursor :refer $ >>
+          lagopus.comp.stitch :refer $ comp-stitch
+          "\"@calcit/std" :refer $ rand-shift rand
     |lagopus.comp.cube $ {}
       :defs $ {}
         |comp-cube $ quote
@@ -461,7 +540,7 @@
                 transformer $ either (&map:get options :transformer) identity
                 chromatism $ either (&map:get options :chromatism) 0.1
               object $ {}
-                :shader $ either (&map:get options :shader) plate-wgsl
+                :shader $ either (&map:get options :shader) wgsl-plate
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ -> (range 6)
@@ -526,12 +605,13 @@
                 :add-uniform $ fn () (js-array & color chromatism)
         |sqrt-3 $ quote
           def sqrt-3 $ sqrt 3
+        |wgsl-plate $ quote
+          def wgsl-plate $ inline-shader "\"plate"
       :ns $ quote
         ns lagopus.comp.plate $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length v+
-          "\"../shaders/plate.wgsl" :default plate-wgsl
     |lagopus.comp.sphere $ {}
       :defs $ {}
         |build-sphere-triangles $ quote
@@ -598,6 +678,36 @@
           "\"../shaders/sphere.wgsl" :default sphere-wgsl
     |lagopus.comp.spots $ {}
       :defs $ {}
+        |comp-bubbles $ quote
+          defn comp-bubbles (options)
+            let
+                bubbles $ either (&map:get options :bubbles)
+                  [] $ [] 0 0 0 100
+              object $ {} (:shader bubbles-wgsl) (:topology :line-list)
+                :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
+                :data $ -> bubbles
+                  map $ fn (info)
+                    let
+                        position $ take info 3
+                        radius $ nth info 3
+                        size $ + 20
+                          * 8 $ sqrt radius
+                        step $ &/ (* 2 &PI) size
+                      -> (range size)
+                        map $ fn (idx)
+                          []
+                            let
+                                radian $ * step idx
+                              {} (:position position) (:radian radian)
+                                :arm $ []
+                                  * radius $ cos radian
+                                  * radius $ sin radian
+                            let
+                                radian $ * step (inc idx)
+                              {} (:position position) (:radian radian)
+                                :arm $ []
+                                  * radius $ cos radian
+                                  * radius $ sin radian
         |comp-spots $ quote
           defn comp-spots (options)
             let
@@ -626,8 +736,153 @@
         ns lagopus.comp.spots $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
-          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+          quaternion.core :refer $ &v+ v+ v-cross v-scale v-dot &v-
+          "\"../shaders/bubbles.wgsl" :default bubbles-wgsl
           "\"../shaders/spots.wgsl" :default spots-wgsl
+    |lagopus.comp.stitch $ {}
+      :defs $ {}
+        |comp-stitch $ quote
+          defn comp-stitch (props)
+            let
+                chars $ either (:chars props) ([] 0x1111)
+                position $ either (:position props) ([] 0 0 0)
+                size 24
+                gap 4
+                s0 $ * 0.1 size
+              group ({})
+                object $ {} (:topology :triangle-list)
+                  :shader $ inline-shader "\"stitch-bg"
+                  :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
+                  :data $ map-indexed chars
+                    fn (idx c)
+                      ->
+                        [] ([] 0 0 0) ([] 1 0 0) ([] 1 -1 0) ([] 0 0 0) ([] 1 -1 0) ([] 0 -1 0)
+                        map $ fn (x)
+                          {} (:base position)
+                            :position $ &v+ (v-scale x size)
+                              v-scale
+                                [] (+ size gap) 0 0
+                                , idx
+                  :hit-region $ :hit-region props
+                object $ {} (:topology :triangle-list)
+                  :shader $ inline-shader "\"stitch-line"
+                  :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
+                  :data $ map-indexed chars
+                    fn (idx c)
+                      let
+                          pattern $ .!padStart
+                            .!slice (&number:display-by c 2) 2
+                            , 32 "\"0"
+                        -> stitch-strokes $ map
+                          fn (info)
+                            let
+                                x $ :position info
+                                data-idx $ :data info
+                              {} (:base position)
+                                :position $ &v+ (v-scale x s0)
+                                  v-scale
+                                    [] (+ size gap) 0 0
+                                    , idx
+                                :value $ if
+                                  = "\"1" $ get pattern data-idx
+                                  , 1 0
+        |stitch-strokes $ quote
+          def stitch-strokes $ let
+              shift 0.2
+            -> (range 4)
+              mapcat $ fn (i)
+                -> (range 4)
+                  mapcat $ fn (j)
+                    let
+                        base $ []
+                          + 1 $ * j 2
+                          - (* i -2) 1
+                          , shift
+                        base-bottom-right $ &v+ base ([] 2 -2 0)
+                        base-top-right $ &v+ base ([] 2 0 0)
+                        base-bottom-left $ &v+ base ([] 0 -2 0)
+                        base-idx $ * 2
+                          + (* i 4) j
+                        base-idx-next $ inc base-idx
+                      []
+                        {}
+                          :position $ &v+ base ([] -0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] -0.2 -0.2 0)
+                          :data base-idx
+                        {}
+                          :position $ &v+ base-bottom-right ([] 0.2 -0.2 0)
+                          :data base-idx
+                        ; "\"next stroke"
+                        {}
+                          :position $ &v+ base-top-right ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] 0.2 -0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                          :data base-idx-next
+                        {}
+                          :position $ &v+ base-bottom-left ([] -0.2 -0.2 0)
+                          :data base-idx-next
+      :ns $ quote
+        ns lagopus.comp.stitch $ :require
+          lagopus.config :refer $ inline-shader
+          lagopus.alias :refer $ group object
+          quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
     |lagopus.config $ {}
       :defs $ {}
         |bloom? $ quote
@@ -649,10 +904,24 @@
         ns lagopus.config $ :require
           lagopus.$meta :refer $ calcit-dirname
           "\"ismobilejs" :default ismobile
+    |lagopus.cursor $ {}
+      :defs $ {}
+        |>> $ quote
+          defn >> (states k)
+            let
+                parent-cursor $ either (:cursor states) ([])
+                branch $ either (get states k) ({})
+              assoc branch :cursor $ conj parent-cursor k
+        |update-states $ quote
+          defn update-states (store cursor new-state)
+            assoc-in store ([] :states & cursor :data) new-state
+      :ns $ quote (ns lagopus.cursor)
     |lagopus.main $ {}
       :defs $ {}
         |*store $ quote
-          defatom *store $ {} (:tab :plate)
+          defatom *store $ {}
+            :states $ {}
+            :tab :bubbles
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
@@ -660,9 +929,10 @@
             if dev? $ js/console.log op data
             let
                 store @*store
-                next-store $ case-default op
-                  do (js/console.warn ":unknown op" op data) store
-                  :tab $ assoc store :tab data
+                next-store $ if (list? op) (update-states store op data)
+                  case-default op
+                    do (js/console.warn ":unknown op" op data) store
+                    :tab $ assoc store :tab data
               if (not= next-store store) (reset! *store next-store)
         |main! $ quote
           defn main! () (hint-fn async)
@@ -672,7 +942,7 @@
             if dev? $ load-console-formatter!
             js-await $ initializeContext
             initializeCanvasTextures
-            reset-clear-color! $ {} (:r 0.4) (:g 0.4) (:b 0.4) (:a 1)
+            reset-clear-color! $ {} (:r 0.18) (:g 0.2) (:b 0.36) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
@@ -702,6 +972,48 @@
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
           memof.once :refer $ reset-memof1-caches!
+          lagopus.cursor :refer $ update-states
+    |lagopus.math $ {}
+      :defs $ {}
+        |fibo-grid-n $ quote
+          defn fibo-grid-n (n total)
+            let
+                z $ dec
+                  &/
+                    dec $ &* 2 n
+                    , total
+                t $ sqrt
+                  &- 1 $ &* z z
+                t2 $ * 2 &PI n phi
+                x $ &* t (js/Math.cos t2)
+                y $ &* t (js/Math.sin t2)
+              [] x y z
+        |fibo-grid-range $ quote
+          defn fibo-grid-range (total)
+            -> (range total)
+              map $ fn (n)
+                fibo-grid-n (inc n) total
+        |phi $ quote
+          def phi $ * 0.5
+            dec $ sqrt 5
+        |rotate-3d-fn $ quote
+          defn rotate-3d-fn (origin axis angle)
+            let
+                axis-0 $ v-normalize axis
+                cos-d $ js/Math.cos angle
+                sin-d $ js/Math.sin angle
+              defn rotate-3d-apply (p)
+                let
+                    p-v $ &v- p origin
+                    h $ v-dot axis-0 p-v
+                    h-v $ v-scale axis-0 h
+                    flat-p-v $ &v- p-v h-v
+                    rot-direction $ v-normalize (v-cross flat-p-v axis-0)
+                    rot-v $ v-scale rot-direction (v-length flat-p-v)
+                  v+ origin h-v (v-scale flat-p-v cos-d) (v-scale rot-v sin-d)
+      :ns $ quote
+        ns lagopus.math $ :require
+          quaternion.core :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
     |lagopus.util $ {}
       :defs $ {}
         |handle-compilation $ quote

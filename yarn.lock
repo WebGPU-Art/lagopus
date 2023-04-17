@@ -11,6 +11,11 @@
     "@cirru/parser.ts" "^0.0.6"
     "@cirru/writer.ts" "^0.1.3"
 
+"@calcit/std@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@calcit/std/-/std-0.0.2.tgz#8692ca6bd847b68b7365a75c5df124af82ab9192"
+  integrity sha512-s976zyxZ2zk4BVKu9DXur0L5FC60AWSsrnu6Aw1YuaxjEpEakk02g/WOWwwRsYYKfgKeRcWvEFKkTWoSjrFH+w==
+
 "@calcit/ternary-tree@0.0.19":
   version "0.0.19"
   resolved "https://registry.yarnpkg.com/@calcit/ternary-tree/-/ternary-tree-0.0.19.tgz#b5b33a3d07a9e603feeef7cd642958c83628122f"
@@ -145,10 +150,10 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.6.tgz#c10a759f0cdc2e0e82952d4342aa6d2dc5e5af8f"
-  integrity sha512-fXRVeI7hOgJ1fmSFPcol2t+JcrCUNu/QbVVw2U6fFC4ENEQwD9cLId+lWAUQFmWeHiNXiy+CF1XPdQofnALucQ==
+"@triadica/lagopus@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.7.tgz#61434b4cc52ad6c1f548f6a21470980fefac5a03"
+  integrity sha512-x9niQemU1p8oeCPLFz2TFrNEOIjyW/ZNYuEEX2EPiKgXbSJDJzrh+zw7r60eAVooHekKr5Lh8oqDSAO1M/tPbg==
   dependencies:
     "@triadica/touch-control" "^0.0.2"
     ismobilejs "^1.1.1"
@@ -265,7 +270,7 @@ individual@^3.0.0:
   resolved "https://registry.yarnpkg.com/individual/-/individual-3.0.0.tgz#e7ca4f85f8957b018734f285750dc22ec2f9862d"
   integrity sha512-rUY5vtT748NMRbEMrTNiFfy29BgGZwGXUi2NFUVMWQrogSLzlJvQV9eeMWi+g1aVaQ53tpyLAQtd5x/JH0Nh1g==
 
-is-core-module@^2.11.0:
+is-core-module@^2.12.0:
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.12.0.tgz#36ad62f6f73c8253fd6472517a12483cf03e7ec4"
   integrity sha512-RECHCBCd/viahWmwj6enj19sKbHfJrddi/6cBDsNTKbNq0f7VeaUkBo60BqzvPqo/W54ChS62Z5qyun7cfOMqQ==
@@ -334,11 +339,11 @@ process@^0.11.10:
   integrity sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==
 
 resolve@^1.22.1:
-  version "1.22.2"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.2.tgz#0ed0943d4e301867955766c9f3e1ae6d01c6845f"
-  integrity sha512-Sb+mjNHOULsBv818T40qSPeRiuWLyaGMa5ewydRLFimneixmVy2zdivRl+AF6jaYPC8ERxGDmFSiqui6SfPd+g==
+  version "1.22.3"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.3.tgz#4b4055349ffb962600972da1fdc33c46a4eb3283"
+  integrity sha512-P8ur/gp/AmbEzjr729bZnLjXK5Z+4P0zhIJgBgzqRih7hL7BOukHGtSTA3ACMY467GRFz3duQsi0bDZdR7DKdw==
   dependencies:
-    is-core-module "^2.11.0"
+    is-core-module "^2.12.0"
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 

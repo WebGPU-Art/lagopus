@@ -22,10 +22,10 @@ fn hue2rgb(f1: f32, f2: f32, hue0: f32) -> f32 {
   return res;
 }
 
-fn hsl2rgb(hsl: vec3<f32>) -> vec3<f32> {
-  var rgb = vec3<f32>(0.0, 0.0, 0.0);
+fn hsl2rgb(hsl: vec3f) -> vec3f {
+  var rgb = vec3f(0.0, 0.0, 0.0);
   if (hsl.y == 0.0) {
-    rgb = vec3<f32>(hsl.z); // Luminance
+    rgb = vec3f(hsl.z); // Luminance
   } else {
     var f2: f32;
     if (hsl.z < 0.5) {
@@ -41,6 +41,6 @@ fn hsl2rgb(hsl: vec3<f32>) -> vec3<f32> {
   return rgb;
 }
 
-fn hsl(h: f32, s: f32, l: f32) -> vec3<f32> {
-  return hsl2rgb(vec3<f32>(h, s, l));
+fn hsl(h: f32, s: f32, l: f32) -> vec3f {
+  return hsl2rgb(vec3f(h, s, l));
 }
