@@ -885,6 +885,17 @@
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
     |lagopus.config $ {}
       :defs $ {}
+        |bg-color $ quote
+          def bg-color $ let
+              bg $ get-env "\"bg-color" "\""
+            if (.blank? bg) nil $ let
+                items $ -> (.split bg "\",")
+                  map $ fn (piece) (js/parseFloat piece)
+              {}
+                :r $ nth items 0
+                :g $ nth items 1
+                :b $ nth items 2
+                :a $ either (nth items 3) 1
         |bloom? $ quote
           def bloom? $ = "\"true" (get-env "\"bloom" "\"false")
         |dev? $ quote
@@ -942,7 +953,8 @@
             if dev? $ load-console-formatter!
             js-await $ initializeContext
             initializeCanvasTextures
-            reset-clear-color! $ {} (:r 0.18) (:g 0.2) (:b 0.36) (:a 1)
+            reset-clear-color! $ either bg-color
+              {} (:r 0.18) (:g 0.2) (:b 0.36) (:a 1)
             render-app!
             renderControl
             startControlLoop 10 onControlEvent
@@ -967,7 +979,7 @@
           lagopus.comp.container :refer $ comp-container
           "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasSize initializeCanvasTextures registerShaderResult enableBloom
           "\"@triadica/touch-control" :refer $ renderControl startControlLoop
-          lagopus.config :refer $ dev? mobile-info bloom?
+          lagopus.config :refer $ dev? mobile-info bloom? bg-color
           lagopus.util :refer $ handle-compilation reset-clear-color!
           "\"bottom-tip" :default hud!
           "\"./calcit.build-errors" :default build-errors
