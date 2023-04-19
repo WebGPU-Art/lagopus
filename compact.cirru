@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.9)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.10)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -400,7 +400,7 @@
             let
                 base $ either (&map:get options :position) ([] 0 0 0)
                 radius $ either (&map:get options :radius) 80
-              object $ {} (:shader cube-wgsl)
+              object $ {} (:shader wgsl-cube)
                 :topology $ do :line-strip :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :float32x3 :metrics)
                 :data $ []
@@ -437,13 +437,13 @@
                       v-scale ([] 1 -1 1) radius
                     :metrics $ [] 1 -1 1
                 :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
+        |wgsl-cube $ quote
+          def wgsl-cube $ inline-shader "\"cube"
       :ns $ quote
         ns lagopus.comp.cube $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v+
-          "\"../shaders/curves.wgsl" :default curves-wgsl
-          "\"../shaders/cube.wgsl" :default cube-wgsl
     |lagopus.comp.curves $ {}
       :defs $ {}
         |build-curve-points $ quote
@@ -501,19 +501,20 @@
             let
                 curves $ either (&map:get options :curves) ([])
               object $ {}
-                :shader $ either (&map:get options :shader) curves-wgsl
+                :shader $ either (&map:get options :shader) wgsl-curves
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
                     size $ count curves
                   map-indexed curves $ fn (idx c)
                     build-curve-points c $ &/ idx size
+        |wgsl-curves $ quote
+          def wgsl-curves $ inline-shader "\"curves"
       :ns $ quote
         ns lagopus.comp.curves $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
-          "\"../shaders/curves.wgsl" :default curves-wgsl
     |lagopus.comp.plate $ {}
       :defs $ {}
         |calc-ratio $ quote
@@ -645,7 +646,7 @@
                 color $ either (&map:get options :color) ([] 0.6 0.8 0.76)
                 *counter $ atom 0
               object $ {}
-                :shader $ either (&map:get options :shader) sphere-wgsl
+                :shader $ either (&map:get options :shader) wgsl-sphere
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ -> unit-triangles
@@ -670,12 +671,13 @@
             [] ([] -1 0 0) ([] 0 1 0) ([] 0 0 -1)
             [] ([] -1 0 0) ([] 0 -1 0) ([] 0 0 1)
             [] ([] -1 0 0) ([] 0 -1 0) ([] 0 0 -1)
+        |wgsl-sphere $ quote
+          def wgsl-sphere $ inline-shader "\"sphere"
       :ns $ quote
         ns lagopus.comp.sphere $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length
-          "\"../shaders/sphere.wgsl" :default sphere-wgsl
     |lagopus.comp.spots $ {}
       :defs $ {}
         |comp-bubbles $ quote
@@ -683,7 +685,7 @@
             let
                 bubbles $ either (&map:get options :bubbles)
                   [] $ [] 0 0 0 100
-              object $ {} (:shader bubbles-wgsl) (:topology :line-list)
+              object $ {} (:shader wgsl-bubbles) (:topology :line-list)
                 :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
                 :data $ -> bubbles
                   map $ fn (info)
@@ -718,7 +720,7 @@
                 vertex-count $ &max 3
                   either (&map:get options :vertex-count) 8
               object $ {}
-                :shader $ either (&map:get options :shader) spots-wgsl
+                :shader $ either (&map:get options :shader) wgsl-spots
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ -> points
@@ -732,13 +734,15 @@
                             :angle-idx $ + 1 angle-idx
                           {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
                             :angle-idx $ + 2 angle-idx
+        |wgsl-bubbles $ quote
+          def wgsl-bubbles $ inline-shader "\"bubbles"
+        |wgsl-spots $ quote
+          def wgsl-spots $ inline-shader "\"spots"
       :ns $ quote
         ns lagopus.comp.spots $ :require
           lagopus.config :refer $ inline-shader
           lagopus.alias :refer $ object
           quaternion.core :refer $ &v+ v+ v-cross v-scale v-dot &v-
-          "\"../shaders/bubbles.wgsl" :default bubbles-wgsl
-          "\"../shaders/spots.wgsl" :default spots-wgsl
     |lagopus.comp.stitch $ {}
       :defs $ {}
         |comp-stitch $ quote
