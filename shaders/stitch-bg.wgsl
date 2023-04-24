@@ -33,5 +33,5 @@ fn vertex_main(
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
-  return vec4(hsl(0.04, 1.0, 0.6), 0.3);
+  return vec4(hsl(0.04, 1.0, 0.6), 0.7);
 }
