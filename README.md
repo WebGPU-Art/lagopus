@@ -221,6 +221,12 @@ Cursor
 lagopus.cursor :refer $ update-states >>
 ```
 
+Math functions in `lagopus.math`
+
+- `fibo-grid-range total` create a list of points constructing Fibonacci Sphere
+- `rotate-3d origin axis-0 angle p` rotate point `p` around `axis-0`
+- `rotate-3d origin axis-0 angle` create a function to rotate point p
+
 ### Shader functions
 
 `{{perspective}}`

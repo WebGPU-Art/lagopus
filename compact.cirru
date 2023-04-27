@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.10)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.11)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -1012,6 +1012,18 @@
         |phi $ quote
           def phi $ * 0.5
             dec $ sqrt 5
+        |rotate-3d $ quote
+          defn rotate-3d (origin axis-0 angle p)
+            let
+                cos-d $ js/Math.cos angle
+                sin-d $ js/Math.sin angle
+                p-v $ &v- p origin
+                h $ v-dot axis-0 p-v
+                h-v $ v-scale axis-0 h
+                flat-p-v $ &v- p-v h-v
+                rot-direction $ v-normalize (v-cross flat-p-v axis-0)
+                rot-v $ v-scale rot-direction (v-length flat-p-v)
+              v+ origin h-v (v-scale flat-p-v cos-d) (v-scale rot-v sin-d)
         |rotate-3d-fn $ quote
           defn rotate-3d-fn (origin axis angle)
             let
