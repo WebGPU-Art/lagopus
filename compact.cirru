@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.11)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.12)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -51,7 +51,7 @@
             lagopus/group nil & children
         |inject-shader-snippets $ quote
           defn inject-shader-snippets (code)
-            -> code (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand) (.!replace "\"{{rotation}}" wgsl-rotation)
+            -> code (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand) (.!replace "\"{{rotation}}" wgsl-rotation) (.!replace "\"{{hsluv}}" wgsl-hsluv)
         |object $ quote
           defn object (options)
             let
@@ -93,6 +93,8 @@
                   &map:get options :add-uniform
         |wgsl-colors $ quote
           def wgsl-colors $ inline-shader "\"lagopus-colors"
+        |wgsl-hsluv $ quote
+          def wgsl-hsluv $ inline-shader "\"lagopus-hsluv"
         |wgsl-perspective $ quote
           def wgsl-perspective $ inline-shader "\"lagopus-perspective"
         |wgsl-rand $ quote

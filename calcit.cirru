@@ -1,6 +1,6 @@
 
 {}
-  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.0.11)
+  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.0.12)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :ir $ {} (:package |lagopus)
@@ -297,6 +297,11 @@
                       |T $ {} (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace) (:type :leaf)
                       |b $ {} (:at 1681404922835) (:by |rJG4IHzWf) (:text "|\"{{rotation}}") (:type :leaf)
                       |h $ {} (:at 1681404927486) (:by |rJG4IHzWf) (:text |wgsl-rotation) (:type :leaf)
+                  |t $ {} (:at 1681404897511) (:by |rJG4IHzWf) (:type :expr)
+                    :data $ {}
+                      |T $ {} (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace) (:type :leaf)
+                      |b $ {} (:at 1684058284435) (:by |rJG4IHzWf) (:text "|\"{{hsluv}}") (:type :leaf)
+                      |h $ {} (:at 1684058286471) (:by |rJG4IHzWf) (:text |wgsl-hsluv) (:type :leaf)
           |object $ {} (:at 1677524651069) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1677524651069) (:by |rJG4IHzWf) (:text |defn) (:type :leaf)
@@ -542,6 +547,14 @@
                 :data $ {}
                   |T $ {} (:at 1679329127665) (:by |rJG4IHzWf) (:text |inline-shader) (:type :leaf)
                   |b $ {} (:at 1680282034985) (:by |rJG4IHzWf) (:text "|\"lagopus-colors") (:type :leaf)
+          |wgsl-hsluv $ {} (:at 1684058290641) (:by |rJG4IHzWf) (:type :expr)
+            :data $ {}
+              |T $ {} (:at 1684058290641) (:by |rJG4IHzWf) (:text |def) (:type :leaf)
+              |b $ {} (:at 1684058290641) (:by |rJG4IHzWf) (:text |wgsl-hsluv) (:type :leaf)
+              |h $ {} (:at 1684058299479) (:by |rJG4IHzWf) (:type :expr)
+                :data $ {}
+                  |T $ {} (:at 1684058299479) (:by |rJG4IHzWf) (:text |inline-shader) (:type :leaf)
+                  |b $ {} (:at 1684058303678) (:by |rJG4IHzWf) (:text "|\"lagopus-hsluv") (:type :leaf)
           |wgsl-perspective $ {} (:at 1677692547549) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1677692547549) (:by |rJG4IHzWf) (:text |def) (:type :leaf)

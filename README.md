@@ -250,6 +250,10 @@ Math functions in `lagopus.math`
 
 - `fn simplexNoise2(v: vec2<f32>) -> f32`
 
+`{{hsluv}}`
+
+- `fn hsluvToRgb(tuple: vec3f) -> vec3f` based on 360 and 100
+
 ### Resources
 
 Shader functions from https://gist.github.com/munrocket/236ed5ba7e409b8bdf1ff6eca5dcdc39
