@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@calcit/procs@^0.6.26":
-  version "0.6.26"
-  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.6.26.tgz#6b5aae18f71b4a2ebdc417fe0ff0e3c97d98ee9d"
-  integrity sha512-waiiKuhGqXQaRphu7qyen9eweGUqYSZpTNDZHEzo1TBw+A0dbzujq5JGgubwEEtRaEz2kWt4dhjQP1hvqstezw==
+"@calcit/procs@^0.6.27":
+  version "0.6.27"
+  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.6.27.tgz#dbd9f7fba1a359171bce65e1c131a4b4975cb361"
+  integrity sha512-8DTo90gyW99bzyCVz1lnj1rd38j6r/+BFhAh7OMnUxCBStrzVeGwm40pbgW19ZqlMl60MjU6XV/3xIrBsqdIKQ==
   dependencies:
     "@calcit/ternary-tree" "0.0.19"
     "@cirru/parser.ts" "^0.0.6"
@@ -150,18 +150,19 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.7.tgz#61434b4cc52ad6c1f548f6a21470980fefac5a03"
-  integrity sha512-x9niQemU1p8oeCPLFz2TFrNEOIjyW/ZNYuEEX2EPiKgXbSJDJzrh+zw7r60eAVooHekKr5Lh8oqDSAO1M/tPbg==
+"@triadica/lagopus@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.10.tgz#1134ba57d0c73b3cab5c66d48c35b7ccfa371415"
+  integrity sha512-8VVg0Ca2mvi5321mHKJoRtLvxxwMqURwqK6V46CGe+Z9mQzts8VIG98wOkbEJSMsZezWDFoPchYYow1bpH7O2Q==
   dependencies:
-    "@triadica/touch-control" "^0.0.2"
+    "@triadica/touch-control" "^0.0.3"
     ismobilejs "^1.1.1"
+    query-string "^8.1.0"
 
-"@triadica/touch-control@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.2.tgz#782368adee18c1937dbbf1d401f35aaa9fe47e87"
-  integrity sha512-U7W0kqfgmD+qumYn38mIy4aC16s8bIc00eIt7vW3kLXokkTu2edVmXmfXkaJE93skkd49WXUeMEt6iKTIQ+uXA==
+"@triadica/touch-control@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.3.tgz#91e7ecb8fd2a36309180eada58f843b1dd44d876"
+  integrity sha512-P6E+MJYmN6EJim0MjhK2kf99OjTZJwAXI7clJz6DDsaf/HCIbyYnVPWyMC7jgc6bPG2I5PAnLga5gHTR1lbUzA==
 
 "@types/estree@^1.0.0":
   version "1.0.1"
@@ -185,6 +186,11 @@ camelize@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/camelize/-/camelize-1.0.1.tgz#89b7e16884056331a35d6b5ad064332c91daa6c3"
   integrity sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==
+
+decode-uri-component@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.4.1.tgz#2ac4859663c704be22bf7db760a1494a49ab2cc5"
+  integrity sha512-+8VxcR21HhTy8nOt6jf20w0c9CADrw1O8d+VZ/YzzCt4bJ3uBjw+D1q2osAB8RnpwwaeYBxy0HyKQxD5JBMuuQ==
 
 dom-walk@^0.1.0:
   version "0.1.2"
@@ -239,6 +245,11 @@ ev-store@^7.0.0:
   integrity sha512-otazchNRnGzp2YarBJ+GXKVGvhxVATB1zmaStxJBYet0Dyq7A9VhH8IUEB/gRcL6Ch52lfpgPTRJ2m49epyMsQ==
   dependencies:
     individual "^3.0.0"
+
+filter-obj@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/filter-obj/-/filter-obj-5.1.0.tgz#5bd89676000a713d7db2e197f660274428e524ed"
+  integrity sha512-qWeTREPoT7I0bifpPUXtxkZJ1XJzxWtfoWWkdVGqa+eCr3SHW/Ocp89o8vLvbUuQnadybJpjOKu4V+RwO6sGng==
 
 fsevents@~2.3.2:
   version "2.3.2"
@@ -314,6 +325,15 @@ process@^0.11.10:
   resolved "https://registry.yarnpkg.com/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
   integrity sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==
 
+query-string@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-8.1.0.tgz#e7f95367737219544cd360a11a4f4ca03836e115"
+  integrity sha512-BFQeWxJOZxZGix7y+SByG3F36dA0AbTy9o6pSmKFcFz7DAj0re9Frkty3saBn3nHo3D0oZJ/+rx3r8H8r8Jbpw==
+  dependencies:
+    decode-uri-component "^0.4.1"
+    filter-obj "^5.1.0"
+    split-on-first "^3.0.0"
+
 rollup@^3.21.0:
   version "3.21.0"
   resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.21.0.tgz#0a71517db56e150222670f88e5e7acfa4fede7c8"
@@ -325,6 +345,11 @@ source-map-js@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.2.tgz#adbc361d9c62df380125e7f161f71c826f1e490c"
   integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
+
+split-on-first@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/split-on-first/-/split-on-first-3.0.0.tgz#f04959c9ea8101b9b0bbf35a61b9ebea784a23e7"
+  integrity sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA==
 
 string-template@~0.2.0:
   version "0.2.1"

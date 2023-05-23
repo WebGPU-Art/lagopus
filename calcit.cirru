@@ -1,6 +1,6 @@
 
 {}
-  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.0.11)
+  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.0.12)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :ir $ {} (:package |lagopus)
@@ -297,6 +297,11 @@
                       |T $ {} (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace) (:type :leaf)
                       |b $ {} (:at 1681404922835) (:by |rJG4IHzWf) (:text "|\"{{rotation}}") (:type :leaf)
                       |h $ {} (:at 1681404927486) (:by |rJG4IHzWf) (:text |wgsl-rotation) (:type :leaf)
+                  |t $ {} (:at 1681404897511) (:by |rJG4IHzWf) (:type :expr)
+                    :data $ {}
+                      |T $ {} (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace) (:type :leaf)
+                      |b $ {} (:at 1684058284435) (:by |rJG4IHzWf) (:text "|\"{{hsluv}}") (:type :leaf)
+                      |h $ {} (:at 1684058286471) (:by |rJG4IHzWf) (:text |wgsl-hsluv) (:type :leaf)
           |object $ {} (:at 1677524651069) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1677524651069) (:by |rJG4IHzWf) (:text |defn) (:type :leaf)
@@ -542,6 +547,14 @@
                 :data $ {}
                   |T $ {} (:at 1679329127665) (:by |rJG4IHzWf) (:text |inline-shader) (:type :leaf)
                   |b $ {} (:at 1680282034985) (:by |rJG4IHzWf) (:text "|\"lagopus-colors") (:type :leaf)
+          |wgsl-hsluv $ {} (:at 1684058290641) (:by |rJG4IHzWf) (:type :expr)
+            :data $ {}
+              |T $ {} (:at 1684058290641) (:by |rJG4IHzWf) (:text |def) (:type :leaf)
+              |b $ {} (:at 1684058290641) (:by |rJG4IHzWf) (:text |wgsl-hsluv) (:type :leaf)
+              |h $ {} (:at 1684058299479) (:by |rJG4IHzWf) (:type :expr)
+                :data $ {}
+                  |T $ {} (:at 1684058299479) (:by |rJG4IHzWf) (:text |inline-shader) (:type :leaf)
+                  |b $ {} (:at 1684058303678) (:by |rJG4IHzWf) (:text "|\"lagopus-hsluv") (:type :leaf)
           |wgsl-perspective $ {} (:at 1677692547549) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1677692547549) (:by |rJG4IHzWf) (:text |def) (:type :leaf)
@@ -7162,6 +7175,15 @@
                 :data $ {}
                   |T $ {} (:at 1681059273742) (:by |rJG4IHzWf) (:text |ismobile) (:type :leaf)
                   |b $ {} (:at 1681059282389) (:by |rJG4IHzWf) (:text |js/window.navigator) (:type :leaf)
+          |remote-control? $ {} (:at 1684604585591) (:by |rJG4IHzWf) (:type :expr)
+            :data $ {}
+              |T $ {} (:at 1684604585591) (:by |rJG4IHzWf) (:text |def) (:type :leaf)
+              |b $ {} (:at 1684604585591) (:by |rJG4IHzWf) (:text |remote-control?) (:type :leaf)
+              |h $ {} (:at 1684604585591) (:by |rJG4IHzWf) (:type :expr)
+                :data $ {}
+                  |T $ {} (:at 1684604590242) (:by |rJG4IHzWf) (:text |get-env) (:type :leaf)
+                  |b $ {} (:at 1684604595253) (:by |rJG4IHzWf) (:text "|\"remote-control") (:type :leaf)
+                  |h $ {} (:at 1684604598827) (:by |rJG4IHzWf) (:text |nil) (:type :leaf)
         :ns $ {} (:at 1677605429745) (:by |rJG4IHzWf) (:type :expr)
           :data $ {}
             |T $ {} (:at 1677605429745) (:by |rJG4IHzWf) (:text |ns) (:type :leaf)
@@ -7492,6 +7514,13 @@
                 :data $ {}
                   |T $ {} (:at 1677932976564) (:by |rJG4IHzWf) (:text |setupMouseEvents) (:type :leaf)
                   |b $ {} (:at 1677932986654) (:by |rJG4IHzWf) (:text |canvas) (:type :leaf)
+              |w $ {} (:at 1684604572339) (:by |rJG4IHzWf) (:type :expr)
+                :data $ {}
+                  |D $ {} (:at 1684604572906) (:by |rJG4IHzWf) (:text |if) (:type :leaf)
+                  |L $ {} (:at 1684604578304) (:by |rJG4IHzWf) (:text |remote-control?) (:type :leaf)
+                  |T $ {} (:at 1684604566712) (:by |rJG4IHzWf) (:type :expr)
+                    :data $ {}
+                      |T $ {} (:at 1684604566980) (:by |rJG4IHzWf) (:text |setupRemoteControl) (:type :leaf)
           |reload! $ {} (:at 1677433362201) (:by |rJG4IHzWf) (:type :expr)
             :data $ {}
               |T $ {} (:at 1677433362201) (:by |rJG4IHzWf) (:text |defn) (:type :leaf)
@@ -7618,6 +7647,7 @@
                         |b $ {} (:at 1681059295444) (:by |rJG4IHzWf) (:text |mobile-info) (:type :leaf)
                         |h $ {} (:at 1681059394605) (:by |rJG4IHzWf) (:text |bloom?) (:type :leaf)
                         |l $ {} (:at 1681836655194) (:by |rJG4IHzWf) (:text |bg-color) (:type :leaf)
+                        |o $ {} (:at 1684604584933) (:by |rJG4IHzWf) (:text |remote-control?) (:type :leaf)
                 |sT $ {} (:at 1680374315430) (:by |rJG4IHzWf) (:type :expr)
                   :data $ {}
                     |T $ {} (:at 1680374562448) (:by |rJG4IHzWf) (:text |lagopus.util) (:type :leaf)
@@ -7650,6 +7680,13 @@
                     |h $ {} (:at 1681578464751) (:by |rJG4IHzWf) (:type :expr)
                       :data $ {}
                         |T $ {} (:at 1681578468221) (:by |rJG4IHzWf) (:text |update-states) (:type :leaf)
+                |x $ {} (:at 1684604518350) (:by |rJG4IHzWf) (:type :expr)
+                  :data $ {}
+                    |T $ {} (:at 1684604550684) (:by |rJG4IHzWf) (:text "|\"@triadica/lagopus/lib/remote-control.mjs") (:type :leaf)
+                    |b $ {} (:at 1684604554472) (:by |rJG4IHzWf) (:text |:refer) (:type :leaf)
+                    |h $ {} (:at 1684604554798) (:by |rJG4IHzWf) (:type :expr)
+                      :data $ {}
+                        |T $ {} (:at 1684604564734) (:by |rJG4IHzWf) (:text |setupRemoteControl) (:type :leaf)
       |lagopus.math $ {}
         :configs $ {}
         :defs $ {}
