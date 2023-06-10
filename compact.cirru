@@ -21,14 +21,27 @@
               &doseq (x indices) (collect-array! x collect!)
               collect! indices
         |collect-from-records! $ quote
-          defn collect-from-records! (data field write!)
-            if (list? data)
-              &doseq (x data) (collect-from-records! x field write!)
-              let
-                  xs $ &map:get data field
-                if (list? xs)
-                  &doseq (x xs) (write! x )
-                  write! xs
+          defn collect-from-records! (data field idx write!)
+            cond
+                list? data
+                &doseq (x data) (collect-from-records! x field idx write!)
+              (tuple? data)
+                do
+                  if
+                    not= :vertex $ nth data 0
+                    js/console.warn "\"expected :vertex tag" data
+                  let
+                      xs $ nth data (inc idx)
+                    if (list? xs)
+                      &doseq (x xs) (write! x)
+                      write! xs
+              (map? data)
+                let
+                    xs $ &map:get data field
+                  if (list? xs)
+                    &doseq (x xs) (write! x)
+                    write! xs
+              true $ raise "\"unknown data"
         |count-recursive $ quote
           defn count-recursive (xs)
             if (list? xs)
@@ -60,7 +73,7 @@
                 vertices-size $ count-recursive data
                 indices $ &map:get options :indices
                 buffers $ js-array &
-                  map attrs-list $ fn (attr)
+                  map-indexed attrs-list $ fn (idx attr)
                     let
                         buffer $ newBufferFormatLength
                           buffer-format $ &map:get attr :format
@@ -72,11 +85,11 @@
                               idx @*idx
                             aset buffer idx x
                             swap! *idx inc
-                      collect-from-records! data field write! 
+                      collect-from-records! data field idx write! 
                       ; js/console.log @*idx $ .-length buffer
-                      ; assert
-                        &= @*idx $ .-length buffer
-                        , "\"buffer size guessed correctly"
+                      if
+                        not= @*idx $ .-length buffer
+                        eprintln "\"buffer size guessed correctly"
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
@@ -159,54 +172,18 @@
                             y0 $ &* d y
                             p0 $ [] x0 y0
                           []
-                            []
-                              {} (:position p0) (:normal-idx 0) (:idx 0)
-                              {} (:position p0) (:normal-idx 0) (:idx 1)
-                              {} (:position p0) (:normal-idx 0) (:idx 2)
-                            []
-                              {} (:position p0) (:normal-idx 0) (:idx 0)
-                              {} (:position p0) (:normal-idx 0) (:idx 2)
-                              {} (:position p0) (:normal-idx 0) (:idx 3)
-                            []
-                              {} (:position p0) (:normal-idx 1) (:idx 0)
-                              {} (:position p0) (:normal-idx 1) (:idx 1)
-                              {} (:position p0) (:normal-idx 1) (:idx 5)
-                            []
-                              {} (:position p0) (:normal-idx 1) (:idx 0)
-                              {} (:position p0) (:normal-idx 1) (:idx 5)
-                              {} (:position p0) (:normal-idx 1) (:idx 4)
-                            []
-                              {} (:position p0) (:normal-idx 2) (:idx 1)
-                              {} (:position p0) (:normal-idx 2) (:idx 2)
-                              {} (:position p0) (:normal-idx 2) (:idx 6)
-                            []
-                              {} (:position p0) (:normal-idx 2) (:idx 1)
-                              {} (:position p0) (:normal-idx 2) (:idx 6)
-                              {} (:position p0) (:normal-idx 2) (:idx 5)
-                            []
-                              {} (:position p0) (:normal-idx 3) (:idx 2)
-                              {} (:position p0) (:normal-idx 3) (:idx 3)
-                              {} (:position p0) (:normal-idx 3) (:idx 6)
-                            []
-                              {} (:position p0) (:normal-idx 3) (:idx 3)
-                              {} (:position p0) (:normal-idx 3) (:idx 7)
-                              {} (:position p0) (:normal-idx 3) (:idx 6)
-                            []
-                              {} (:position p0) (:normal-idx 4) (:idx 0)
-                              {} (:position p0) (:normal-idx 4) (:idx 3)
-                              {} (:position p0) (:normal-idx 4) (:idx 4)
-                            []
-                              {} (:position p0) (:normal-idx 4) (:idx 3)
-                              {} (:position p0) (:normal-idx 4) (:idx 4)
-                              {} (:position p0) (:normal-idx 4) (:idx 7)
-                            []
-                              {} (:position p0) (:normal-idx 5) (:idx 4)
-                              {} (:position p0) (:normal-idx 5) (:idx 5)
-                              {} (:position p0) (:normal-idx 5) (:idx 6)
-                            []
-                              {} (:position p0) (:normal-idx 5) (:idx 4)
-                              {} (:position p0) (:normal-idx 5) (:idx 6)
-                              {} (:position p0) (:normal-idx 5) (:idx 7)
+                            [] (:: :vertex p0 0 0) (:: :vertex p0 0 1) (:: :vertex p0 0 2)
+                            [] (:: :vertex p0 0 0) (:: :vertex p0 0 2) (:: :vertex p0 0 3)
+                            [] (:: :vertex p0 1 0) (:: :vertex p0 1 1) (:: :vertex p0 1 5)
+                            [] (:: :vertex p0 1 0) (:: :vertex p0 1 5) (:: :vertex p0 1 4)
+                            [] (:: :vertex p0 2 1) (:: :vertex p0 2 2) (:: :vertex p0 2 6)
+                            [] (:: :vertex p0 2 1) (:: :vertex p0 2 6) (:: :vertex p0 2 5)
+                            [] (:: :vertex p0 3 2) (:: :vertex p0 3 3) (:: :vertex p0 3 6)
+                            [] (:: :vertex p0 3 3) (:: :vertex p0 3 7) (:: :vertex p0 3 6)
+                            [] (:: :vertex p0 4 0) (:: :vertex p0 4 3) (:: :vertex p0 4 4)
+                            [] (:: :vertex p0 4 3) (:: :vertex p0 4 4) (:: :vertex p0 4 7)
+                            [] (:: :vertex p0 5 4) (:: :vertex p0 5 5) (:: :vertex p0 5 6)
+                            [] (:: :vertex p0 5 4) (:: :vertex p0 5 6) (:: :vertex p0 5 7)
         |comp-container $ quote
           defn comp-container (store)
             let
@@ -275,13 +252,13 @@
                             y1 $ &+ y0 d
                           []
                             []
-                              {} $ :position ([] x0 y0)
-                              {} $ :position ([] x1 y0)
-                              {} $ :position ([] x1 y1)
+                              :: :vertex $ [] x0 y0
+                              :: :vertex $ [] x1 y0
+                              :: :vertex $ [] x1 y1
                             []
-                              {} $ :position ([] x0 y0)
-                              {} $ :position ([] x1 y1)
-                              {} $ :position ([] x0 y1)
+                              :: :vertex $ [] x0 y0
+                              :: :vertex $ [] x1 y1
+                              :: :vertex $ [] x0 y1
         |comp-necklace $ quote
           defn comp-necklace () $ comp-spots
             {} (; :topology :line-strip) (:radius 6) (:vertex-count 8) (:shift 12)
@@ -406,38 +383,30 @@
                 :topology $ do :line-strip :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :float32x3 :metrics)
                 :data $ []
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] -1 -1 -1) radius
-                    :metrics $ [] -1 -1 -1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] -1 1 -1) radius
-                    :metrics $ [] -1 1 -1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] -1 1 1) radius
-                    :metrics $ [] -1 1 1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] -1 -1 1) radius
-                    :metrics $ [] -1 -1 1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] 1 -1 -1) radius
-                    :metrics $ [] 1 -1 -1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] 1 1 -1) radius
-                    :metrics $ [] 1 1 -1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] 1 1 1) radius
-                    :metrics $ [] 1 1 1
-                  {}
-                    :position $ &v+ base
-                      v-scale ([] 1 -1 1) radius
-                    :metrics $ [] 1 -1 1
+                  :: :vertex
+                    &v+ base $ v-scale ([] -1 -1 -1) radius
+                    [] -1 -1 -1
+                  :: :vertex
+                    &v+ base $ v-scale ([] -1 1 -1) radius
+                    [] -1 1 -1
+                  :: :vertex
+                    &v+ base $ v-scale ([] -1 1 1) radius
+                    [] -1 1 1
+                  :: :vertex
+                    &v+ base $ v-scale ([] -1 -1 1) radius
+                    [] -1 -1 1
+                  :: :vertex
+                    &v+ base $ v-scale ([] 1 -1 -1) radius
+                    [] 1 -1 -1
+                  :: :vertex
+                    &v+ base $ v-scale ([] 1 1 -1) radius
+                    [] 1 1 -1
+                  :: :vertex
+                    &v+ base $ v-scale ([] 1 1 1) radius
+                    [] 1 1 1
+                  :: :vertex
+                    &v+ base $ v-scale ([] 1 -1 1) radius
+                    [] 1 -1 1
                 :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
         |wgsl-cube $ quote
           def wgsl-cube $ inline-shader "\"cube"
@@ -460,22 +429,25 @@
                       p-raw $ nth points idx
                       q-raw $ nth points idx+1
                       q2-raw $ nth points (inc idx+1)
-                      p $ &map:get p-raw :position
-                      q $ &map:get q-raw :position
-                      q2 $ if (some? q2-raw) (&map:get q2-raw :position)
+                      p $ if (tuple? p-raw) (nth p-raw 1) (&map:get p-raw :position)
+                      q $ if (tuple? q-raw) (nth q-raw 1)
+                        if (map? q-raw) (&map:get q-raw :position)
+                      q2 $ if (tuple? q2-raw) (nth q2-raw 1)
+                        if (list? q2-raw)
+                          if (map? q2-raw) (&map:get q2-raw :position)
                       direction $ &v- q p
                       direction2 $ if (some? q2) (&v- q2 q) direction
-                      p-width $ either (&map:get p-raw :width) 1
-                      q-width $ either (&map:get q-raw :width) 1
+                      p-width $ either
+                        if (tuple? p-raw) (nth p-raw 2)
+                          if (map? p-raw) (&map:get p-raw :width)
+                        , 1
+                      q-width $ either
+                        if (tuple? q-raw) (nth q-raw 2)
+                          if (map? q-raw) (&map:get q-raw :width)
+                        , 1
                       ratio $ &/ idx size
                       ratio+1 $ &/ idx+1 size
-                    []
-                      {} (:position p) (:brush 0) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
-                      {} (:position q) (:brush 0) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
-                      {} (:position p) (:brush 1) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
-                      {} (:position q) (:brush 0) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
-                      {} (:position q) (:brush 1) (:direction direction2) (:curve_ratio curve-ratio) (:color_index idx+1) (:width q-width)
-                      {} (:position p) (:brush 1) (:direction direction) (:curve_ratio curve-ratio) (:color_index idx) (:width p-width)
+                    [] (:: :vertex p 0 direction curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction2 curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q 1 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction curve-ratio idx p-width)
         |comp-axis $ quote
           defn comp-axis (? options)
             let
@@ -485,19 +457,19 @@
                 :curves $ []
                   -> (range-bothway n)
                     map $ fn (n)
-                      {}
-                        :position $ [] (* n unit) 0 0
-                        :width 2
+                      :: :vertex
+                        [] (* n unit) 0 0
+                        , 2
                   -> (range-bothway n)
                     map $ fn (n)
-                      {}
-                        :position $ [] 0 (* n unit) 0
-                        :width 2
+                      :: :vertex
+                        [] 0 (* n unit) 0
+                        , 2
                   -> (range-bothway n)
                     map $ fn (n)
-                      {}
-                        :position $ [] 0 0 (* n unit)
-                        :width 2
+                      :: :vertex
+                        [] 0 0 $ * n unit
+                        , 2
         |comp-curves $ quote
           defn comp-curves (options)
             let
@@ -594,16 +566,10 @@
                                       v-scale unit-x $ &* s3 (nth p3 0)
                                       v-scale unit-y $ &* s3 (nth p3 1)
                                 swap! *counter &+ 2
-                                []
-                                  {} (:position ps0) (:idx c)
-                                  {} (:position ps1) (:idx c)
-                                  {} (:position ps2) (:idx c)
+                                [] (:: :vertex ps0 c) (:: :vertex ps1 c) (:: :vertex ps2 c)
                                   if
                                     &< (&+ idx j) (dec iteration)
-                                    []
-                                      {} (:position ps3) (:idx c1)
-                                      {} (:position ps1) (:idx c1)
-                                      {} (:position ps2) (:idx c1)
+                                    [] (:: :vertex ps3 c1) (:: :vertex ps1 c1) (:: :vertex ps2 c1)
                                     []
                 :add-uniform $ fn () (js-array & color chromatism)
         |sqrt-3 $ quote
@@ -624,12 +590,15 @@
                   idx $ deref *counter
                 swap! *counter inc
                 []
-                  {} (:idx idx)
-                    :position $ &v+ base (v-scale p0 radius)
-                  {} (:idx idx)
-                    :position $ &v+ base (v-scale p1 radius)
-                  {} (:idx idx)
-                    :position $ &v+ base (v-scale p2 radius)
+                  :: :vertex
+                    &v+ base $ v-scale p0 radius
+                    , idx
+                  :: :vertex
+                    &v+ base $ v-scale p1 radius
+                    , idx
+                  :: :vertex
+                    &v+ base $ v-scale p2 radius
+                    , idx
               let
                   p01 $ pick-radian-middle p0 p1
                   p02 $ pick-radian-middle p0 p2
@@ -730,12 +699,9 @@
                     ->
                       range $ - vertex-count 2
                       map $ fn (angle-idx)
-                        []
-                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx) (:angle-idx 0)
-                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
-                            :angle-idx $ + 1 angle-idx
-                          {} (:base base) (:color color) (:radius radius) (:vertex-count vertex-count) (:shift shift) (:spot-idx spot-idx)
-                            :angle-idx $ + 2 angle-idx
+                        [] (:: :vertex base color radius vertex-count 0 shift spot-idx)
+                          :: :vertex base color radius vertex-count (+ 1 angle-idx) shift spot-idx
+                          :: :vertex base color radius vertex-count (+ 2 angle-idx) shift spot-idx
         |wgsl-bubbles $ quote
           def wgsl-bubbles $ inline-shader "\"bubbles"
         |wgsl-spots $ quote
