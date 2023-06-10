@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@calcit/procs@^0.7.0-a3":
-  version "0.7.0-a3"
-  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.7.0-a3.tgz#c47c8eb60a07a3188d1cf514af643b821526d00e"
-  integrity sha512-sUJOypiZ0uHVOpE/0vJWAPW/uIMhVe5tWuAxf1NYz6DLC9dHFtUvwOU16oDyMk/bmCnhqcbff8QxHA+EIKL4pw==
+"@calcit/procs@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.7.0.tgz#09a66c814c849beb9403e1f63ec24fbd655c1430"
+  integrity sha512-Q+K1cWxm/F58jEOYVNy7HbMFqtiF0+tdUsamLJrNaUUU5/gNymfI9WvgiWYBp7/KiWm8gsPximu9zIkcrW4pwQ==
   dependencies:
     "@calcit/ternary-tree" "0.0.19"
     "@cirru/parser.ts" "^0.0.6"
@@ -335,9 +335,9 @@ query-string@^8.1.0:
     split-on-first "^3.0.0"
 
 rollup@^3.21.0:
-  version "3.23.0"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.23.0.tgz#b8d6146dac4bf058ee817f92820988e9b358b564"
-  integrity sha512-h31UlwEi7FHihLe1zbk+3Q7z1k/84rb9BSwmBSr/XjOCEaBJ2YyedQDuM0t/kfOS0IxM+vk1/zI9XxYj9V+NJQ==
+  version "3.24.0"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.24.0.tgz#865dee1fe0bb528747b59914dfab25e6f480e370"
+  integrity sha512-OgraHOIg2YpHQTjl0/ymWfFNBEyPucB7lmhXrQUh38qNOegxLapSPFs9sNr0qKR75awW41D93XafoR2QfhBdUQ==
   optionalDependencies:
     fsevents "~2.3.2"
 
