@@ -30,7 +30,7 @@ fn transform_perspective(p: vec3f) -> PointResult {
   let z_next: f32 = r;
 
   return PointResult(
-    vec3(x_next, y_next / uniforms.viewport_ratio, z_next),
+    vec3(x_next, y_next / uniforms.viewport_ratio, z_next) * uniforms.scale,
     r, s
   );
 }
