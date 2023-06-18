@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@calcit/procs@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.7.0.tgz#09a66c814c849beb9403e1f63ec24fbd655c1430"
-  integrity sha512-Q+K1cWxm/F58jEOYVNy7HbMFqtiF0+tdUsamLJrNaUUU5/gNymfI9WvgiWYBp7/KiWm8gsPximu9zIkcrW4pwQ==
+"@calcit/procs@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.7.2.tgz#4121b737c1a48682f6c1aaf8b45226bbe7d217ea"
+  integrity sha512-hfTSX4N/pYQW9GNf8aWDp95TByTujk49wJcPGbUivxEa+K2WlJ0jefbhe0N2Xv8wVd6k5AlYljneGDIs61fRnA==
   dependencies:
     "@calcit/ternary-tree" "0.0.19"
     "@cirru/parser.ts" "^0.0.6"
@@ -150,10 +150,10 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.14":
-  version "0.0.14"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.14.tgz#63063966c43df67c5b905938cce7bdcc51bb9af4"
-  integrity sha512-35koHJwn8fmUzHNbQ/COKQ3kk4qH6iH1SM2IzUyIfR1PXq1oPWE/NROraAfPc31VjoVd2agjcCxv4Wmfy6iHBg==
+"@triadica/lagopus@^0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.15.tgz#268590542b72ba8e248665c8e77d1fcd257ed71e"
+  integrity sha512-9u7jcBZ1m3PnYqwb73n6Drm31K0UMvMO0dGj4UjE4Vu67WuHrspMTW0ctCaJalf8zPSwkKNNqoCmV+ndXrfb6A==
   dependencies:
     "@triadica/touch-control" "^0.0.3"
     ismobilejs "^1.1.1"
@@ -335,9 +335,9 @@ query-string@^8.1.0:
     split-on-first "^3.0.0"
 
 rollup@^3.21.0:
-  version "3.25.0"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.25.0.tgz#71327d396a9decbf23c87b55916ae7204211738a"
-  integrity sha512-FnJkNRst2jEZGw7f+v4hFo6UTzpDKrAKcHZWcEfm5/GJQ5CK7wgb4moNLNAe7npKUev7yQn1AY/YbZRIxOv6Qg==
+  version "3.25.1"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.25.1.tgz#9fff79d22ff1a904b2b595a2fb9bc3793cb987d8"
+  integrity sha512-tywOR+rwIt5m2ZAWSe5AIJcTat8vGlnPFAv15ycCrw33t6iFsXZ6mzHVFh2psSjxQPmI+xgzMZZizUAukBI4aQ==
   optionalDependencies:
     fsevents "~2.3.2"
 

@@ -95,7 +95,7 @@ fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
 Curves
 
 ```cirru
-lagopus.comp.curves :refer $ comp-curves
+lagopus.comp.curves :refer $ comp-curves comp-polylines
 
 comp-curves $ {} (; :topology :line-strip)
   :curves $ []
@@ -110,6 +110,26 @@ comp-curves $ {} (; :topology :line-strip)
               * 0.6 idx
               * r $ sin angle
             :width 2
+```
+
+Another way of defining lines is `comp-polylines` that seperate segments with `:: :break`s.
+It does not require "flatterned" list so is supposed to be a little performant.
+
+> note that `: vertex p` is a short form for `:: :vertex p` since Calcit `0.7.2` .
+
+```cirru
+comp-polylines $ {} (; :topology :line-strip)
+  :data $ []
+    [] $ []
+      : vertex ([] 0 0 0) width
+      : vertex ([] 100 100 0) width
+      : break
+      : vertex ([] 0 0 10) width
+      : vertex ([] 200 0 10) width
+      : vertex ([] 200 20 0) width
+      : vertex ([] 100 40 0) width
+      : vertex ([] 100 20 200) width
+      : break
 ```
 
 Spots

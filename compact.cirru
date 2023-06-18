@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.13)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.14)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -216,6 +216,7 @@
                   :control $ comp-control-demo (>> states :control)
                   :stitch $ comp-stitch-demo
                   :bubbles $ comp-bubbles-demo
+                  :triangles $ comp-triangles-demo
         |comp-control-demo $ quote
           defn comp-control-demo (states)
             let
@@ -356,13 +357,34 @@
                 :color $ [] 0.9 0.3 0.8 1
                 :size 20
               fn (e d!) (d! :tab :bubbles)
+            comp-button
+              {}
+                :position $ [] 140 220 0
+                :color $ [] 0.1 0.6 0.8 1
+                :size 20
+              fn (e d!) (d! :tab :triangles)
+        |comp-triangles-demo $ quote
+          defn comp-triangles-demo () $ let
+              width 2
+            comp-polylines $ {} (; :topology :line-strip)
+              :data $ []
+                [] $ []
+                  : vertex ([] 0 0 0) width
+                  : vertex ([] 100 100 0) width
+                  : break
+                  : vertex ([] 0 0 10) width
+                  : vertex ([] 200 0 10) width
+                  : vertex ([] 200 20 0) width
+                  : vertex ([] 100 40 0) width
+                  : vertex ([] 100 20 200) width
+                  : break
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
           lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
-          lagopus.comp.curves :refer $ comp-curves comp-axis
+          lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines
           lagopus.comp.spots :refer $ comp-spots comp-bubbles
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+ v+
@@ -448,6 +470,44 @@
                       ratio $ &/ idx size
                       ratio+1 $ &/ idx+1 size
                     [] (:: :vertex p 0 direction curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction2 curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q 1 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction curve-ratio idx p-width)
+        |build-polyline-points $ quote
+          defn build-polyline-points (*vertexes *prev *counter p)
+            tag-match p
+                :break
+                do (reset! *prev nil) (swap! *counter inc)
+              (:vertex position width)
+                if-let (prev @*prev)
+                  let
+                      older $ :older prev
+                      idx $ :idx prev
+                      idx+1 $ inc idx
+                      curve-ratio @*counter
+                    reset! *prev $ {} (:position position) (:older older)
+                      :width $ :width prev
+                      :idx $ inc (:idx prev)
+                    if (some? older)
+                      let
+                          p older
+                          q $ :position prev
+                          q2 position
+                          direction $ &v- q p
+                          direction2 $ &v- q2 q
+                          p-width $ :width prev
+                          q-width width
+                          ratio $ &* idx 0.001
+                          ratio+1 $ &* idx+1 0.001
+                        swap! *vertexes conj $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction2 curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q2 1 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
+                      let
+                          q $ :position prev
+                          q2 position
+                          direction $ &v- q2 q
+                          p-width $ :width prev
+                          q-width width
+                          ratio $ &* idx 0.001
+                          ratio+1 $ &* idx+1 0.001
+                        swap! *vertexes conj $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 p-width) (:: :vertex q2 1 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
+                  do $ reset! *prev
+                    {} (:position position) (:older nil) (:width width) (:idx 0)
         |comp-axis $ quote
           defn comp-axis (? options)
             let
@@ -482,6 +542,26 @@
                     size $ count curves
                   map-indexed curves $ fn (idx c)
                     build-curve-points c $ &/ idx size
+        |comp-polylines $ quote
+          defn comp-polylines (options)
+            let
+                data $ either (&map:get options :data) ([])
+              object $ {}
+                :shader $ either (&map:get options :shader) wgsl-curves
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ [] (: float32x3 :position) (: uint32 :brush) (: float32x3 :direction) (: float32 :curve_ratio) (: uint32 :color_index) (: float32 :width)
+                :data $ let
+                    *vertexes $ atom ([])
+                    *prev $ atom nil
+                    *counter $ atom 0
+                    collect! $ fn (p) (build-polyline-points *vertexes *prev *counter p)
+                  traverse-polylines-data data collect!
+                  deref *vertexes
+        |traverse-polylines-data $ quote
+          defn traverse-polylines-data (data collect!)
+            if (list? data)
+              &doseq (item data) (traverse-polylines-data item collect!)
+              if (tuple? data) (collect! data) (js/console.error "\"Unexpected polyline data:" data)
         |wgsl-curves $ quote
           def wgsl-curves $ inline-shader "\"curves"
       :ns $ quote
