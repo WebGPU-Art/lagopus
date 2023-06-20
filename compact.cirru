@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.0.14)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.0)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -232,7 +232,7 @@
                     :position $ :pos state
                     :color $ [] 0.6 0.6 1.0 1.0
                   fn (move d!)
-                    d! cursor $ assoc state :pos move
+                    d! $ : :state cursor (assoc state :pos move)
         |comp-mountains $ quote
           defn comp-mountains () $ object
             {} (:shader mountains-wgsl)
@@ -296,73 +296,85 @@
                 :position $ [] 0 260 0
                 :color $ [] 0.5 0.5 0.9 1
                 :size 20
-              fn (e d!) (d! :tab :axis)
+              fn (e d!)
+                d! $ : tab :axis
             comp-button
               {}
                 :position $ [] 40 260 0
                 :color $ [] 0.9 0.4 0.5 1
                 :size 20
-              fn (e d!) (d! :tab :mountains)
+              fn (e d!)
+                d! $ : tab :mountains
             comp-button
               {}
                 :position $ [] 80 260 0
                 :color $ [] 0.8 0.9 0.2 1
                 :size 20
-              fn (e d!) (d! :tab :city)
+              fn (e d!)
+                d! $ : tab :city
             comp-button
               {}
                 :position $ [] 120 260 0
                 :color $ [] 0.3 0.9 0.2 1
                 :size 20
-              fn (e d!) (d! :tab :cube)
+              fn (e d!)
+                d! $ : tab :cube
             comp-button
               {}
                 :position $ [] 160 260 0
                 :color $ [] 0.8 0.0 0.9 1
                 :size 20
-              fn (e d!) (d! :tab :ribbon)
+              fn (e d!)
+                d! $ : tab :ribbon
             comp-button
               {}
                 :position $ [] 200 260 0
                 :color $ [] 0.2 0.9 0.6 1
                 :size 20
-              fn (e d!) (d! :tab :necklace)
+              fn (e d!)
+                d! $ : tab :necklace
             comp-button
               {}
                 :position $ [] 240 260 0
                 :color $ [] 0.2 0.9 0.6 1
                 :size 20
-              fn (e d!) (d! :tab :sphere)
+              fn (e d!)
+                d! $ : tab :sphere
             comp-button
               {}
                 :position $ [] 280 260 0
                 :color $ [] 0.9 0.4 0.6 1
                 :size 20
-              fn (e d!) (d! :tab :plate)
+              fn (e d!)
+                d! $ : tab :plate
             comp-button
               {}
                 :position $ [] 20 220 0
                 :color $ [] 0.7 0.8 0.9 1
                 :size 20
-              fn (e d!) (d! :tab :control)
+              fn (e d!)
+                d! $ : tab :control
             comp-button
               {}
                 :position $ [] 60 220 0
                 :color $ [] 0.9 0.7 0.6 1
                 :size 20
-              fn (e d!) (d! :tab :stitch)
+              fn (e d!)
+                d! $ : tab :stitch
             comp-button
               {}
                 :position $ [] 100 220 0
                 :color $ [] 0.9 0.3 0.8 1
                 :size 20
-              fn (e d!) (d! :tab :bubbles)
+              fn (e d!)
+                d! $ : tab :bubbles
             comp-button
               {}
                 :position $ [] 140 220 0
                 :color $ [] 0.1 0.6 0.8 1
                 :size 20
-              fn (e d!) (d! :tab :triangles)
+              fn (e d!)
+                d! $ : tab :triangles
         |comp-triangles-demo $ quote
           defn comp-triangles-demo () $ let
               width 2
@@ -990,14 +1002,14 @@
         |canvas $ quote
           def canvas $ js/document.querySelector "\"canvas"
         |dispatch! $ quote
-          defn dispatch! (op data)
-            if dev? $ js/console.log op data
+          defn dispatch! (op)
+            if dev? $ js/console.log op
             let
                 store @*store
-                next-store $ if (list? op) (update-states store op data)
-                  case-default op
-                    do (js/console.warn ":unknown op" op data) store
-                    :tab $ assoc store :tab data
+                next-store $ tag-match op
+                    :state c s
+                    update-states store c s
+                  (:tab t) (assoc store :tab t)
               if (not= next-store store) (reset! *store next-store)
         |main! $ quote
           defn main! () (hint-fn async)
