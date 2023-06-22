@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.0)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -528,20 +528,16 @@
                       ratio+1 $ &/ idx+1 size
                     [] (:: :vertex p 0 direction curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction2 curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q 1 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction curve-ratio idx p-width)
         |build-polyline-points $ quote
-          defn build-polyline-points (*prev *counter p write!)
+          defn build-polyline-points (*prev p write!)
             tag-match p
                 :break
-                do (reset! *prev nil) (swap! *counter inc)
+                do $ reset! *prev nil
               (:vertex position width)
                 if-let (prev @*prev)
                   let
                       older $ :older prev
-                      idx $ :idx prev
-                      idx+1 $ inc idx
-                      curve-ratio @*counter
                     reset! *prev $ {} (:position position) (:older older)
                       :width $ :width prev
-                      :idx $ inc (:idx prev)
                     if (some? older)
                       let
                           p older
@@ -551,20 +547,16 @@
                           direction2 $ &v- q2 q
                           p-width $ :width prev
                           q-width width
-                          ratio $ &* idx 0.001
-                          ratio+1 $ &* idx+1 0.001
-                        write! $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction2 curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q2 1 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
+                        write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction2 q-width) (:: :vertex q 1 direction2 p-width) (:: :vertex q2 0 direction2 p-width) (:: :vertex q2 1 direction2 q-width) (:: :vertex q 1 direction p-width)
                       let
                           q $ :position prev
                           q2 position
                           direction $ &v- q2 q
                           p-width $ :width prev
                           q-width width
-                          ratio $ &* idx 0.001
-                          ratio+1 $ &* idx+1 0.001
-                        write! $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 p-width) (:: :vertex q2 1 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
+                        write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction q-width) (:: :vertex q 1 direction p-width) (:: :vertex q2 0 direction p-width) (:: :vertex q2 1 direction q-width) (:: :vertex q 1 direction p-width)
                   do $ reset! *prev
-                    {} (:position position) (:older nil) (:width width) (:idx 0)
+                    {} (:position position) (:older nil) (:width width)
         |comp-axis $ quote
           defn comp-axis (? options)
             let
@@ -604,14 +596,13 @@
             let
                 data $ either (&map:get options :data) ([])
               object-writer $ {}
-                :shader $ either (&map:get options :shader) wgsl-curves
+                :shader $ either (&map:get options :shader) wgsl-polylines
                 :topology $ either (&map:get options :topology) :triangle-list
-                :attrs-list $ [] (: float32x3 :position) (: uint32 :brush) (: float32x3 :direction) (: float32 :curve_ratio) (: uint32 :color_index) (: float32 :width)
+                :attrs-list $ [] (: float32x3 :position) (: uint32 :brush) (: float32x3 :direction) (: float32 :width)
                 :writer $ fn (write!)
                   let
                       *prev $ atom nil
-                      *counter $ atom 0
-                      collect! $ fn (p) (build-polyline-points *prev *counter p write!)
+                      collect! $ fn (p) (build-polyline-points *prev p write!)
                     traverse-polylines-data data collect!
         |traverse-polylines-data $ quote
           defn traverse-polylines-data (data collect!)
@@ -620,6 +611,8 @@
               if (tuple? data) (collect! data) (js/console.error "\"Unexpected polyline data:" data)
         |wgsl-curves $ quote
           def wgsl-curves $ inline-shader "\"curves"
+        |wgsl-polylines $ quote
+          def wgsl-polylines $ inline-shader "\"polylines"
       :ns $ quote
         ns lagopus.comp.curves $ :require
           lagopus.config :refer $ inline-shader
