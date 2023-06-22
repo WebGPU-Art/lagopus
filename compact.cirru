@@ -71,7 +71,6 @@
                 attrs-list $ map (&map:get options :attrs-list) expand-attr
                 data $ &map:get options :data
                 vertices-size $ count-recursive data
-                indices $ &map:get options :indices
                 buffers $ js-array &
                   map-indexed attrs-list $ fn (idx attr)
                     let
@@ -85,11 +84,11 @@
                               idx @*idx
                             aset buffer idx x
                             swap! *idx inc
-                      collect-from-records! data field idx write! 
+                      collect-from-records! data field idx write!
                       ; js/console.log @*idx $ .-length buffer
                       if
                         not= @*idx $ .-length buffer
-                        eprintln "\"buffer size guessed correctly"
+                        eprintln "\"buffer size guessed incorrectly"
                       , buffer
               ; js/console.log vertices-size buffers
               createRenderer
@@ -97,10 +96,56 @@
                 turn-string $ &map:get options :topology
                 to-js-data attrs-list
                 , vertices-size buffers nil
-                  if (some? indices)
+                  if-let
+                    indices $ &map:get options :indices
                     u32buffer $ let
                         *arr $ js-array
                         collect! $ fn (x) (.!push *arr x )
+                      collect-array! indices collect!
+                      , *arr
+                  &map:get options :add-uniform
+        |object-writer $ quote
+          defn object-writer (options)
+            let
+                attrs-list $ map (&map:get options :attrs-list) expand-attr
+                writer $ &map:get options :writer
+                bundles $ js-array &
+                  ->
+                    range $ count attrs-list
+                    map $ fn (_) (js-array)
+                *counter $ atom 0
+                count! $ fn (x) (swap! *counter &+ x)
+                collect! $ fn (chunk)
+                  &doseq (record chunk) (count! 1)
+                    map-indexed attrs-list $ fn (idx attr)
+                      let
+                          arr $ aget bundles idx
+                          data $ do
+                            assert "\"expected tuple" $ tuple? record
+                            if
+                              not= :vertex $ nth record 0
+                              js/console.warn "\"expected :vertex tag" record
+                            nth record $ inc idx
+                        if (list? data)
+                          &doseq (d data) (.!push arr d)
+                          .!push arr data
+                buffers $ do (writer collect!)
+                  js-array & $ map-indexed attrs-list
+                    fn (idx attr)
+                      newBufferFormatArray
+                        buffer-format $ &map:get attr :format
+                        aget bundles idx
+              ; js/console.log @*counter buffers
+              createRenderer
+                inject-shader-snippets $ &map:get options :shader
+                turn-string $ &map:get options :topology
+                to-js-data attrs-list
+                , @*counter buffers nil
+                  if-let
+                    indices $ &map:get options :indices
+                    u32buffer $ let
+                        *arr $ js-array
+                        collect! $ fn (x) (.!push *arr x)
                       collect-array! indices collect!
                       , *arr
                   &map:get options :add-uniform
@@ -118,7 +163,7 @@
           def wgsl-simplex $ inline-shader "\"lagopus-simplex"
       :ns $ quote
         ns lagopus.alias $ :require
-          "\"@triadica/lagopus" :refer $ createRenderer u32buffer newBufferFormatLength
+          "\"@triadica/lagopus" :refer $ createRenderer u32buffer newBufferFormatLength newBufferFormatArray
           "\"@triadica/lagopus" :as lagopus
           lagopus.config :refer $ inline-shader
     |lagopus.comp.button $ {}
@@ -483,7 +528,7 @@
                       ratio+1 $ &/ idx+1 size
                     [] (:: :vertex p 0 direction curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction2 curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q 1 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction curve-ratio idx p-width)
         |build-polyline-points $ quote
-          defn build-polyline-points (*vertexes *prev *counter p)
+          defn build-polyline-points (*prev *counter p write!)
             tag-match p
                 :break
                 do (reset! *prev nil) (swap! *counter inc)
@@ -508,7 +553,7 @@
                           q-width width
                           ratio $ &* idx 0.001
                           ratio+1 $ &* idx+1 0.001
-                        swap! *vertexes conj $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction2 curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q2 1 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
+                        write! $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction2 curve-ratio idx p-width) (:: :vertex q2 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q2 1 direction2 curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
                       let
                           q $ :position prev
                           q2 position
@@ -517,7 +562,7 @@
                           q-width width
                           ratio $ &* idx 0.001
                           ratio+1 $ &* idx+1 0.001
-                        swap! *vertexes conj $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 p-width) (:: :vertex q2 1 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
+                        write! $ [] (:: :vertex q 0 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width) (:: :vertex q2 0 direction curve-ratio idx+1 p-width) (:: :vertex q2 1 direction curve-ratio idx+1 q-width) (:: :vertex q 1 direction curve-ratio idx p-width)
                   do $ reset! *prev
                     {} (:position position) (:older nil) (:width width) (:idx 0)
         |comp-axis $ quote
@@ -558,17 +603,16 @@
           defn comp-polylines (options)
             let
                 data $ either (&map:get options :data) ([])
-              object $ {}
+              object-writer $ {}
                 :shader $ either (&map:get options :shader) wgsl-curves
                 :topology $ either (&map:get options :topology) :triangle-list
                 :attrs-list $ [] (: float32x3 :position) (: uint32 :brush) (: float32x3 :direction) (: float32 :curve_ratio) (: uint32 :color_index) (: float32 :width)
-                :data $ let
-                    *vertexes $ atom ([])
-                    *prev $ atom nil
-                    *counter $ atom 0
-                    collect! $ fn (p) (build-polyline-points *vertexes *prev *counter p)
-                  traverse-polylines-data data collect!
-                  deref *vertexes
+                :writer $ fn (write!)
+                  let
+                      *prev $ atom nil
+                      *counter $ atom 0
+                      collect! $ fn (p) (build-polyline-points *prev *counter p write!)
+                    traverse-polylines-data data collect!
         |traverse-polylines-data $ quote
           defn traverse-polylines-data (data collect!)
             if (list? data)
@@ -579,7 +623,7 @@
       :ns $ quote
         ns lagopus.comp.curves $ :require
           lagopus.config :refer $ inline-shader
-          lagopus.alias :refer $ object
+          lagopus.alias :refer $ object object-writer
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
     |lagopus.comp.plate $ {}
       :defs $ {}

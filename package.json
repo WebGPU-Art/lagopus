@@ -3,7 +3,7 @@
   "dependencies": {
     "@calcit/procs": "^0.7.2",
     "@calcit/std": "^0.0.2",
-    "@triadica/lagopus": "^0.0.15",
+    "@triadica/lagopus": "^0.0.16-a1",
     "@triadica/touch-control": "^0.0.3",
     "ismobilejs": "^1.1.1"
   },
