@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.2)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -424,24 +424,24 @@
           defn comp-triangles-demo () $ let
               width 2
             comp-polylines $ {} (; :topology :line-strip)
-              :data $ []
-                [] $ []
+              :writer $ fn (write!)
+                write! $ []
                   : vertex ([] 0 0 0) width
                   : vertex ([] 100 100 0) width
-                  : break
-                  : vertex ([] 0 0 10) width
-                  : vertex ([] 200 0 10) width
-                  : vertex ([] 200 20 0) width
-                  : vertex ([] 100 40 0) width
-                  : vertex ([] 100 20 200) width
-                  : break
+                  , break-mark
+                    : vertex ([] 0 0 10) width
+                    : vertex ([] 200 0 10) width
+                    : vertex ([] 200 20 0) width
+                    : vertex ([] 100 40 0) width
+                    : vertex ([] 100 20 200) width
+                    , break-mark
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
           lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
-          lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines
+          lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines break-mark
           lagopus.comp.spots :refer $ comp-spots comp-bubbles
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+ v+
@@ -496,6 +496,8 @@
           quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v+
     |lagopus.comp.curves $ {}
       :defs $ {}
+        |break-mark $ quote
+          def break-mark $ :: :break
         |build-curve-points $ quote
           defn build-curve-points (points curve-ratio)
             let
@@ -594,7 +596,8 @@
         |comp-polylines $ quote
           defn comp-polylines (options)
             let
-                data $ either (&map:get options :data) ([])
+                chunk-writer! $ either (&map:get options :writer)
+                  fn (_) (js/console.warn "\"expected polylines writer")
               object-writer $ {}
                 :shader $ either (&map:get options :shader) wgsl-polylines
                 :topology $ either (&map:get options :topology) :triangle-list
@@ -602,13 +605,11 @@
                 :writer $ fn (write!)
                   let
                       *prev $ atom nil
-                      collect! $ fn (p) (build-polyline-points *prev p write!)
-                    traverse-polylines-data data collect!
-        |traverse-polylines-data $ quote
-          defn traverse-polylines-data (data collect!)
-            if (list? data)
-              &doseq (item data) (traverse-polylines-data item collect!)
-              if (tuple? data) (collect! data) (js/console.error "\"Unexpected polyline data:" data)
+                      collect! $ fn (p)
+                        if (list? p)
+                          &doseq (x p) (build-polyline-points *prev x write!)
+                          build-polyline-points *prev p write!
+                    chunk-writer! collect!
         |wgsl-curves $ quote
           def wgsl-curves $ inline-shader "\"curves"
         |wgsl-polylines $ quote
