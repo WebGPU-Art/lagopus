@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.2)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.3)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -423,25 +423,38 @@
         |comp-triangles-demo $ quote
           defn comp-triangles-demo () $ let
               width 2
-            comp-polylines $ {} (; :topology :line-strip)
-              :writer $ fn (write!)
-                write! $ []
-                  : vertex ([] 0 0 0) width
-                  : vertex ([] 100 100 0) width
-                  , break-mark
-                    : vertex ([] 0 0 10) width
-                    : vertex ([] 200 0 10) width
-                    : vertex ([] 200 20 0) width
-                    : vertex ([] 100 40 0) width
-                    : vertex ([] 100 20 200) width
+            group nil
+              ; comp-polylines $ {} (; :topology :line-strip)
+                :writer $ fn (write!)
+                  write! $ []
+                    : vertex ([] 0 0 0) width
+                    : vertex ([] 100 100 0) width
                     , break-mark
+                      : vertex ([] 0 0 10) width
+                      : vertex ([] 200 0 10) width
+                      : vertex ([] 200 20 0) width
+                      : vertex ([] 100 40 0) width
+                      : vertex ([] 100 20 200) width
+                      , break-mark
+              comp-polylines-marked $ {} (; :topology :line-strip)
+                :writer $ fn (write!)
+                  write! $ []
+                    : vertex ([] 0 0 0) width 0
+                    : vertex ([] 100 100 0) width 0
+                    , break-mark
+                      : vertex ([] 0 0 10) width 2
+                      : vertex ([] 200 0 10) width 2
+                      : vertex ([] 200 20 0) width 2
+                      : vertex ([] 100 40 0) width 2
+                      : vertex ([] 100 20 200) width 2
+                      , break-mark
       :ns $ quote
         ns lagopus.comp.container $ :require
           lagopus.alias :refer $ group object
           "\"../shaders/mountains.wgsl" :default mountains-wgsl
           "\"../shaders/city.wgsl" :default city-wgsl
           lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
-          lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines break-mark
+          lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines comp-polylines-marked break-mark
           lagopus.comp.spots :refer $ comp-spots comp-bubbles
           memof.once :refer $ memof1-call
           quaternion.core :refer $ c+ v+
@@ -559,6 +572,38 @@
                         write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction q-width) (:: :vertex q 1 direction p-width) (:: :vertex q2 0 direction p-width) (:: :vertex q2 1 direction q-width) (:: :vertex q 1 direction p-width)
                   do $ reset! *prev
                     {} (:position position) (:older nil) (:width width)
+        |build-polyline-points-marked $ quote
+          defn build-polyline-points-marked (*prev p write!)
+            tag-match p
+                :break
+                do $ reset! *prev nil
+              (:vertex position width mark)
+                if-let (prev @*prev)
+                  let
+                      older $ :older prev
+                    reset! *prev $ {} (:position position) (:older older) (:mark mark)
+                      :width $ :width prev
+                    if (some? older)
+                      let
+                          p older
+                          q $ :position prev
+                          prev-mark $ :mark prev
+                          q2 position
+                          direction $ &v- q p
+                          direction2 $ &v- q2 q
+                          p-width $ :width prev
+                          q-width width
+                        write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
+                      let
+                          q $ :position prev
+                          prev-mark $ :mark prev
+                          q2 position
+                          direction $ &v- q2 q
+                          p-width $ :width prev
+                          q-width width
+                        write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark) (:: :vertex q2 0 direction p-width mark) (:: :vertex q2 1 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark)
+                  do $ reset! *prev
+                    {} (:position position) (:older nil) (:mark mark) (:width width)
         |comp-axis $ quote
           defn comp-axis (? options)
             let
@@ -610,10 +655,29 @@
                           &doseq (x p) (build-polyline-points *prev x write!)
                           build-polyline-points *prev p write!
                     chunk-writer! collect!
+        |comp-polylines-marked $ quote
+          defn comp-polylines-marked (options)
+            let
+                chunk-writer! $ either (&map:get options :writer)
+                  fn (_) (js/console.warn "\"expected polylines writer")
+              object-writer $ {}
+                :shader $ either (&map:get options :shader) wgsl-polylines-marked
+                :topology $ either (&map:get options :topology) :triangle-list
+                :attrs-list $ [] (: float32x3 :position) (: uint32 :brush) (: float32x3 :direction) (: float32 :width) (: float32 :mark)
+                :writer $ fn (write!)
+                  let
+                      *prev $ atom nil
+                      collect! $ fn (p)
+                        if (list? p)
+                          &doseq (x p) (build-polyline-points-marked *prev x write!)
+                          build-polyline-points-marked *prev p write!
+                    chunk-writer! collect!
         |wgsl-curves $ quote
           def wgsl-curves $ inline-shader "\"curves"
         |wgsl-polylines $ quote
           def wgsl-polylines $ inline-shader "\"polylines"
+        |wgsl-polylines-marked $ quote
+          def wgsl-polylines-marked $ inline-shader "\"polylines-marked"
       :ns $ quote
         ns lagopus.comp.curves $ :require
           lagopus.config :refer $ inline-shader
