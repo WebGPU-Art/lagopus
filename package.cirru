@@ -2,4 +2,4 @@
 {}
   :dependencies $ {}
     |calcit-lang/memof |main
-    |calcit-lang/quaternion |0.0.6
+    |calcit-lang/quaternion |0.0.7
