@@ -1,10 +1,10 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.1.4)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.3.0)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
-    |lagopus.alias $ {}
+    |lagopus.alias $ %{} :FileEntry
       :defs $ {}
         |buffer-format $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -182,7 +182,7 @@
             "\"@triadica/lagopus" :refer $ createRenderer u32buffer newBufferFormatLength newBufferFormatArray
             "\"@triadica/lagopus" :as lagopus
             lagopus.config :refer $ inline-shader
-    |lagopus.comp.button $ {}
+    |lagopus.comp.button $ %{} :FileEntry
       :defs $ {}
         |comp-button $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -208,7 +208,7 @@
         :code $ quote
           ns lagopus.comp.button $ :require
             "\"@triadica/lagopus" :refer $ compButton compSlider compDragPoint
-    |lagopus.comp.container $ {}
+    |lagopus.comp.container $ %{} :FileEntry
       :defs $ {}
         |color-default $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -496,7 +496,7 @@
             lagopus.cursor :refer $ >>
             lagopus.comp.stitch :refer $ comp-stitch
             "\"@calcit/std" :refer $ rand-shift rand
-    |lagopus.comp.cube $ {}
+    |lagopus.comp.cube $ %{} :FileEntry
       :defs $ {}
         |comp-cube $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -542,7 +542,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
             quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v+
-    |lagopus.comp.curves $ {}
+    |lagopus.comp.curves $ %{} :FileEntry
       :defs $ {}
         |break-mark $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -730,7 +730,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object object-writer
             quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
-    |lagopus.comp.plate $ {}
+    |lagopus.comp.plate $ %{} :FileEntry
       :defs $ {}
         |calc-ratio $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -827,7 +827,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
             quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length v+
-    |lagopus.comp.sphere $ {}
+    |lagopus.comp.sphere $ %{} :FileEntry
       :defs $ {}
         |build-sphere-triangles $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -901,7 +901,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
             quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length
-    |lagopus.comp.spots $ {}
+    |lagopus.comp.spots $ %{} :FileEntry
       :defs $ {}
         |comp-bubbles $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -968,7 +968,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
             quaternion.core :refer $ &v+ v+ v-cross v-scale v-dot &v-
-    |lagopus.comp.stitch $ {}
+    |lagopus.comp.stitch $ %{} :FileEntry
       :defs $ {}
         |comp-stitch $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1115,7 +1115,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ group object
             quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
-    |lagopus.config $ {}
+    |lagopus.config $ %{} :FileEntry
       :defs $ {}
         |bg-color $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1156,7 +1156,7 @@
           ns lagopus.config $ :require
             lagopus.$meta :refer $ calcit-dirname
             "\"ismobilejs" :default ismobile
-    |lagopus.cursor $ {}
+    |lagopus.cursor $ %{} :FileEntry
       :defs $ {}
         |>> $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1171,7 +1171,7 @@
               assoc-in store ([] :states & cursor :data) new-state
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote (ns lagopus.cursor)
-    |lagopus.main $ {}
+    |lagopus.main $ %{} :FileEntry
       :defs $ {}
         |*store $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1238,7 +1238,7 @@
             memof.once :refer $ reset-memof1-caches!
             lagopus.cursor :refer $ update-states
             "\"@triadica/lagopus/lib/remote-control.mjs" :refer $ setupRemoteControl
-    |lagopus.math $ {}
+    |lagopus.math $ %{} :FileEntry
       :defs $ {}
         |fibo-grid-n $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1297,7 +1297,7 @@
         :code $ quote
           ns lagopus.math $ :require
             quaternion.core :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
-    |lagopus.util $ {}
+    |lagopus.util $ %{} :FileEntry
       :defs $ {}
         |handle-compilation $ %{} :CodeEntry (:doc |)
           :code $ quote
