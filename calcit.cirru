@@ -1,11 +1,10 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:compact-output? true) (:extension |.cljs) (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.1.4)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.3.0)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
-    |lagopus.alias $ {}
-      :configs $ {}
+    |lagopus.alias $ %{} :FileEntry
       :defs $ {}
         |buffer-format $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1679332306840) (:by |rJG4IHzWf)
@@ -1023,8 +1022,7 @@
                     |h $ %{} :Expr (:at 1677692494667) (:by |rJG4IHzWf)
                       :data $ {}
                         |T $ %{} :Leaf (:at 1677692496829) (:by |rJG4IHzWf) (:text |inline-shader)
-    |lagopus.comp.button $ {}
-      :configs $ {}
+    |lagopus.comp.button $ %{} :FileEntry
       :defs $ {}
         |comp-button $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1677931948464) (:by |rJG4IHzWf)
@@ -1141,8 +1139,7 @@
                         |T $ %{} :Leaf (:at 1677932020089) (:by |rJG4IHzWf) (:text |compButton)
                         |b $ %{} :Leaf (:at 1681579080914) (:by |rJG4IHzWf) (:text |compSlider)
                         |h $ %{} :Leaf (:at 1681579869659) (:by |rJG4IHzWf) (:text |compDragPoint)
-    |lagopus.comp.container $ {}
-      :configs $ {}
+    |lagopus.comp.container $ %{} :FileEntry
       :defs $ {}
         |color-default $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1677950743954) (:by |rJG4IHzWf)
@@ -3291,8 +3288,7 @@
                       :data $ {}
                         |T $ %{} :Leaf (:at 1681633113045) (:by |rJG4IHzWf) (:text |rand-shift)
                         |b $ %{} :Leaf (:at 1681633141773) (:by |rJG4IHzWf) (:text |rand)
-    |lagopus.comp.cube $ {}
-      :configs $ {}
+    |lagopus.comp.cube $ %{} :FileEntry
       :defs $ {}
         |comp-cube $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1678986191601) (:by |rJG4IHzWf)
@@ -3672,8 +3668,7 @@
                         |l $ %{} :Leaf (:at 1680693928157) (:by |rJG4IHzWf) (:text |v-dot)
                         |o $ %{} :Leaf (:at 1680693928157) (:by |rJG4IHzWf) (:text |&v-)
                         |q $ %{} :Leaf (:at 1680694024442) (:by |rJG4IHzWf) (:text |v+)
-    |lagopus.comp.curves $ {}
-      :configs $ {}
+    |lagopus.comp.curves $ %{} :FileEntry
       :defs $ {}
         |break-mark $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1687501310835) (:by |rJG4IHzWf)
@@ -5274,8 +5269,7 @@
                         |h $ %{} :Leaf (:at 1679326808169) (:by |rJG4IHzWf) (:text |v-scale)
                         |l $ %{} :Leaf (:at 1679326812283) (:by |rJG4IHzWf) (:text |v-dot)
                         |o $ %{} :Leaf (:at 1679326814314) (:by |rJG4IHzWf) (:text |&v-)
-    |lagopus.comp.plate $ {}
-      :configs $ {}
+    |lagopus.comp.plate $ %{} :FileEntry
       :defs $ {}
         |calc-ratio $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1681318678130) (:by |rJG4IHzWf)
@@ -6062,8 +6056,7 @@
                         |o $ %{} :Leaf (:at 1681315502175) (:by |rJG4IHzWf) (:text |&v-)
                         |q $ %{} :Leaf (:at 1681317792057) (:by |rJG4IHzWf) (:text |v-length)
                         |s $ %{} :Leaf (:at 1681317792808) (:by |rJG4IHzWf) (:text |v+)
-    |lagopus.comp.sphere $ {}
-      :configs $ {}
+    |lagopus.comp.sphere $ %{} :FileEntry
       :defs $ {}
         |build-sphere-triangles $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1680705680860) (:by |rJG4IHzWf)
@@ -6682,8 +6675,7 @@
                         |l $ %{} :Leaf (:at 1680702746925) (:by |rJG4IHzWf) (:text |v-dot)
                         |o $ %{} :Leaf (:at 1680702746925) (:by |rJG4IHzWf) (:text |&v-)
                         |q $ %{} :Leaf (:at 1680706341269) (:by |rJG4IHzWf) (:text |v-length)
-    |lagopus.comp.spots $ {}
-      :configs $ {}
+    |lagopus.comp.spots $ %{} :FileEntry
       :defs $ {}
         |comp-bubbles $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1681631670373) (:by |rJG4IHzWf)
@@ -7220,8 +7212,7 @@
                         |h $ %{} :Leaf (:at 1680199472678) (:by |rJG4IHzWf) (:text |v-scale)
                         |l $ %{} :Leaf (:at 1680199472678) (:by |rJG4IHzWf) (:text |v-dot)
                         |o $ %{} :Leaf (:at 1680199472678) (:by |rJG4IHzWf) (:text |&v-)
-    |lagopus.comp.stitch $ {}
-      :configs $ {}
+    |lagopus.comp.stitch $ %{} :FileEntry
       :defs $ {}
         |comp-stitch $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1681625752356) (:by |rJG4IHzWf)
@@ -8239,8 +8230,7 @@
                         |h $ %{} :Leaf (:at 1681627394408) (:by |rJG4IHzWf) (:text |v-scale)
                         |l $ %{} :Leaf (:at 1681627394408) (:by |rJG4IHzWf) (:text |v-dot)
                         |o $ %{} :Leaf (:at 1681627394408) (:by |rJG4IHzWf) (:text |&v-)
-    |lagopus.config $ {}
-      :configs $ {}
+    |lagopus.config $ %{} :FileEntry
       :defs $ {}
         |bg-color $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1681836515382) (:by |rJG4IHzWf)
@@ -8470,8 +8460,7 @@
                     |T $ %{} :Leaf (:at 1681059261120) (:by |rJG4IHzWf) (:text "|\"ismobilejs")
                     |b $ %{} :Leaf (:at 1681059263914) (:by |rJG4IHzWf) (:text |:default)
                     |h $ %{} :Leaf (:at 1681059270919) (:by |rJG4IHzWf) (:text |ismobile)
-    |lagopus.cursor $ {}
-      :configs $ {}
+    |lagopus.cursor $ %{} :FileEntry
       :defs $ {}
         |>> $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1681578368772) (:by |rJG4IHzWf)
@@ -8551,8 +8540,7 @@
           :data $ {}
             |T $ %{} :Leaf (:at 1681578344494) (:by |rJG4IHzWf) (:text |ns)
             |b $ %{} :Leaf (:at 1681578344494) (:by |rJG4IHzWf) (:text |lagopus.cursor)
-    |lagopus.main $ {}
-      :configs $ {}
+    |lagopus.main $ %{} :FileEntry
       :defs $ {}
         |*store $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1677948378750) (:by |rJG4IHzWf)
@@ -8955,8 +8943,7 @@
                     |h $ %{} :Expr (:at 1684604554798) (:by |rJG4IHzWf)
                       :data $ {}
                         |T $ %{} :Leaf (:at 1684604564734) (:by |rJG4IHzWf) (:text |setupRemoteControl)
-    |lagopus.math $ {}
-      :configs $ {}
+    |lagopus.math $ %{} :FileEntry
       :defs $ {}
         |fibo-grid-n $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1681404287863) (:by |rJG4IHzWf)
@@ -9329,8 +9316,7 @@
                         |q $ %{} :Leaf (:at 1681405148064) (:by |rJG4IHzWf) (:text |v+)
                         |s $ %{} :Leaf (:at 1681405150379) (:by |rJG4IHzWf) (:text |&v+)
                         |t $ %{} :Leaf (:at 1681405222588) (:by |rJG4IHzWf) (:text |v-length)
-    |lagopus.util $ {}
-      :configs $ {}
+    |lagopus.util $ %{} :FileEntry
       :defs $ {}
         |handle-compilation $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1677607943025) (:by |rJG4IHzWf)

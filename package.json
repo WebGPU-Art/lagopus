@@ -1,7 +1,7 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "dependencies": {
-    "@calcit/procs": "^0.8.0-a2",
+    "@calcit/procs": "^0.8.0-a5",
     "@calcit/std": "^0.0.2",
     "@triadica/lagopus": "^0.0.17",
     "@triadica/touch-control": "^0.0.3",
