@@ -2,19 +2,19 @@
 # yarn lockfile v1
 
 
-"@calcit/procs@^0.8.0-a5":
-  version "0.8.0-a5"
-  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.8.0-a5.tgz#1bf7e8d535cdc29ca02d2b3ce221d60408735a86"
-  integrity sha512-6t7e5n2z1bvF6nUYPdet1nJaAFAiIz2YDNXCdBWQl17eVEi5RVhkWf0FWN7jojzevj7milVT7qjfVNjy6uc7Wg==
+"@calcit/procs@^0.8.4":
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.8.4.tgz#4cda88519b17baf308c6fae01703b4efac82209d"
+  integrity sha512-0Q+XIeQfzEmK0F9iD320dd8lk/12rTacb4ea9szErrFuY1iu4CkuAE5iTZUdBpWzneMQEwPReGoAVq6dE+9M5w==
   dependencies:
     "@calcit/ternary-tree" "0.0.23"
     "@cirru/parser.ts" "^0.0.6"
     "@cirru/writer.ts" "^0.1.4"
 
-"@calcit/std@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@calcit/std/-/std-0.0.2.tgz#8692ca6bd847b68b7365a75c5df124af82ab9192"
-  integrity sha512-s976zyxZ2zk4BVKu9DXur0L5FC60AWSsrnu6Aw1YuaxjEpEakk02g/WOWwwRsYYKfgKeRcWvEFKkTWoSjrFH+w==
+"@calcit/std@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@calcit/std/-/std-0.0.3.tgz#b3c0636b05bdba68dafb7fea06c86f64a52b1730"
+  integrity sha512-9p9CuyKvz3PDd+gddnaGFQwOpVrmjBQ8F5Ej7KFwifeTLXIkOh2niECMPHS/5mffo1JgTK7zcugpX9rurxeGJQ==
 
 "@calcit/ternary-tree@0.0.23":
   version "0.0.23"
@@ -150,10 +150,10 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@triadica/lagopus@^0.0.17":
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.17.tgz#a7c4144f81b3ff3ddafa98d67c25472c73b969d3"
-  integrity sha512-N3yM7sO9MMP9/wcZVSRXYcTf9ARgQw7asnCpR5VIYgklvQWFd+YDK37be6a2CC1t64OJOUFlTa9xaGqW1XytOQ==
+"@triadica/lagopus@^0.0.18":
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.18.tgz#09c2531d91f62c68df48f0b1f715b2b5f42d12ff"
+  integrity sha512-PIzUiJ14swGfnApKECCkyKtlXdL3I2ra9ZHDdpCbsUMTD58IPWi/geiqtwdHm7YiNOZEkoAvCCg44KalNqmhWg==
   dependencies:
     "@triadica/touch-control" "^0.0.3"
     ismobilejs "^1.1.1"
@@ -165,9 +165,9 @@
   integrity sha512-P6E+MJYmN6EJim0MjhK2kf99OjTZJwAXI7clJz6DDsaf/HCIbyYnVPWyMC7jgc6bPG2I5PAnLga5gHTR1lbUzA==
 
 "@types/estree@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.1.tgz#aa22750962f3bf0e79d753d3cc067f010c95f194"
-  integrity sha512-LG4opVs2ANWZ1TJoKc937iMmNstM/d0ae1vNbnBvBhqCSezgVUOzcLCqbI5elV8Vy6WKwKjaqR+zO9VKirBBCA==
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.2.tgz#ff02bc3dc8317cd668dfec247b750ba1f1d62453"
+  integrity sha512-VeiPZ9MMwXjO32/Xu7+OwflfmeoRwkE/qzndw42gGtgJwZopBnzy2gD//NN1+go1mADzkDcqf/KnFRSjTJ8xJA==
 
 bottom-tip@^0.1.5:
   version "0.1.5"
@@ -312,9 +312,9 @@ picomatch@^2.3.1:
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
 
 postcss@^8.4.27:
-  version "8.4.29"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.29.tgz#33bc121cf3b3688d4ddef50be869b2a54185a1dd"
-  integrity sha512-cbI+jaqIeu/VGqXEarWkRCCffhjgXc0qjBtXpqJhTBohMUjUQnbBr0xqX3vEKudc4iviTewcJo5ajcec5+wdJw==
+  version "8.4.31"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.31.tgz#92b451050a9f914da6755af352bdc0192508656d"
+  integrity sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==
   dependencies:
     nanoid "^3.3.6"
     picocolors "^1.0.0"
@@ -335,9 +335,9 @@ query-string@^8.1.0:
     split-on-first "^3.0.0"
 
 rollup@^3.27.1:
-  version "3.28.1"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.28.1.tgz#fb44aa6d5e65c7e13fd5bcfff266d0c4ea9ba433"
-  integrity sha512-R9OMQmIHJm9znrU3m3cpE8uhN0fGdXiawME7aZIpQqvpS/85+Vt1Hq1/yVIcYfOmaQiHjvXkQAoJukvLpau6Yw==
+  version "3.29.4"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.29.4.tgz#4d70c0f9834146df8705bfb69a9a19c9e1109981"
+  integrity sha512-oWzmBZwvYrU0iJHtDmhsm662rC15FRXmcjCk1xD771dFDx5jJ02ufAQQTn0etB2emNk4J9EZg/yWKpsn9BWGRw==
   optionalDependencies:
     fsevents "~2.3.2"
 
