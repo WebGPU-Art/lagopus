@@ -203,7 +203,7 @@ comp-plate $ {} (; :topology :line-strip)
 Controls
 
 ```cirru
-lagopus.comp.button :refer $ comp-button comp-slider comp-drag-button
+lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
 
 comp-button
   {}
