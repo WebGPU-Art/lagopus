@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@calcit/procs@^0.8.8":
-  version "0.8.8"
-  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.8.8.tgz#3f52519f88e3bacfeb14f0e76673a8cf2b95205e"
-  integrity sha512-lYszWjcGU62OKIJAeEAIsJngg9Rul24ExCVt8HZRuFeu5SHzTohTN3p8951zz1hsPRDG4kH0T/+KORzVb/48yA==
+"@calcit/procs@^0.8.9":
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/@calcit/procs/-/procs-0.8.9.tgz#090d18aba5a9f3d20fa562d34f5640de764934f1"
+  integrity sha512-xG7gmTZv+FUwNd592n84Lo2jTjvVSY18fJwPy9R55qP3AJFnKQkD+UjqNo9EKffWZKWEF3jAkkOMfuRNQMmeag==
   dependencies:
     "@calcit/ternary-tree" "0.0.23"
     "@cirru/parser.ts" "^0.0.6"
@@ -163,6 +163,11 @@
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.3.tgz#91e7ecb8fd2a36309180eada58f843b1dd44d876"
   integrity sha512-P6E+MJYmN6EJim0MjhK2kf99OjTZJwAXI7clJz6DDsaf/HCIbyYnVPWyMC7jgc6bPG2I5PAnLga5gHTR1lbUzA==
+
+"@triadica/touch-control@^0.0.4-a1":
+  version "0.0.4-a1"
+  resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.4-a1.tgz#11aa2b1216d54f62920f7524b296f403cd8d20df"
+  integrity sha512-L+Qf3UTWhoGcB/iYXcOJ0hfknMNCHOOB+cWkkmfdg6JJ79cm0kjLA821a4N3ciR4wH7G56U13hZTsyd/TifAuQ==
 
 "@types/estree@^1.0.0":
   version "1.0.2"

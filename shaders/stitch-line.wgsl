@@ -48,6 +48,6 @@ fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
   if (vtx_out.value > 0.5) {
     return vec4(1.0, 1.0, 1.0, 1.0);
   } else {
-    return vec4(1.0, 0.0, 0.0, 1.0);
+    return vec4(1.0, 0.0, 0.0, 0.0);
   }
 }

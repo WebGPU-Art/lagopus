@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.3.0)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.3.1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -258,7 +258,7 @@
               let
                   cursor $ []
                   states $ :states store
-                group nil (memof1-call comp-tabs)
+                group nil (; memof1-call comp-tabs)
                   case-default (:tab store) (group nil)
                     :axis $ comp-axis
                       {} (:n 20) (:unit 20)
@@ -643,29 +643,56 @@
                           write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark) (:: :vertex q2 0 direction p-width mark) (:: :vertex q2 1 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark)
                     do $ reset! *prev
                       {} (:position position) (:older nil) (:mark mark) (:width width)
+        |char-x $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            def char-x $ count-hex
+              reverse $ concat ([] true false true false false false false true) ([] false false true false true true false false) ([] false false false true true false true false) ([] false true false false false false true false)
+        |char-y $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            def char-y $ count-hex
+              reverse $ concat ([] true false true false false false false true) ([] false false true false true true false false) ([] false false false false true true false false) ([] false false false false true true false false)
+        |char-z $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            def char-z $ count-hex
+              reverse $ concat ([] true false true false true true false true) ([] false false false false false true false false) ([] false false false true false false false false) ([] false true true true true true true true true)
         |comp-axis $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-axis (? options)
               let
                   n $ either (get options :n) 20
                   unit $ either (get options :unit) 20
-                comp-curves $ {} (; :topology :line-strip)
-                  :curves $ []
-                    -> (range-bothway n)
-                      map $ fn (n)
-                        :: :vertex
-                          [] (* n unit) 0 0
-                          , 2
-                    -> (range-bothway n)
-                      map $ fn (n)
-                        :: :vertex
-                          [] 0 (* n unit) 0
-                          , 2
-                    -> (range-bothway n)
-                      map $ fn (n)
-                        :: :vertex
-                          [] 0 0 $ * n unit
-                          , 2
+                  w $ either (get options :width) 1
+                group nil
+                  comp-polylines-marked $ {} (; :topology :line-strip)
+                    :shader $ inline-shader "\"axis"
+                    :writer $ fn (write!)
+                      &doseq
+                        idx $ range-bothway n
+                        write! $ :: :vertex
+                          [] (* idx unit) 0 0
+                          , w 0
+                      write! break-mark
+                      &doseq
+                        idx $ range-bothway n
+                        write! $ :: :vertex
+                          [] 0 (* idx unit) 0
+                          , w 1
+                      write! break-mark
+                      &doseq
+                        idx $ range-bothway n
+                        write! $ :: :vertex
+                          [] 0 0 $ * idx unit
+                          , w 2
+                      write! break-mark
+                  comp-stitch $ {} (:size 16)
+                    :position $ [] 400 0 0
+                    :chars $ [] char-x
+                  comp-stitch $ {} (:size 16)
+                    :position $ [] 0 400 0
+                    :chars $ [] char-y
+                  comp-stitch $ {} (:size 16)
+                    :position $ [] 0 0 400
+                    :chars $ [] char-z
         |comp-curves $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-curves (options)
@@ -715,6 +742,13 @@
                             &doseq (x p) (build-polyline-points-marked *prev x write!)
                             build-polyline-points-marked *prev p write!
                       chunk-writer! collect!
+        |count-hex $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            defn count-hex (xs)
+              -> xs
+                map-indexed $ fn (idx v)
+                  * (if v 1 0) (pow 2 idx)
+                reduce 0 &+
         |wgsl-curves $ %{} :CodeEntry (:doc |)
           :code $ quote
             def wgsl-curves $ inline-shader "\"curves"
@@ -728,8 +762,9 @@
         :code $ quote
           ns lagopus.comp.curves $ :require
             lagopus.config :refer $ inline-shader
-            lagopus.alias :refer $ object object-writer
+            lagopus.alias :refer $ object group object-writer
             quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+            lagopus.comp.stitch :refer $ comp-stitch
     |lagopus.comp.plate $ %{} :FileEntry
       :defs $ {}
         |calc-ratio $ %{} :CodeEntry (:doc |)
@@ -976,7 +1011,7 @@
               let
                   chars $ either (:chars props) ([] 0x1111)
                   position $ either (:position props) ([] 0 0 0)
-                  size 24
+                  size $ either (:size props) 24
                   gap 4
                   s0 $ * 0.1 size
                 group ({})
@@ -1143,7 +1178,7 @@
                     let
                         dir $ if (.ends-with? calcit-dirname "\"/") calcit-dirname (str calcit-dirname "\"/")
                       str dir "\"shaders/" name "\".wgsl"
-                println "\"reading shader file:" shader
+                println "\"inline:" shader
                 read-file shader
         |mobile-info $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1177,7 +1212,7 @@
           :code $ quote
             defatom *store $ {}
               :states $ {}
-              :tab :bubbles
+              :tab :axis
         |canvas $ %{} :CodeEntry (:doc |)
           :code $ quote
             def canvas $ js/document.querySelector "\"canvas"
