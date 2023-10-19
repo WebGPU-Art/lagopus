@@ -132,6 +132,23 @@ comp-polylines $ {} (; :topology :line-strip)
       , break-mark
 ```
 
+also if you want an extra mark for controlling colors:
+
+```cirru
+comp-polylines-marked $ {} (; :topology :line-strip)
+  :writer $ fn (write!)
+    write! $ []
+      : vertex ([] 0 0 0) width 0
+      : vertex ([] 100 100 0) width 0
+      , break-mark
+      : vertex ([] 0 0 10) width 2
+      : vertex ([] 200 0 10) width 2
+      : vertex ([] 200 20 0) width 2
+      : vertex ([] 100 40 0) width 2
+      : vertex ([] 100 20 200) width 2
+      , break-mark
+```
+
 Spots
 
 ```cirru
