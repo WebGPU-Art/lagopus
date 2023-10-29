@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.4.2)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.4.3)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -5624,6 +5624,14 @@
                                         :data $ {}
                                           |T $ %{} :Leaf (:at 1687598972394) (:by |rJG4IHzWf) (:text |chunk-writer!)
                                           |b $ %{} :Leaf (:at 1687598972394) (:by |rJG4IHzWf) (:text |collect!)
+                          |q $ %{} :Expr (:at 1698591209810) (:by |rJG4IHzWf)
+                            :data $ {}
+                              |T $ %{} :Leaf (:at 1698591213538) (:by |rJG4IHzWf) (:text |:add-uniform)
+                              |b $ %{} :Expr (:at 1698591217191) (:by |rJG4IHzWf)
+                                :data $ {}
+                                  |T $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |&map:get)
+                                  |b $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |options)
+                                  |h $ %{} :Leaf (:at 1698591219525) (:by |rJG4IHzWf) (:text |:add-uniform)
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1697475620895) (:by |rJG4IHzWf)
             :data $ {}

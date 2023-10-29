@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.2)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.3)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -760,6 +760,7 @@
                             &doseq (x p) (build-polyline-points-marked *prev x write!)
                             build-polyline-points-marked *prev p write!
                       chunk-writer! collect!
+                  :add-uniform $ &map:get options :add-uniform
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn count-hex (xs)
