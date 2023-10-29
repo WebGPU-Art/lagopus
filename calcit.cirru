@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.4.0)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.4.1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -7651,7 +7651,7 @@
                         |T $ %{} :Leaf (:at 1680199472678) (:by |rJG4IHzWf) (:text |object)
                 |l $ %{} :Expr (:at 1680199472678) (:by |rJG4IHzWf)
                   :data $ {}
-                    |T $ %{} :Leaf (:at 1680199472678) (:by |rJG4IHzWf) (:text |quaternion.core)
+                    |T $ %{} :Leaf (:at 1698580951537) (:by |rJG4IHzWf) (:text |quaternion.vector)
                     |b $ %{} :Leaf (:at 1680199472678) (:by |rJG4IHzWf) (:text |:refer)
                     |h $ %{} :Expr (:at 1680199472678) (:by |rJG4IHzWf)
                       :data $ {}
@@ -9761,7 +9761,7 @@
                 |T $ %{} :Leaf (:at 1681405106955) (:by |rJG4IHzWf) (:text |:require)
                 |b $ %{} :Expr (:at 1681405107473) (:by |rJG4IHzWf)
                   :data $ {}
-                    |T $ %{} :Leaf (:at 1681405214916) (:by |rJG4IHzWf) (:text |quaternion.core)
+                    |T $ %{} :Leaf (:at 1698580919422) (:by |rJG4IHzWf) (:text |quaternion.vector)
                     |b $ %{} :Leaf (:at 1681405112831) (:by |rJG4IHzWf) (:text |:refer)
                     |h $ %{} :Expr (:at 1681405113076) (:by |rJG4IHzWf)
                       :data $ {}

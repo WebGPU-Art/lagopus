@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.0)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -1018,7 +1018,7 @@
           ns lagopus.comp.spots $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
-            quaternion.core :refer $ &v+ v+ v-cross v-scale v-dot &v-
+            quaternion.vector :refer $ &v+ v+ v-cross v-scale v-dot &v-
     |lagopus.comp.stitch $ %{} :FileEntry
       :defs $ {}
         |comp-stitch $ %{} :CodeEntry (:doc |)
@@ -1347,7 +1347,7 @@
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.math $ :require
-            quaternion.core :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
+            quaternion.vector :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
     |lagopus.util $ %{} :FileEntry
       :defs $ {}
         |handle-compilation $ %{} :CodeEntry (:doc |)
