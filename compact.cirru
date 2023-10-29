@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.2)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -156,7 +156,7 @@
                         newBufferFormatArray
                           buffer-format $ &map:get attr :format
                           aget bundles idx
-                js/console.log @*counter buffers
+                ; js/console.log @*counter buffers
                 createRenderer
                   inject-shader-snippets $ &map:get options :shader
                   turn-string $ &map:get options :topology
@@ -210,7 +210,7 @@
               compDragPoint (to-js-data props)
                 fn (move d!)
                   on-drag
-                    [] (.-0 move) (.-1 move) (.-2 move)
+                    v3 (.-0 move) (.-1 move) (.-2 move)
                     , d! 
         |comp-slider $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -218,12 +218,14 @@
               compSlider (to-js-data props)
                 fn (move d!)
                   on-slide
-                    [] (.-0 move) (.-1 move)
+                    complex (.-0 move) (.-1 move)
                     , d!
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.comp.button $ :require
             "\"@triadica/lagopus" :refer $ compButton compSlider compDragPoint
+            quaternion.vector :refer $ v3
+            quaternion.complex :refer $ complex
     |lagopus.comp.container $ %{} :FileEntry
       :defs $ {}
         |color-default $ %{} :CodeEntry (:doc |)
@@ -1018,7 +1020,8 @@
           ns lagopus.comp.spots $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
-            quaternion.vector :refer $ &v+ v+ v-cross v-scale v-dot &v-
+            quaternion.vector :refer $ &v+ v+ v-cross v-scale v-dot &v- v3
+            quaternion.complex :refer $ complex
     |lagopus.comp.stitch $ %{} :FileEntry
       :defs $ {}
         |comp-stitch $ %{} :CodeEntry (:doc |)
@@ -1304,7 +1307,7 @@
                   t2 $ * 2 &PI n phi
                   x $ &* t (js/Math.cos t2)
                   y $ &* t (js/Math.sin t2)
-                [] x y z
+                v3 x y z
         |fibo-grid-range $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn fibo-grid-range (total)
@@ -1347,7 +1350,7 @@
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.math $ :require
-            quaternion.vector :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
+            quaternion.vector :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length v3
     |lagopus.util $ %{} :FileEntry
       :defs $ {}
         |handle-compilation $ %{} :CodeEntry (:doc |)
