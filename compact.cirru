@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.3.1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.3)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -35,15 +35,23 @@
                       js/console.warn "\"expected :vertex tag" data
                     let
                         xs $ nth data (inc idx)
-                      if (list? xs)
-                        &doseq (x xs) (write! x)
-                        write! xs
+                      if (tuple? xs)
+                        tag-match xs $ 
+                          :v3 x y z
+                          do (write! x) (write! y) (write! z)
+                        if (list? xs)
+                          &doseq (x xs) (write! x)
+                          write! xs
                 (map? data)
                   let
                       xs $ &map:get data field
-                    if (list? xs)
-                      &doseq (x xs) (write! x)
-                      write! xs
+                    if (tuple? xs)
+                      tag-match xs $ 
+                        :v3 x y z
+                        do (write! x) (write! y) (write! z)
+                      if (list? xs)
+                        &doseq (x xs) (write! x)
+                        write! xs
                 true $ raise "\"unknown data"
         |count-recursive $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -135,9 +143,13 @@
                                 not= :vertex $ nth record 0
                                 js/console.warn "\"expected :vertex tag" record
                               nth record $ inc idx
-                          if (list? data)
-                            &doseq (d data) (.!push arr d)
-                            .!push arr data
+                          if (tuple? data)
+                            tag-match data $ 
+                              :v3 x y z
+                              do $ .!push arr x y z
+                            if (list? data)
+                              &doseq (d data) (.!push arr d)
+                              .!push arr data
                   buffers $ do (writer collect!)
                     js-array & $ map-indexed attrs-list
                       fn (idx attr)
@@ -187,14 +199,18 @@
         |comp-button $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-button (props on-click)
-              compButton (to-js-data props) on-click
+              compButton
+                -> props
+                  update :position $ fn (p) (.to-js p)
+                  to-js-data
+                , on-click
         |comp-drag-point $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-drag-point (props on-drag)
               compDragPoint (to-js-data props)
                 fn (move d!)
                   on-drag
-                    [] (.-0 move) (.-1 move) (.-2 move)
+                    v3 (.-0 move) (.-1 move) (.-2 move)
                     , d! 
         |comp-slider $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -202,12 +218,14 @@
               compSlider (to-js-data props)
                 fn (move d!)
                   on-slide
-                    [] (.-0 move) (.-1 move)
+                    complex (.-0 move) (.-1 move)
                     , d!
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.comp.button $ :require
             "\"@triadica/lagopus" :refer $ compButton compSlider compDragPoint
+            quaternion.vector :refer $ v3
+            quaternion.complex :refer $ complex
     |lagopus.comp.container $ %{} :FileEntry
       :defs $ {}
         |color-default $ %{} :CodeEntry (:doc |)
@@ -258,7 +276,7 @@
               let
                   cursor $ []
                   states $ :states store
-                group nil (; memof1-call comp-tabs)
+                group nil (memof1-call comp-tabs)
                   case-default (:tab store) (group nil)
                     :axis $ comp-axis
                       {} (:n 20) (:unit 20)
@@ -267,7 +285,7 @@
                     :bends $ group nil
                     :cube $ comp-cube
                       {}
-                        :position $ [] 40 0 0
+                        :position $ v3 40 0 0
                         :radius 40
                     :ribbon $ comp-ribbon
                     :necklace $ comp-necklace
@@ -278,9 +296,9 @@
                       {} (; :topology :line-strip) (:iteration 20) (:radius 160)
                         :color $ [] 0.04 0.8 0.6
                         :transformer $ fn (i)
-                          v+ i $ [] 0 0 -10
-                        ; :x-direction $ [] 1 0 0
-                        ; :y-direction $ [] 0 1 0
+                          v+ i $ v3 0 0 -10
+                        ; :x-direction $ v3 1 0 0
+                        ; :y-direction $ v3 0 1 0
                         :chromatism 0.14
                     :control $ comp-control-demo (>> states :control)
                     :stitch $ comp-stitch-demo
@@ -353,7 +371,7 @@
                           angle $ * 0.1 idx
                           r 40
                         {}
-                          :position $ []
+                          :position $ v3
                             * r $ cos angle
                             * 0.6 idx
                             * r $ sin angle
@@ -368,84 +386,84 @@
             defn comp-tabs () $ group nil
               comp-button
                 {}
-                  :position $ [] 0 260 0
+                  :position $ v3 0 260 0
                   :color $ [] 0.5 0.5 0.9 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :axis
               comp-button
                 {}
-                  :position $ [] 40 260 0
+                  :position $ v3 40 260 0
                   :color $ [] 0.9 0.4 0.5 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :mountains
               comp-button
                 {}
-                  :position $ [] 80 260 0
+                  :position $ v3 80 260 0
                   :color $ [] 0.8 0.9 0.2 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :city
               comp-button
                 {}
-                  :position $ [] 120 260 0
+                  :position $ v3 120 260 0
                   :color $ [] 0.3 0.9 0.2 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :cube
               comp-button
                 {}
-                  :position $ [] 160 260 0
+                  :position $ v3 160 260 0
                   :color $ [] 0.8 0.0 0.9 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :ribbon
               comp-button
                 {}
-                  :position $ [] 200 260 0
+                  :position $ v3 200 260 0
                   :color $ [] 0.2 0.9 0.6 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :necklace
               comp-button
                 {}
-                  :position $ [] 240 260 0
+                  :position $ v3 240 260 0
                   :color $ [] 0.2 0.9 0.6 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :sphere
               comp-button
                 {}
-                  :position $ [] 280 260 0
+                  :position $ v3 280 260 0
                   :color $ [] 0.9 0.4 0.6 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :plate
               comp-button
                 {}
-                  :position $ [] 20 220 0
+                  :position $ v3 20 220 0
                   :color $ [] 0.7 0.8 0.9 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :control
               comp-button
                 {}
-                  :position $ [] 60 220 0
+                  :position $ v3 60 220 0
                   :color $ [] 0.9 0.7 0.6 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :stitch
               comp-button
                 {}
-                  :position $ [] 100 220 0
+                  :position $ v3 100 220 0
                   :color $ [] 0.9 0.3 0.8 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :bubbles
               comp-button
                 {}
-                  :position $ [] 140 220 0
+                  :position $ v3 140 220 0
                   :color $ [] 0.1 0.6 0.8 1
                   :size 20
                 fn (e d!)
@@ -458,26 +476,26 @@
                 ; comp-polylines $ {} (; :topology :line-strip)
                   :writer $ fn (write!)
                     write! $ []
-                      : vertex ([] 0 0 0) width
-                      : vertex ([] 100 100 0) width
+                      : vertex (v3 0 0 0) width
+                      : vertex (v3 100 100 0) width
                       , break-mark
-                        : vertex ([] 0 0 10) width
-                        : vertex ([] 200 0 10) width
-                        : vertex ([] 200 20 0) width
-                        : vertex ([] 100 40 0) width
-                        : vertex ([] 100 20 200) width
+                        : vertex (v3 0 0 10) width
+                        : vertex (v3 200 0 10) width
+                        : vertex (v3 200 20 0) width
+                        : vertex (v3 100 40 0) width
+                        : vertex (v3 100 20 200) width
                         , break-mark
                 comp-polylines-marked $ {} (; :topology :line-strip)
                   :writer $ fn (write!)
                     write! $ []
-                      : vertex ([] 0 0 0) width 0
-                      : vertex ([] 100 100 0) width 0
+                      : vertex (v3 0 0 0) width 0
+                      : vertex (v3 100 100 0) width 0
                       , break-mark
-                        : vertex ([] 0 0 10) width 2
-                        : vertex ([] 200 0 10) width 2
-                        : vertex ([] 200 20 0) width 2
-                        : vertex ([] 100 40 0) width 2
-                        : vertex ([] 100 20 200) width 2
+                        : vertex (v3 0 0 10) width 2
+                        : vertex (v3 200 0 10) width 2
+                        : vertex (v3 200 20 0) width 2
+                        : vertex (v3 100 40 0) width 2
+                        : vertex (v3 100 20 200) width 2
                         , break-mark
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
@@ -489,7 +507,7 @@
             lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines comp-polylines-marked break-mark
             lagopus.comp.spots :refer $ comp-spots comp-bubbles
             memof.once :refer $ memof1-call
-            quaternion.core :refer $ c+ v+
+            quaternion.vector :refer $ v+ v3
             lagopus.comp.cube :refer $ comp-cube
             lagopus.comp.sphere :refer $ comp-sphere
             lagopus.comp.plate :refer $ comp-plate
@@ -502,37 +520,37 @@
           :code $ quote
             defn comp-cube (options)
               let
-                  base $ either (&map:get options :position) ([] 0 0 0)
+                  base $ either (&map:get options :position) (v3 0 0 0)
                   radius $ either (&map:get options :radius) 80
                 object $ {} (:shader wgsl-cube)
                   :topology $ do :line-strip :triangle-list
                   :attrs-list $ [] (:: :float32x3 :position) (:: :float32x3 :metrics)
                   :data $ []
                     :: :vertex
-                      &v+ base $ v-scale ([] -1 -1 -1) radius
-                      [] -1 -1 -1
+                      &v+ base $ v-scale (v3 -1 -1 -1) radius
+                      v3 -1 -1 -1
                     :: :vertex
-                      &v+ base $ v-scale ([] -1 1 -1) radius
-                      [] -1 1 -1
+                      &v+ base $ v-scale (v3 -1 1 -1) radius
+                      v3 -1 1 -1
                     :: :vertex
-                      &v+ base $ v-scale ([] -1 1 1) radius
-                      [] -1 1 1
+                      &v+ base $ v-scale (v3 -1 1 1) radius
+                      v3 -1 1 1
                     :: :vertex
-                      &v+ base $ v-scale ([] -1 -1 1) radius
-                      [] -1 -1 1
+                      &v+ base $ v-scale (v3 -1 -1 1) radius
+                      v3 -1 -1 1
                     :: :vertex
-                      &v+ base $ v-scale ([] 1 -1 -1) radius
-                      [] 1 -1 -1
+                      &v+ base $ v-scale (v3 1 -1 -1) radius
+                      v3 1 -1 -1
                     :: :vertex
-                      &v+ base $ v-scale ([] 1 1 -1) radius
-                      [] 1 1 -1
+                      &v+ base $ v-scale (v3 1 1 -1) radius
+                      v3 1 1 -1
                     :: :vertex
-                      &v+ base $ v-scale ([] 1 1 1) radius
-                      [] 1 1 1
+                      &v+ base $ v-scale (v3 1 1 1) radius
+                      v3 1 1 1
                     :: :vertex
-                      &v+ base $ v-scale ([] 1 -1 1) radius
-                      [] 1 -1 1
-                  :indices $ [] ([] 0 1 2 0 2 3 ) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
+                      &v+ base $ v-scale (v3 1 -1 1) radius
+                      v3 1 -1 1
+                  :indices $ [] ([] 0 1 2 0 2 3) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
         |wgsl-cube $ %{} :CodeEntry (:doc |)
           :code $ quote
             def wgsl-cube $ inline-shader "\"cube"
@@ -541,7 +559,7 @@
           ns lagopus.comp.cube $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
-            quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v+
+            quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v+ v3
     |lagopus.comp.curves $ %{} :FileEntry
       :defs $ {}
         |break-mark $ %{} :CodeEntry (:doc |)
@@ -669,29 +687,29 @@
                       &doseq
                         idx $ range-bothway n
                         write! $ :: :vertex
-                          [] (* idx unit) 0 0
+                          v3 (* idx unit) 0 0
                           , w 0
                       write! break-mark
                       &doseq
                         idx $ range-bothway n
                         write! $ :: :vertex
-                          [] 0 (* idx unit) 0
+                          v3 0 (* idx unit) 0
                           , w 1
                       write! break-mark
                       &doseq
                         idx $ range-bothway n
                         write! $ :: :vertex
-                          [] 0 0 $ * idx unit
+                          v3 0 0 $ * idx unit
                           , w 2
                       write! break-mark
-                  comp-stitch $ {} (:size 16)
-                    :position $ [] 400 0 0
+                  ; comp-stitch $ {} (:size 16)
+                    :position $ v3 400 0 0
                     :chars $ [] char-x
-                  comp-stitch $ {} (:size 16)
-                    :position $ [] 0 400 0
+                  ; comp-stitch $ {} (:size 16)
+                    :position $ v3 0 400 0
                     :chars $ [] char-y
-                  comp-stitch $ {} (:size 16)
-                    :position $ [] 0 0 400
+                  ; comp-stitch $ {} (:size 16)
+                    :position $ v3 0 0 400
                     :chars $ [] char-z
         |comp-curves $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -742,6 +760,7 @@
                             &doseq (x p) (build-polyline-points-marked *prev x write!)
                             build-polyline-points-marked *prev p write!
                       chunk-writer! collect!
+                  :add-uniform $ &map:get options :add-uniform
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn count-hex (xs)
@@ -763,7 +782,7 @@
           ns lagopus.comp.curves $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object group object-writer
-            quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+            quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v3
             lagopus.comp.stitch :refer $ comp-stitch
     |lagopus.comp.plate $ %{} :FileEntry
       :defs $ {}
@@ -782,9 +801,9 @@
           :code $ quote
             defn comp-plate (options)
               let
-                  base $ either (&map:get options :position) ([] 0 0 0)
-                  x-direction $ either (&map:get options :x-direction) ([] 1 0 0)
-                  y-direction $ either (&map:get options :y-direction) ([] 0 1 0)
+                  base $ either (&map:get options :position) (v3 0 0 0)
+                  x-direction $ either (&map:get options :x-direction) (v3 1 0 0)
+                  y-direction $ either (&map:get options :y-direction) (v3 0 1 0)
                   radius $ either (&map:get options :radius) 80
                   iteration $ either (&map:get options :iteration) 4
                   color $ either (&map:get options :color) ([] 0.6 0.8 0.76)
@@ -861,12 +880,12 @@
           ns lagopus.comp.plate $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
-            quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length v+
+            quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v-length v3 v+
     |lagopus.comp.sphere $ %{} :FileEntry
       :defs $ {}
-        |build-sphere-triangles $ %{} :CodeEntry (:doc |)
+        |build-sphere-triangles $ %{} :CodeEntry (:doc "|based on knowledge from https://www.danielsieger.com/blog/2021/03/27/generating-spheres.html")
           :code $ quote
-            defn build-sphere-triangles (base radius depth *counter p0 p1 p2) (; "\"based on knowledge from https://www.danielsieger.com/blog/2021/03/27/generating-spheres.html")
+            defn build-sphere-triangles (base radius depth *counter p0 p1 p2)
               if (<= depth 0)
                 let
                     idx $ deref *counter
@@ -894,7 +913,7 @@
           :code $ quote
             defn comp-sphere (options)
               let
-                  base $ either (&map:get options :position) ([] 0 0 0)
+                  base $ either (&map:get options :position) (v3 0 0 0)
                   radius $ either (&map:get options :radius) 40
                   iteration $ either (&map:get options :iteration) 2
                   color $ either (&map:get options :color) ([] 0.6 0.8 0.76)
@@ -919,14 +938,14 @@
         |unit-triangles $ %{} :CodeEntry (:doc |)
           :code $ quote
             def unit-triangles $ []
-              [] ([] 1 0 0) ([] 0 1 0) ([] 0 0 1)
-              [] ([] 1 0 0) ([] 0 1 0) ([] 0 0 -1)
-              [] ([] 1 0 0) ([] 0 -1 0) ([] 0 0 1)
-              [] ([] 1 0 0) ([] 0 -1 0) ([] 0 0 -1)
-              [] ([] -1 0 0) ([] 0 1 0) ([] 0 0 1)
-              [] ([] -1 0 0) ([] 0 1 0) ([] 0 0 -1)
-              [] ([] -1 0 0) ([] 0 -1 0) ([] 0 0 1)
-              [] ([] -1 0 0) ([] 0 -1 0) ([] 0 0 -1)
+              [] (v3 1 0 0) (v3 0 1 0) (v3 0 0 1)
+              [] (v3 1 0 0) (v3 0 1 0) (v3 0 0 -1)
+              [] (v3 1 0 0) (v3 0 -1 0) (v3 0 0 1)
+              [] (v3 1 0 0) (v3 0 -1 0) (v3 0 0 -1)
+              [] (v3 -1 0 0) (v3 0 1 0) (v3 0 0 1)
+              [] (v3 -1 0 0) (v3 0 1 0) (v3 0 0 -1)
+              [] (v3 -1 0 0) (v3 0 -1 0) (v3 0 0 1)
+              [] (v3 -1 0 0) (v3 0 -1 0) (v3 0 0 -1)
         |wgsl-sphere $ %{} :CodeEntry (:doc |)
           :code $ quote
             def wgsl-sphere $ inline-shader "\"sphere"
@@ -935,7 +954,7 @@
           ns lagopus.comp.sphere $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
-            quaternion.core :refer $ &v+ v-cross v-scale v-dot &v- v-length
+            quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v-length v3
     |lagopus.comp.spots $ %{} :FileEntry
       :defs $ {}
         |comp-bubbles $ %{} :CodeEntry (:doc |)
@@ -1002,7 +1021,8 @@
           ns lagopus.comp.spots $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ object
-            quaternion.core :refer $ &v+ v+ v-cross v-scale v-dot &v-
+            quaternion.vector :refer $ &v+ v+ v-cross v-scale v-dot &v- v3
+            quaternion.complex :refer $ complex
     |lagopus.comp.stitch $ %{} :FileEntry
       :defs $ {}
         |comp-stitch $ %{} :CodeEntry (:doc |)
@@ -1010,7 +1030,7 @@
             defn comp-stitch (props)
               let
                   chars $ either (:chars props) ([] 0x1111)
-                  position $ either (:position props) ([] 0 0 0)
+                  position $ either (:position props) (v3 0 0 0)
                   size $ either (:size props) 24
                   gap 4
                   s0 $ * 0.1 size
@@ -1021,12 +1041,12 @@
                     :data $ map-indexed chars
                       fn (idx c)
                         ->
-                          [] ([] 0 0 0) ([] 1 0 0) ([] 1 -1 0) ([] 0 0 0) ([] 1 -1 0) ([] 0 -1 0)
+                          [] (v3 0 0 0) (v3 1 0 0) (v3 1 -1 0) (v3 0 0 0) (v3 1 -1 0) (v3 0 -1 0)
                           map $ fn (x)
                             {} (:base position)
                               :position $ &v+ (v-scale x size)
                                 v-scale
-                                  [] (+ size gap) 0 0
+                                  v3 (+ size gap) 0 0
                                   , idx
                     :hit-region $ :hit-region props
                   object $ {} (:topology :triangle-list)
@@ -1046,7 +1066,7 @@
                                 {} (:base position)
                                   :position $ &v+ (v-scale x s0)
                                     v-scale
-                                      [] (+ size gap) 0 0
+                                      v3 (+ size gap) 0 0
                                       , idx
                                   :value $ if
                                     = "\"1" $ get pattern data-idx
@@ -1060,96 +1080,96 @@
                   -> (range 4)
                     mapcat $ fn (j)
                       let
-                          base $ []
+                          base $ v3
                             + 1 $ * j 2
                             - (* i -2) 1
                             , shift
-                          base-bottom-right $ &v+ base ([] 2 -2 0)
-                          base-top-right $ &v+ base ([] 2 0 0)
-                          base-bottom-left $ &v+ base ([] 0 -2 0)
+                          base-bottom-right $ &v+ base (v3 2 -2 0)
+                          base-top-right $ &v+ base (v3 2 0 0)
+                          base-bottom-left $ &v+ base (v3 0 -2 0)
                           base-idx $ * 2
                             + (* i 4) j
                           base-idx-next $ inc base-idx
                         []
                           {}
-                            :position $ &v+ base ([] -0.2 0.2 0)
+                            :position $ &v+ base (v3 -0.2 0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base ([] 0.2 0.2 0)
+                            :position $ &v+ base (v3 0.2 0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base ([] -0.2 -0.2 0)
+                            :position $ &v+ base (v3 -0.2 -0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base ([] 0.2 0.2 0)
+                            :position $ &v+ base (v3 0.2 0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base ([] -0.2 -0.2 0)
+                            :position $ &v+ base (v3 -0.2 -0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                            :position $ &v+ base-bottom-right (v3 0.2 0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base ([] -0.2 -0.2 0)
+                            :position $ &v+ base (v3 -0.2 -0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                            :position $ &v+ base-bottom-right (v3 0.2 0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base-bottom-right ([] -0.2 -0.2 0)
+                            :position $ &v+ base-bottom-right (v3 -0.2 -0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base-bottom-right ([] 0.2 0.2 0)
+                            :position $ &v+ base-bottom-right (v3 0.2 0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base-bottom-right ([] -0.2 -0.2 0)
+                            :position $ &v+ base-bottom-right (v3 -0.2 -0.2 0)
                             :data base-idx
                           {}
-                            :position $ &v+ base-bottom-right ([] 0.2 -0.2 0)
+                            :position $ &v+ base-bottom-right (v3 0.2 -0.2 0)
                             :data base-idx
                           ; "\"next stroke"
                           {}
-                            :position $ &v+ base-top-right ([] -0.2 0.2 0)
+                            :position $ &v+ base-top-right (v3 -0.2 0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                            :position $ &v+ base-top-right (v3 0.2 -0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-top-right ([] 0.2 0.2 0)
+                            :position $ &v+ base-top-right (v3 0.2 0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-top-right ([] -0.2 0.2 0)
+                            :position $ &v+ base-top-right (v3 -0.2 0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                            :position $ &v+ base-top-right (v3 0.2 -0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                            :position $ &v+ base-bottom-left (v3 -0.2 0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-top-right ([] 0.2 -0.2 0)
+                            :position $ &v+ base-top-right (v3 0.2 -0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-bottom-left ([] 0.2 -0.2 0)
+                            :position $ &v+ base-bottom-left (v3 0.2 -0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                            :position $ &v+ base-bottom-left (v3 -0.2 0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-bottom-left ([] 0.2 -0.2 0)
+                            :position $ &v+ base-bottom-left (v3 0.2 -0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-bottom-left ([] -0.2 0.2 0)
+                            :position $ &v+ base-bottom-left (v3 -0.2 0.2 0)
                             :data base-idx-next
                           {}
-                            :position $ &v+ base-bottom-left ([] -0.2 -0.2 0)
+                            :position $ &v+ base-bottom-left (v3 -0.2 -0.2 0)
                             :data base-idx-next
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.comp.stitch $ :require
             lagopus.config :refer $ inline-shader
             lagopus.alias :refer $ group object
-            quaternion.core :refer $ &v+ v-cross v-scale v-dot &v-
+            quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v3
     |lagopus.config $ %{} :FileEntry
       :defs $ {}
         |bg-color $ %{} :CodeEntry (:doc |)
@@ -1288,7 +1308,7 @@
                   t2 $ * 2 &PI n phi
                   x $ &* t (js/Math.cos t2)
                   y $ &* t (js/Math.sin t2)
-                [] x y z
+                v3 x y z
         |fibo-grid-range $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn fibo-grid-range (total)
@@ -1331,7 +1351,7 @@
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.math $ :require
-            quaternion.core :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length
+            quaternion.vector :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length v3
     |lagopus.util $ %{} :FileEntry
       :defs $ {}
         |handle-compilation $ %{} :CodeEntry (:doc |)
