@@ -31,8 +31,7 @@ fn vertex_main(
   @location(0) position: vec2<f32>,
   @location(1) normal_idx: f32,
   @location(2) idx: f32,
-) -> VertexOut
-{
+) -> VertexOut {
   var output: VertexOut;
   let h1 = simplexNoise2(vec2<f32>(position.x, position.y) * 0.0002) * ALL_HEIGHT * 0.6;
   let h2 = simplexNoise2(vec2<f32>(position.x, position.y) * 0.002) * ALL_HEIGHT * 0.25;
@@ -44,21 +43,21 @@ fn vertex_main(
   let d = 70.0;
   let up = h;
   // let up = 100.0;
-  if (idx < 0.5) {
+  if idx < 0.5 {
     p1 += vec3f(-d, 0.0, -d);
-  } else if (idx < 1.5) {
+  } else if idx < 1.5 {
     p1 += vec3f(d, 0.0, -d);
-  } else if (idx < 2.5) {
+  } else if idx < 2.5 {
     p1 += vec3f(d, 0.0, d);
-  } else if (idx < 3.5) {
+  } else if idx < 3.5 {
     p1 += vec3f(-d, 0.0, d);
-  } else if (idx < 4.5) {
+  } else if idx < 4.5 {
     p1 += vec3f(-d, up, -d);
-  } else if (idx < 5.5) {
+  } else if idx < 5.5 {
     p1 += vec3f(d, up, -d);
-  } else if (idx < 6.5) {
+  } else if idx < 6.5 {
     p1 += vec3f(d, up, d);
-  } else if (idx < 7.5) {
+  } else if idx < 7.5 {
     p1 += vec3f(-d, up, d);
   } else {
     p1 += vec3f(13.0, 200.0, 13.0);
@@ -66,7 +65,7 @@ fn vertex_main(
 
   let p = transform_perspective(p1.xyz).point_position;
   let scale: f32 = 0.002;
-  output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
+  output.position = vec4(p[0] * scale, p[1] * scale, p[2] * scale, 1.0);
   // output.position = position;
   output.h = normal_idx;
   // output.h = 0.0;
@@ -79,15 +78,15 @@ fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
   // return vec4f(0.0, 0.0, 1.0, 1.0);
   let h = vtx_out.h;
 
-  if (h < 0.5) {
+  if h < 0.5 {
     return vec4f(0.82, 0.82, 0.82, 1.0);
-  } else if (h < 1.5) {
+  } else if h < 1.5 {
     return vec4f(0.88, 0.88, 0.88, 1.0);
-  } else if (h < 2.5) {
+  } else if h < 2.5 {
     return vec4f(0.8, 0.8, 0.8, 1.0);
-  } else if (h < 3.5) {
+  } else if h < 3.5 {
     return vec4f(0.75, 0.75, 0.75, 1.0);
-  } else if (h < 4.5) {
+  } else if h < 4.5 {
     return vec4f(0.8, 0.8, 0.8, 1.0);
   } else {
     return vec4f(1.0, 1.0, 1.0, 1.0);

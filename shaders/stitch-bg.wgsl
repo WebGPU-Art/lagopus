@@ -29,7 +29,7 @@ fn vertex_main(
   let p1 = base + uniforms.rightward * position.x + uniforms.upward * position.y;
   let p = transform_perspective(p1.xyz).point_position;
   let scale: f32 = 0.002;
-  return vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
+  return vec4(p[0] * scale, p[1] * scale, p[2] * scale, 1.0);
 }
 
 @fragment

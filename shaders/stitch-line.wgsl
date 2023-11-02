@@ -29,7 +29,7 @@ fn vertex_main(
   @location(2) value: u32,
 ) -> VertexOut {
   var p1 = base + uniforms.rightward * position.x + uniforms.upward * position.y;
-  if (value == 1u) {
+  if value == 1u {
     p1 -= uniforms.forward * 0.1;
   }
   let result = transform_perspective(p1.xyz);
@@ -45,7 +45,7 @@ fn vertex_main(
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
-  if (vtx_out.value > 0.5) {
+  if vtx_out.value > 0.5 {
     return vec4(1.0, 1.0, 1.0, 1.0);
   } else {
     return vec4(1.0, 0.0, 0.0, 0.0);

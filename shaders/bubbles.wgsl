@@ -43,7 +43,7 @@ fn vertex_main(
   let p = result.point_position;
   let s = result.r;
   let scale: f32 = 0.002;
-  output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
+  output.position = vec4(p[0] * scale, p[1] * scale, p[2] * scale, 1.0);
   output.radian = radian;
   output.s = s;
   return output;
@@ -53,5 +53,5 @@ fn vertex_main(
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
   let dim = min(1, (1 / pow(vtx_out.s, 1.6)) + 0.02);
   let l = (cos(vtx_out.radian * 1.8 - 1.8) * 0.3 + 0.76);
-  return vec4f(l,l,l,l*dim);
+  return vec4f(l, l, l, l * dim);
 }

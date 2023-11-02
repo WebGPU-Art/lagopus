@@ -40,12 +40,12 @@ fn vertex_main(
   var p1 = position;
 
   var next = cross(direction, uniforms.forward);
-  if (length(next) < 0.0001) {
+  if length(next) < 0.0001 {
     // if parallel, use leftward
     next = -next;
   }
   let brush_direction = normalize(next);
-  if (brush == 1) {
+  if brush == 1 {
     p1 += brush_direction * width * 0.5;
   } else {
     p1 -= brush_direction * width * 0.5;
@@ -53,7 +53,7 @@ fn vertex_main(
 
   let p = transform_perspective(p1.xyz).point_position;
   let scale: f32 = 0.002;
-  output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
+  output.position = vec4(p[0] * scale, p[1] * scale, p[2] * scale, 1.0);
   output.original = position;
   output.ratio = curve_ratio;
   output.color = hsl(fract(0.14 + curve_ratio), 1.0, 0.2 + 0.8 * fract(0.8 + f32(color_index) * 0.01));

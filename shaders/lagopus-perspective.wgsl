@@ -19,7 +19,7 @@ fn transform_perspective(p: vec3f) -> PointResult {
 
   let r: f32 = dot(moved_point, forward) / look_distance;
 
-  if (r < (s * -0.9)) {
+  if r < (s * -0.9) {
     // make it disappear with depth test since it's probably behind the camera
     return PointResult(vec3(0.0, 0.0, 10000.), r, s);
   }

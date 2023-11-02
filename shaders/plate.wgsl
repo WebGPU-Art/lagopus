@@ -45,7 +45,7 @@ fn vertex_main(
 
   let p = transform_perspective(position.xyz).point_position;
   let scale: f32 = 0.002;
-  output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
+  output.position = vec4(p[0] * scale, p[1] * scale, p[2] * scale, 1.0);
   output.idx = f32(idx);
   output.color = uniforms.color;
   output.chromatism = uniforms.chromatism;
@@ -55,6 +55,6 @@ fn vertex_main(
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
   let a = rand(vtx_out.idx);
-  let color = hsl(vtx_out.color.x, vtx_out.color.y, vtx_out.color.z + a*vtx_out.chromatism);
+  let color = hsl(vtx_out.color.x, vtx_out.color.y, vtx_out.color.z + a * vtx_out.chromatism);
   return vec4(color.xyz, 1.0);
 }

@@ -12,7 +12,7 @@ fn rotate_around(v: vec3f, axis: vec3f, rot: f32) -> vec3f {
   var perpendicular = vec3f(a * r, b * r, c * r);
 
   var x_of_rot = v - perpendicular;
-  if (length(x_of_rot) < 0.00001) {
+  if length(x_of_rot) < 0.00001 {
     return v;
   }
 
