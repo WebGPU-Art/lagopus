@@ -1,25 +1,9 @@
 
-struct UBO {
-  cone_back_scale: f32,
-  viewport_ratio: f32,
-  look_distance: f32,
-  scale: f32,
-  forward: vec3f,
-  // direction up overhead, better unit vector
-  upward: vec3f,
-  rightward: vec3f,
-  camera_position: vec3f,
-  _pad: u32,
-};
+#import lagopus::perspective
 
-@group(0) @binding(0)
-var<uniform> uniforms: UBO;
+#import lagopus::rand
 
-{{perspective}}
-
-{{rand}}
-
-{{colors}}
+#import lagopus::colors
 
 // main
 
@@ -51,7 +35,7 @@ fn vertex_main(
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
-  let dim = min(1, (1 / pow(vtx_out.s, 1.6)) + 0.02);
+  let dim = min(1., (1. / pow(vtx_out.s, 1.6)) + 0.02);
   let l = (cos(vtx_out.radian * 1.8 - 1.8) * 0.3 + 0.76);
   return vec4f(l, l, l, l * dim);
 }

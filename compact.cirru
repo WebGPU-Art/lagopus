@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.4.3)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.0)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -79,7 +79,7 @@
         |inject-shader-snippets $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn inject-shader-snippets (code)
-              -> code (.!replace "\"{{simplex}}" wgsl-simplex) (.!replace "\"{{perspective}}" wgsl-perspective) (.!replace "\"{{colors}}" wgsl-colors) (.!replace "\"{{rand}}" wgsl-rand) (.!replace "\"{{rotation}}" wgsl-rotation) (.!replace "\"{{hsluv}}" wgsl-hsluv)
+              -> code (.!replace "\"#import lagopus::simplex" wgsl-simplex) (.!replace "\"#import lagopus::perspective" wgsl-perspective) (.!replace "\"#import lagopus::colors" wgsl-colors) (.!replace "\"#import lagopus::rand" wgsl-rand) (.!replace "\"#import lagopus::rotation" wgsl-rotation) (.!replace "\"#import lagopus::hsluv" wgsl-hsluv)
         |object $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn object (options)

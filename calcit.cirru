@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.4.3)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.0)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -428,32 +428,32 @@
                   |h $ %{} :Expr (:at 1681404897511) (:by |rJG4IHzWf)
                     :data $ {}
                       |T $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace)
-                      |b $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text "|\"{{simplex}}")
+                      |b $ %{} :Leaf (:at 1702712876673) (:by |rJG4IHzWf) (:text "|\"#import lagopus::simplex")
                       |h $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |wgsl-simplex)
                   |l $ %{} :Expr (:at 1681404897511) (:by |rJG4IHzWf)
                     :data $ {}
                       |T $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace)
-                      |b $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text "|\"{{perspective}}")
+                      |b $ %{} :Leaf (:at 1702713073711) (:by |rJG4IHzWf) (:text "|\"#import lagopus::perspective")
                       |h $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |wgsl-perspective)
                   |o $ %{} :Expr (:at 1681404897511) (:by |rJG4IHzWf)
                     :data $ {}
                       |T $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace)
-                      |b $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text "|\"{{colors}}")
+                      |b $ %{} :Leaf (:at 1702713076547) (:by |rJG4IHzWf) (:text "|\"#import lagopus::colors")
                       |h $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |wgsl-colors)
                   |q $ %{} :Expr (:at 1681404897511) (:by |rJG4IHzWf)
                     :data $ {}
                       |T $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace)
-                      |b $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text "|\"{{rand}}")
+                      |b $ %{} :Leaf (:at 1702713079037) (:by |rJG4IHzWf) (:text "|\"#import lagopus::rand")
                       |h $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |wgsl-rand)
                   |s $ %{} :Expr (:at 1681404897511) (:by |rJG4IHzWf)
                     :data $ {}
                       |T $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace)
-                      |b $ %{} :Leaf (:at 1681404922835) (:by |rJG4IHzWf) (:text "|\"{{rotation}}")
+                      |b $ %{} :Leaf (:at 1702713082617) (:by |rJG4IHzWf) (:text "|\"#import lagopus::rotation")
                       |h $ %{} :Leaf (:at 1681404927486) (:by |rJG4IHzWf) (:text |wgsl-rotation)
                   |t $ %{} :Expr (:at 1681404897511) (:by |rJG4IHzWf)
                     :data $ {}
                       |T $ %{} :Leaf (:at 1681404897511) (:by |rJG4IHzWf) (:text |.!replace)
-                      |b $ %{} :Leaf (:at 1684058284435) (:by |rJG4IHzWf) (:text "|\"{{hsluv}}")
+                      |b $ %{} :Leaf (:at 1702713085509) (:by |rJG4IHzWf) (:text "|\"#import lagopus::hsluv")
                       |h $ %{} :Leaf (:at 1684058286471) (:by |rJG4IHzWf) (:text |wgsl-hsluv)
         |object $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1677524651069) (:by |rJG4IHzWf)

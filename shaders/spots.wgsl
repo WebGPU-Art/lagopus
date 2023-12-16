@@ -1,21 +1,7 @@
-struct UBO {
-  cone_back_scale: f32,
-  viewport_ratio: f32,
-  look_distance: f32,
-  scale: f32,
-  forward: vec3f,
-  // direction up overhead, better unit vector
-  upward: vec3f,
-  rightward: vec3f,
-  camera_position: vec3f,
-};
 
-@group(0) @binding(0)
-var<uniform> uniforms: UBO;
+#import lagopus::perspective
 
-{{perspective}}
-
-{{rand}}
+#import lagopus::rand
 
 // main
 
@@ -38,7 +24,7 @@ fn vertex_main(
 ) -> VertexOut {
   var output: VertexOut;
 
-  let seed = 34.26471 * f32(spot_idx * 10) * 10.0;
+  let seed = 34.26471 * f32(spot_idx * 10u) * 10.0;
   let angle_unit = 2.0 * PI / f32(vertex_count);
   let angle = f32(angle_idx) * angle_unit;
   let shift3 = vec3f(
