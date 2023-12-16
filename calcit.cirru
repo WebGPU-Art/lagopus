@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.0)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -691,7 +691,7 @@
                         :data $ {}
                           |T $ %{} :Leaf (:at 1680712947504) (:by |rJG4IHzWf) (:text |&map:get)
                           |b $ %{} :Leaf (:at 1680712949087) (:by |rJG4IHzWf) (:text |options)
-                          |h $ %{} :Leaf (:at 1680712953994) (:by |rJG4IHzWf) (:text |:add-uniform)
+                          |h $ %{} :Leaf (:at 1702731210721) (:by |rJG4IHzWf) (:text |:get-params)
         |object-writer $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1687413134159) (:by |rJG4IHzWf)
             :data $ {}
@@ -1034,7 +1034,7 @@
                         :data $ {}
                           |T $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |&map:get)
                           |b $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |options)
-                          |h $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |:add-uniform)
+                          |h $ %{} :Leaf (:at 1702731225951) (:by |rJG4IHzWf) (:text |:get-params)
         |wgsl-colors $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1679329122236) (:by |rJG4IHzWf)
             :data $ {}
@@ -5626,12 +5626,12 @@
                                           |b $ %{} :Leaf (:at 1687598972394) (:by |rJG4IHzWf) (:text |collect!)
                           |q $ %{} :Expr (:at 1698591209810) (:by |rJG4IHzWf)
                             :data $ {}
-                              |T $ %{} :Leaf (:at 1698591213538) (:by |rJG4IHzWf) (:text |:add-uniform)
+                              |T $ %{} :Leaf (:at 1702731240546) (:by |rJG4IHzWf) (:text |:get-params)
                               |b $ %{} :Expr (:at 1698591217191) (:by |rJG4IHzWf)
                                 :data $ {}
                                   |T $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |&map:get)
                                   |b $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |options)
-                                  |h $ %{} :Leaf (:at 1698591219525) (:by |rJG4IHzWf) (:text |:add-uniform)
+                                  |h $ %{} :Leaf (:at 1702731243935) (:by |rJG4IHzWf) (:text |:get-params)
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1697475620895) (:by |rJG4IHzWf)
             :data $ {}
@@ -6465,7 +6465,7 @@
                                                                                       |T $ %{} :Leaf (:at 1681317947335) (:by |rJG4IHzWf) (:text |[])
                           |q $ %{} :Expr (:at 1681315527601) (:by |rJG4IHzWf)
                             :data $ {}
-                              |T $ %{} :Leaf (:at 1681315527601) (:by |rJG4IHzWf) (:text |:add-uniform)
+                              |T $ %{} :Leaf (:at 1702731285934) (:by |rJG4IHzWf) (:text |:get-params)
                               |b $ %{} :Expr (:at 1681315527601) (:by |rJG4IHzWf)
                                 :data $ {}
                                   |T $ %{} :Leaf (:at 1681315527601) (:by |rJG4IHzWf) (:text |fn)
@@ -6865,7 +6865,7 @@
                                                   |h $ %{} :Leaf (:at 1680705956108) (:by |rJG4IHzWf) (:text |2)
                           |q $ %{} :Expr (:at 1680713001516) (:by |rJG4IHzWf)
                             :data $ {}
-                              |T $ %{} :Leaf (:at 1680713004846) (:by |rJG4IHzWf) (:text |:add-uniform)
+                              |T $ %{} :Leaf (:at 1702731271905) (:by |rJG4IHzWf) (:text |:get-params)
                               |b $ %{} :Expr (:at 1680713005449) (:by |rJG4IHzWf)
                                 :data $ {}
                                   |T $ %{} :Leaf (:at 1680713005783) (:by |rJG4IHzWf) (:text |fn)

@@ -1,9 +1,9 @@
 {
-  "version": "0.5.0",
+  "version": "0.5.1",
   "dependencies": {
     "@calcit/procs": "^0.8.14",
     "@calcit/std": "^0.0.3",
-    "@triadica/lagopus": "^0.0.18",
+    "@triadica/lagopus": "^0.0.19",
     "@triadica/touch-control": "^0.0.4-a1",
     "ismobilejs": "^1.1.1"
   },

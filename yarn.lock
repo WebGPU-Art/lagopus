@@ -215,19 +215,14 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.9.0.tgz#4ea610e0c40a07a8afa2977cbf80507f41c2271c"
   integrity sha512-aPP5Q5AqNGuT0tnuEkK/g4mnt3ZhheiXrDIiSVIHN9mcN21OyXDVbEMqmXPE7e2OplNLDkcvV+ZoGJa2ZImFgw==
 
-"@triadica/lagopus@^0.0.18":
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.18.tgz#09c2531d91f62c68df48f0b1f715b2b5f42d12ff"
-  integrity sha512-PIzUiJ14swGfnApKECCkyKtlXdL3I2ra9ZHDdpCbsUMTD58IPWi/geiqtwdHm7YiNOZEkoAvCCg44KalNqmhWg==
+"@triadica/lagopus@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.19.tgz#6a825b2dd15465cf916e061b2c952f0877b518d1"
+  integrity sha512-dh6PEsGD5pXe6U+gyYczZb362BJHZGXQjqj2XlW4Gi1tyXqRRp+ly+LWHnvJ/7zKNKSGBl6cO67Kwyn+O8tLRg==
   dependencies:
-    "@triadica/touch-control" "^0.0.3"
+    "@triadica/touch-control" "^0.0.4-a1"
     ismobilejs "^1.1.1"
     query-string "^8.1.0"
-
-"@triadica/touch-control@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@triadica/touch-control/-/touch-control-0.0.3.tgz#91e7ecb8fd2a36309180eada58f843b1dd44d876"
-  integrity sha512-P6E+MJYmN6EJim0MjhK2kf99OjTZJwAXI7clJz6DDsaf/HCIbyYnVPWyMC7jgc6bPG2I5PAnLga5gHTR1lbUzA==
 
 "@triadica/touch-control@^0.0.4-a1":
   version "0.0.4-a1"

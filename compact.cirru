@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.0)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.1)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -119,7 +119,7 @@
                           collect! $ fn (x) (.!push *arr x )
                         collect-array! indices collect!
                         , *arr
-                    &map:get options :add-uniform
+                    &map:get options :get-params
         |object-writer $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn object-writer (options)
@@ -169,7 +169,7 @@
                           collect! $ fn (x) (.!push *arr x)
                         collect-array! indices collect!
                         , *arr
-                    &map:get options :add-uniform
+                    &map:get options :get-params
         |wgsl-colors $ %{} :CodeEntry (:doc |)
           :code $ quote
             def wgsl-colors $ inline-shader "\"lagopus-colors"
@@ -760,7 +760,7 @@
                             &doseq (x p) (build-polyline-points-marked *prev x write!)
                             build-polyline-points-marked *prev p write!
                       chunk-writer! collect!
-                  :add-uniform $ &map:get options :add-uniform
+                  :get-params $ &map:get options :get-params
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn count-hex (xs)
@@ -868,7 +868,7 @@
                                       &< (&+ idx j) (dec iteration)
                                       [] (:: :vertex ps3 c1) (:: :vertex ps1 c1) (:: :vertex ps2 c1)
                                       []
-                  :add-uniform $ fn () (js-array & color chromatism)
+                  :get-params $ fn () (js-array & color chromatism)
         |sqrt-3 $ %{} :CodeEntry (:doc |)
           :code $ quote
             def sqrt-3 $ sqrt 3
@@ -925,7 +925,7 @@
                   :data $ -> unit-triangles
                     map $ fn (xs)
                       build-sphere-triangles base radius iteration *counter (nth xs 0) (nth xs 1) (nth xs 2)
-                  :add-uniform $ fn () (js-array & color 1)
+                  :get-params $ fn () (js-array & color 1)
         |pick-radian-middle $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn pick-radian-middle (p0 p1)
