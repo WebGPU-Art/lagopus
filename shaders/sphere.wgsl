@@ -1,28 +1,17 @@
 
-struct UBO {
-  cone_back_scale: f32,
-  viewport_ratio: f32,
-  look_distance: f32,
-  scale: f32,
-  forward: vec3f,
-  // direction up overhead, better unit vector
-  upward: vec3f,
-  rightward: vec3f,
-  camera_position: vec3f,
-  _pad: u32,
 
+#import lagopus::perspective
+
+#import lagopus::rand
+
+#import lagopus::colors
+
+struct Params {
   // custom
   color: vec3f,
-};
+}
 
-@group(0) @binding(0)
-var<uniform> uniforms: UBO;
-
-{{perspective}}
-
-{{rand}}
-
-{{colors}}
+@group(0) @binding(1) var<uniform> params: Params;
 
 // main
 
@@ -45,7 +34,7 @@ fn vertex_main(
   let scale: f32 = 0.002;
   output.position = vec4(p[0] * scale, p[1] * scale, p[2] * scale, 1.0);
   output.idx = f32(idx);
-  output.color = uniforms.color;
+  output.color = params.color;
   return output;
 }
 

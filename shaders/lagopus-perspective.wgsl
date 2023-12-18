@@ -1,4 +1,17 @@
-// perspective
+
+struct UBO {
+  cone_back_scale: f32,
+  viewport_ratio: f32,
+  look_distance: f32,
+  scale: f32,
+  forward: vec3f,
+  // direction up overhead, better unit vector
+  upward: vec3f,
+  rightward: vec3f,
+  camera_position: vec3f,
+};
+
+@group(0) @binding(0) var<uniform> uniforms: UBO;
 
 struct PointResult {
   point_position: vec3f,
@@ -34,3 +47,4 @@ fn transform_perspective(p: vec3f) -> PointResult {
     r, s
   );
 }
+

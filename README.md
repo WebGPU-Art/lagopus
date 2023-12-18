@@ -267,16 +267,16 @@ Math functions in `lagopus.math`
 
 ### Shader functions
 
-`{{perspective}}`
+`#import lagopus::perspective`
 
 - `fn transform_perspective(p: vec3f) -> PointResult`
 
-`{{colors}}`
+`#import lagopus::colors`
 
 - `fn hsl2rgb(hsl: vec3f) -> vec3f`
 - `fn hsl(h: f32, s: f32, l: f32) -> vec3f`
 
-`{{rand}}`
+`#import lagopus::rand`
 
 - `fn rand(n: f32) -> f32`
 - `fn rand_balanced(n: f32) -> f32`
@@ -284,11 +284,11 @@ Math functions in `lagopus.math`
 - `fn rand2(n: vec2<f32>) -> f32`
 - `fn noise2(n: vec2<f32>) -> f32`
 
-`{{simplex}}`
+`#import lagopus::simplex`
 
 - `fn simplexNoise2(v: vec2<f32>) -> f32`
 
-`{{hsluv}}`
+`#import lagopus::hsluv`
 
 - `fn hsluvToRgb(tuple: vec3f) -> vec3f` based on 360 and 100
 
