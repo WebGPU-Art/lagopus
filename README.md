@@ -19,70 +19,61 @@ object $ {}
     :: :float32x3 :position
     :: :float32x3 :color
   :data $ []
-    {}
-      :position $ [] 0 0 0
-      :color $ [] 1 0 0
-    {}
-      :position $ [] 100 0 0
-      :color $ [] 0 1 0
-    {}
-      :position $ [] 0 100 0
-      :color $ [] 0 0 1
+    :vertex (v3 0 0 0) (v3 1 0 0)
+    :vertex (v3 100 0 0) (v3 0 1 0)
+    :vertex (v3 0 100 0) (v3 0 0 1)
 ```
 
 - `:shader` custom shader file string
 - `:topology` topology symbol, `:triangle-list` or `:line-strip`
-- `:attrs-list` list of attributes, each attribute is a map with `:field` and `:format` keys
-  - an alternative way is to write in `{} (:field :position) (:format :float32x3)` format
+- `:attrs-list` list of attributes, first value providing type, second value is a name(history reason...)
 - `:data` list of data, each data is a map with keys matching `:attrs-list`, nested list is supported
 - optional `:indices` list of indices, each index is a number. nested list is supported
+- `:get-params`, to add custom params with `uniform` buffer, for example `fn () (js-array 1 1 1 1)`, notice the values should obey [memory alignments](https://sotrh.github.io/learn-wgpu/showcase/alignment/#alignment-of-uniform-and-storage-buffers)
 
-Shader file should obey the some rules rules:
+Alternatively, there's also `object-writer` which provides a writer API, which replaces `:data`:
+
+```cirru
+  :writer $ fn (write!)
+    write! $ []
+      :vertex (v3 1 1 1)
+```
+
+### Shader
+
+Shader file expects 3 parts:
+
+- params(could be empty)
+- `vertex_main`, here you call `transform_perspective` to display point in 3d
+- `fragment_main`
 
 ```wgsl
-// uniform structure that matches data passed from Lagopus
-struct UBO {
-  cone_back_scale: f32,
-  viewport_ratio: f32,
-  look_distance: f32,
-  scale: f32,
-  forward: vec3f,
-  // direction up overhead, better unit vector
-  upward: vec3f,
-  rightward: vec3f,
-  camera_position: vec3f,
-};
+// to include `lagopus-perpective.wgsl` , provide function `transform_perspective`
+#import lagopus::perspective
 
-@group(0) @binding(0)
-var<uniform> uniforms: UBO;
+struct Params {
+  _t: f32,
+}
 
-// to include `lagopus-perpective.wgsl`
-{{perspective}}
+@group(0) @binding(0) var<uniform> params: Params;
 
 // structure passing from Vertex to Fragment
 struct VertexOut {
   @builtin(position) position: vec4f,
-  @location(0) original: vec3f,
 };
 
 @vertex
 fn vertex_main(
   @location(0) position: vec3f,
+  // data added from attributes put here
 ) -> VertexOut {
-
-  // use perspective function from `lagopus-perpective.wgsl`, handles parameters from Lagopus
-
   var output: VertexOut;
-  let p1 = position;
-  let p = transform_perspective(p1.xyz).point_position;
+  let p = transform_perspective(position.xyz).point_position;
   let scale: f32 = 0.002;
-  output.position = vec4(p[0]*scale, p[1]*scale, p[2]*scale, 1.0);
-  output.original = position;
+
+  output.position = vec4(p.xyz * scale, 1.0);
   return output;
 }
-
-const middle: f32 = 50.0;
-const limit: f32 = 48.0;
 
 @fragment
 fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
@@ -90,9 +81,36 @@ fn fragment_main(vtx_out: VertexOut) -> @location(0) vec4f {
 }
 ```
 
+##### Builtin functions
+
+`#import lagopus::perspective`
+
+- `fn transform_perspective(p: vec3f) -> PointResult`
+
+`#import lagopus::colors`
+
+- `fn hsl2rgb(hsl: vec3f) -> vec3f`
+- `fn hsl(h: f32, s: f32, l: f32) -> vec3f`
+
+`#import lagopus::rand`
+
+- `fn rand(n: f32) -> f32`
+- `fn rand_balanced(n: f32) -> f32`
+- `fn noise(p: f32) -> f32`
+- `fn rand2(n: vec2<f32>) -> f32`
+- `fn noise2(n: vec2<f32>) -> f32`
+
+`#import lagopus::simplex`
+
+- `fn simplexNoise2(v: vec2<f32>) -> f32`
+
+`#import lagopus::hsluv`
+
+- `fn hsluvToRgb(tuple: vec3f) -> vec3f` based on 360 and 100
+
 ### Components
 
-Curves
+##### Curves
 
 ```cirru
 lagopus.comp.curves :refer $ comp-curves comp-polylines break-mark
@@ -149,7 +167,7 @@ comp-polylines-marked $ {} (; :topology :line-strip)
       , break-mark
 ```
 
-Spots
+##### Spots
 
 ```cirru
 lagopus.comp.spots :refer $ comp-spots comp-bubbles
@@ -172,7 +190,7 @@ comp-bubbles $ {}
       [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area) (+ 6 $ rand 120)
 ```
 
-Axis:
+##### Axis
 
 ```cirru
 laopus.comp.curves :refer $ comp-axis
@@ -181,7 +199,7 @@ comp-axis $ {} (:n 20)
   :unit 20
 ```
 
-Cube
+##### Cube
 
 ```cirru
 lagopus.comp.cube :refer $ comp-cube
@@ -191,7 +209,7 @@ comp-cube $ {}
   :radius 40
 ```
 
-Sphere
+##### Sphere
 
 ```cirru
 lagopus.comp.sphere :refer $ comp-sphere
@@ -201,7 +219,7 @@ comp-sphere $ {} (; :topology :line-strip)
   :radius 160
 ```
 
-Plate
+##### Plate
 
 ```cirru
 lagopus.comp.plate :refer $ comp-plate
@@ -217,7 +235,7 @@ comp-plate $ {} (; :topology :line-strip)
   :chromatism 0.14
 ```
 
-Controls
+##### Controls
 
 ```cirru
 lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
@@ -243,7 +261,7 @@ comp-drag-point
     d! cursor $ assoc state :pos move
 ```
 
-Stitch
+##### Stitch
 
 ```cirru
 lagopus.comp.stitch :refer $ comp-stitch
@@ -253,7 +271,7 @@ comp-stitch $ {}
   :position $ [] 0 0 0
 ```
 
-Cursor
+### Cursor
 
 ```cirru
 lagopus.cursor :refer $ update-states >>
@@ -264,33 +282,6 @@ Math functions in `lagopus.math`
 - `fibo-grid-range total` create a list of points constructing Fibonacci Sphere
 - `rotate-3d origin axis-0 angle p` rotate point `p` around `axis-0`
 - `rotate-3d origin axis-0 angle` create a function to rotate point p
-
-### Shader functions
-
-`#import lagopus::perspective`
-
-- `fn transform_perspective(p: vec3f) -> PointResult`
-
-`#import lagopus::colors`
-
-- `fn hsl2rgb(hsl: vec3f) -> vec3f`
-- `fn hsl(h: f32, s: f32, l: f32) -> vec3f`
-
-`#import lagopus::rand`
-
-- `fn rand(n: f32) -> f32`
-- `fn rand_balanced(n: f32) -> f32`
-- `fn noise(p: f32) -> f32`
-- `fn rand2(n: vec2<f32>) -> f32`
-- `fn noise2(n: vec2<f32>) -> f32`
-
-`#import lagopus::simplex`
-
-- `fn simplexNoise2(v: vec2<f32>) -> f32`
-
-`#import lagopus::hsluv`
-
-- `fn hsluvToRgb(tuple: vec3f) -> vec3f` based on 360 and 100
 
 ### Resources
 
