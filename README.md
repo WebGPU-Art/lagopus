@@ -19,9 +19,9 @@ object $ {}
     :: :float32x3 :position
     :: :float32x3 :color
   :data $ []
-    :vertex (v3 0 0 0) (v3 1 0 0)
-    :vertex (v3 100 0 0) (v3 0 1 0)
-    :vertex (v3 0 100 0) (v3 0 0 1)
+    :: :vertex (v3 0 0 0) (v3 1 0 0)
+    :: :vertex (v3 100 0 0) (v3 0 1 0)
+    :: :vertex (v3 0 100 0) (v3 0 0 1)
 ```
 
 - `:shader` custom shader file string
@@ -36,7 +36,7 @@ Alternatively, there's also `object-writer` which provides a writer API, which r
 ```cirru
   :writer $ fn (write!)
     write! $ []
-      :vertex (v3 1 1 1)
+      :: :vertex (v3 1 1 1)
 ```
 
 ### Shader
