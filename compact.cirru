@@ -1266,6 +1266,8 @@
               resetCanvasSize canvas
               add-watch *store :change $ fn (next store) (render-app!)
               setupMouseEvents canvas
+              loadGamepadControl
+              paintLagopusTree
               if remote-control? $ setupRemoteControl
         |reload! $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -1284,7 +1286,7 @@
         :code $ quote
           ns lagopus.main $ :require
             lagopus.comp.container :refer $ comp-container
-            "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasSize initializeCanvasTextures registerShaderResult enableBloom
+            "\"@triadica/lagopus" :refer $ setupMouseEvents onControlEvent paintLagopusTree renderLagopusTree initializeContext resetCanvasSize initializeCanvasTextures registerShaderResult enableBloom loadGamepadControl
             "\"@triadica/touch-control" :refer $ renderControl startControlLoop
             lagopus.config :refer $ dev? mobile-info bloom? bg-color remote-control?
             lagopus.util :refer $ handle-compilation reset-clear-color!

@@ -9255,6 +9255,12 @@
                 :data $ {}
                   |T $ %{} :Leaf (:at 1677932976564) (:by |rJG4IHzWf) (:text |setupMouseEvents)
                   |b $ %{} :Leaf (:at 1677932986654) (:by |rJG4IHzWf) (:text |canvas)
+              |vT $ %{} :Expr (:at 1709227234142) (:by |rJG4IHzWf)
+                :data $ {}
+                  |T $ %{} :Leaf (:at 1709227234365) (:by |rJG4IHzWf) (:text |loadGamepadControl)
+              |vj $ %{} :Expr (:at 1709227273726) (:by |rJG4IHzWf)
+                :data $ {}
+                  |T $ %{} :Leaf (:at 1709227273726) (:by |rJG4IHzWf) (:text |paintLagopusTree)
               |w $ %{} :Expr (:at 1684604572339) (:by |rJG4IHzWf)
                 :data $ {}
                   |D $ %{} :Leaf (:at 1684604572906) (:by |rJG4IHzWf) (:text |if)
@@ -9373,6 +9379,7 @@
                         |s $ %{} :Leaf (:at 1681058264772) (:by |rJG4IHzWf) (:text |initializeCanvasTextures)
                         |sT $ %{} :Leaf (:at 1681059468858) (:by |rJG4IHzWf) (:text |registerShaderResult)
                         |t $ %{} :Leaf (:at 1681058356577) (:by |rJG4IHzWf) (:text |enableBloom)
+                        |u $ %{} :Leaf (:at 1709227229729) (:by |rJG4IHzWf) (:text |loadGamepadControl)
                 |q $ %{} :Expr (:at 1677433288307) (:by |rJG4IHzWf)
                   :data $ {}
                     |T $ %{} :Leaf (:at 1677433295405) (:by |rJG4IHzWf) (:text "|\"@triadica/touch-control")
