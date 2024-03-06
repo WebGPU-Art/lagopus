@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.1)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.2)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -207,11 +207,20 @@
         |comp-drag-point $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-drag-point (props on-drag)
-              compDragPoint (to-js-data props)
-                fn (move d!)
-                  on-drag
-                    v3 (.-0 move) (.-1 move) (.-2 move)
-                    , d! 
+              let
+                  color $ &map:get props :color
+                  position $ &map:get props :position
+                compDragPoint
+                  js-object
+                    :color $ to-js-data color
+                    :position $ if (tuple? position)
+                      js-array (nth position 1) (nth position 2) (nth position 3)
+                      if (list? position) (to-js-data position)
+                        do (eprintln "\"unknown position" position) (js-array 10 0 0)
+                  fn (move d!)
+                    on-drag
+                      v3 (.-0 move) (.-1 move) (.-2 move)
+                      , d!
         |comp-slider $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-slider (props on-slide)
