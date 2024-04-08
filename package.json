@@ -1,7 +1,7 @@
 {
   "version": "0.5.2",
   "dependencies": {
-    "@calcit/procs": "^0.8.38",
+    "@calcit/procs": "^0.8.50",
     "@calcit/std": "^0.0.3",
     "@triadica/lagopus": "0.0.20",
     "@triadica/touch-control": "^0.0.4-a1",
@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "bottom-tip": "^0.1.5",
-    "vite": "^5.1.5",
-    "vite-plugin-glsl": "^1.2.1"
+    "vite": "^5.2.8",
+    "vite-plugin-glsl": "^1.3.0"
   }
 }
