@@ -230,10 +230,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.14.1.tgz#299eee74b7d87e116083ac5b1ce8dd9434668294"
   integrity sha512-wQGI+LY/Py20zdUPq+XCem7JcPOyzIJBm3dli+56DJsQOHbnXZFEwgmnC6el1TPAfC8lBT3m+z69RmLykNUbew==
 
-"@triadica/lagopus@0.0.21":
-  version "0.0.21"
-  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.21.tgz#81d866965d0b4d7ab8d85c3b29b35b4c872c9586"
-  integrity sha512-4qiNdt79GUOEBkV7yMWufIAnQiTgP2f2RdkE0YL40fWcguw6Lt9MPJK7evSEew5KPS9QF8aC1se3DXmsqcEj7w==
+"@triadica/lagopus@0.0.22":
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/@triadica/lagopus/-/lagopus-0.0.22.tgz#08f50b0d7a79d2f8b706e943a43e9cc7b42ff0f8"
+  integrity sha512-Sd+d9MOeRcpkvkXkb3w1u45yc9ZEQDkOOkQUn2QsqrqGCbJSiS8CU4WkC+mEbPg6REKX/O41kXwbBSNLufoPAw==
   dependencies:
     "@triadica/touch-control" "^0.0.4-a1"
     ismobilejs "^1.1.1"

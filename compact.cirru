@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.3)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.5)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -120,7 +120,7 @@
                         collect-array! indices collect!
                         , *arr
                     &map:get options :get-params
-                    js-array & $ &map:get options :textures
+                    js-array & $ either (&map:get options :textures) ([])
                     &map:get options :label
         |object-writer $ %{} :CodeEntry (:doc |)
           :code $ quote
@@ -223,6 +223,14 @@
                     on-drag
                       v3 (.-0 move) (.-1 move) (.-2 move)
                       , d!
+        |comp-flat-button $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            defn comp-flat-button (props on-click)
+              compFlatButton
+                -> props
+                  update :position $ fn (p) (.to-js p)
+                  to-js-data
+                , on-click
         |comp-slider $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-slider (props on-slide)
@@ -235,6 +243,7 @@
         :code $ quote
           ns lagopus.comp.button $ :require
             "\"@triadica/lagopus" :refer $ compButton compSlider compDragPoint
+            "\"@triadica/lagopus/lib/comp/button.mjs" :refer $ compFlatButton
             quaternion.vector :refer $ v3
             quaternion.complex :refer $ complex
     |lagopus.comp.container $ %{} :FileEntry
@@ -316,6 +325,7 @@
                     :bubbles $ comp-bubbles-demo
                     :triangles $ comp-triangles-demo
                     :image $ comp-image-demo textures-dict
+                    :kaleidoscope $ comp-kaleidoscope textures-dict
         |comp-control-demo $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-control-demo (states)
@@ -333,24 +343,12 @@
                       :color $ [] 0.6 0.6 1.0 1.0
                     fn (move d!)
                       d! $ : :state cursor (assoc state :pos move)
-        |comp-image-demo $ %{} :CodeEntry (:doc |)
-          :code $ quote
-            defn comp-image-demo (textures-dict)
-              object $ {} (:label :image) (:shader wgsl-image)
-                :topology $ do :line-strip :triangle-list
-                :attrs-list $ []
-                  {} (:field :position) (:format "\"float32x3")
-                  {} (:field :uv) (:format "\"float32x2")
-                :data $ []
-                  []
-                    :: :vertex ([] 0 0 0) ([] 0 0)
-                    :: :vertex ([] 100 0 0) ([] 1 0)
-                    :: :vertex ([] 100 100 0) ([] 1 1)
-                  []
-                    :: :vertex ([] 100 100 0) ([] 1 1)
-                    :: :vertex ([] 0 100 0) ([] 0 1)
-                    :: :vertex ([] 0 0 0) ([] 0 0)
-                :textures $ [] (get textures-dict :tiye)
+                  comp-flat-button
+                    {}
+                      :position $ v3 100 20 0
+                      :color $ [] 0.9 0.4 0.5 1
+                      :size 40
+                    fn (e d!) (js/console.log "\"CLICKED")
         |comp-mountains $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-mountains () $ object
@@ -501,10 +499,17 @@
               comp-button
                 {}
                   :position $ v3 180 220 0
-                  :color $ [] 0.9 0.8 0.7 1
+                  :color $ [] 0.9 0.2 0.99 1
                   :size 20
                 fn (e d!)
                   d! $ : tab :image
+              comp-button
+                {}
+                  :position $ v3 220 220 0
+                  :color $ [] 0.9 0.8 0.99 1
+                  :size 20
+                fn (e d!)
+                  d! $ : tab :kaleidoscope
         |comp-triangles-demo $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-triangles-demo () $ let
@@ -534,16 +539,13 @@
                         : vertex (v3 100 40 0) width 2
                         : vertex (v3 100 20 200) width 2
                         , break-mark
-        |wgsl-image $ %{} :CodeEntry (:doc |)
-          :code $ quote
-            def wgsl-image $ inline-shader "\"image"
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.comp.container $ :require
             lagopus.alias :refer $ group object
             "\"../shaders/mountains.wgsl" :default mountains-wgsl
             "\"../shaders/city.wgsl" :default city-wgsl
-            lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
+            lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point comp-flat-button
             lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines comp-polylines-marked break-mark
             lagopus.comp.spots :refer $ comp-spots comp-bubbles
             memof.once :refer $ memof1-call
@@ -555,6 +557,7 @@
             lagopus.comp.stitch :refer $ comp-stitch
             "\"@calcit/std" :refer $ rand-shift rand
             lagopus.config :refer $ inline-shader
+            lagopus.comp.image :refer $ comp-image-demo comp-kaleidoscope
     |lagopus.comp.cube $ %{} :FileEntry
       :defs $ {}
         |comp-cube $ %{} :CodeEntry (:doc |)
@@ -825,6 +828,60 @@
             lagopus.alias :refer $ object group object-writer
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v3
             lagopus.comp.stitch :refer $ comp-stitch
+    |lagopus.comp.image $ %{} :FileEntry
+      :defs $ {}
+        |comp-image-demo $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            defn comp-image-demo (textures-dict)
+              object $ {} (:label :image) (:shader wgsl-image)
+                :topology $ do :line-strip :triangle-list
+                :attrs-list $ []
+                  {} (:field :position) (:format "\"float32x3")
+                  {} (:field :uv) (:format "\"float32x2")
+                :data $ []
+                  []
+                    :: :vertex ([] 0 0 0) ([] 0 0)
+                    :: :vertex ([] 100 0 0) ([] 1 0)
+                    :: :vertex ([] 100 100 0) ([] 1 1)
+                  []
+                    :: :vertex ([] 100 100 0) ([] 1 1)
+                    :: :vertex ([] 0 100 0) ([] 0 1)
+                    :: :vertex ([] 0 0 0) ([] 0 0)
+                :textures $ [] (get textures-dict :tiye)
+        |comp-kaleidoscope $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            defn comp-kaleidoscope (textures-dict)
+              object $ {} (:label :image) (:shader wgsl-kaleidoscope)
+                :topology $ do :line-strip :triangle-list
+                :attrs-list $ []
+                  {} (:field :position) (:format "\"float32x3")
+                  {} (:field :uv) (:format "\"float32x2")
+                :data $ []
+                  []
+                    :: :vertex ([] 0 0 0) ([] 0 0)
+                    :: :vertex ([] 100 0 0) ([] 1 0)
+                    :: :vertex ([] 100 100 0) ([] 1 1)
+                  []
+                    :: :vertex ([] 100 100 0) ([] 1 1)
+                    :: :vertex ([] 0 100 0) ([] 0 1)
+                    :: :vertex ([] 0 0 0) ([] 0 0)
+                :textures $ [] (get textures-dict :tiye)
+        |wgsl-image $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            def wgsl-image $ inline-shader "\"image"
+        |wgsl-kaleidoscope $ %{} :CodeEntry (:doc |)
+          :code $ quote
+            def wgsl-kaleidoscope $ inline-shader "\"kaleidoscope"
+      :ns $ %{} :CodeEntry (:doc |)
+        :code $ quote
+          ns lagopus.comp.image $ :require
+            lagopus.alias :refer $ group object
+            lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
+            memof.once :refer $ memof1-call
+            quaternion.vector :refer $ v+ v3
+            lagopus.cursor :refer $ >>
+            "\"@calcit/std" :refer $ rand-shift rand
+            lagopus.config :refer $ inline-shader
     |lagopus.comp.plate $ %{} :FileEntry
       :defs $ {}
         |calc-ratio $ %{} :CodeEntry (:doc |)
