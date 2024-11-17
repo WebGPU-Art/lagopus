@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.5)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.7)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -122,6 +122,7 @@
                     &map:get options :get-params
                     js-array & $ either (&map:get options :textures) ([])
                     &map:get options :label
+                    &map:get options :compute-options
         |object-writer $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn object-writer (options)
@@ -172,6 +173,9 @@
                         collect-array! indices collect!
                         , *arr
                     &map:get options :get-params
+                    js-array & $ either (&map:get options :textures) ([])
+                    &map:get options :label
+                    &map:get options :compute-options
         |wgsl-colors $ %{} :CodeEntry (:doc |)
           :code $ quote
             def wgsl-colors $ inline-shader "\"lagopus-colors"
@@ -786,6 +790,8 @@
                             &doseq (x p) (build-polyline-points *prev x write!)
                             build-polyline-points *prev p write!
                       chunk-writer! collect!
+                  :get-params $ &map:get options :get-params
+                  :compute-options $ &map:get options :compute-options
         |comp-polylines-marked $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-polylines-marked (options)
@@ -805,6 +811,7 @@
                             build-polyline-points-marked *prev p write!
                       chunk-writer! collect!
                   :get-params $ &map:get options :get-params
+                  :compute-options $ &map:get options :compute-options
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn count-hex (xs)

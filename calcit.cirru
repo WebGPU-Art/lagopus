@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.5)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.7)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -712,6 +712,11 @@
                           |T $ %{} :Leaf (:at 1712774343465) (:by |rJG4IHzWf) (:text |&map:get)
                           |b $ %{} :Leaf (:at 1712774343465) (:by |rJG4IHzWf) (:text |options)
                           |h $ %{} :Leaf (:at 1712774345991) (:by |rJG4IHzWf) (:text |:label)
+                      |w $ %{} :Expr (:at 1731837960162) (:by |rJG4IHzWf)
+                        :data $ {}
+                          |T $ %{} :Leaf (:at 1731837960162) (:by |rJG4IHzWf) (:text |&map:get)
+                          |b $ %{} :Leaf (:at 1731837960162) (:by |rJG4IHzWf) (:text |options)
+                          |h $ %{} :Leaf (:at 1731837960162) (:by |rJG4IHzWf) (:text |:compute-options)
         |object-writer $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1687413134159) (:by |rJG4IHzWf)
             :data $ {}
@@ -1055,6 +1060,31 @@
                           |T $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |&map:get)
                           |b $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |options)
                           |h $ %{} :Leaf (:at 1702731225951) (:by |rJG4IHzWf) (:text |:get-params)
+                      |v $ %{} :Expr (:at 1731837956237) (:by |rJG4IHzWf)
+                        :data $ {}
+                          |T $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |js-array)
+                          |b $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |&)
+                          |h $ %{} :Expr (:at 1731837956237) (:by |rJG4IHzWf)
+                            :data $ {}
+                              |T $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |either)
+                              |b $ %{} :Expr (:at 1731837956237) (:by |rJG4IHzWf)
+                                :data $ {}
+                                  |T $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |&map:get)
+                                  |b $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |options)
+                                  |h $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |:textures)
+                              |h $ %{} :Expr (:at 1731837956237) (:by |rJG4IHzWf)
+                                :data $ {}
+                                  |T $ %{} :Leaf (:at 1731837956237) (:by |rJG4IHzWf) (:text |[])
+                      |w $ %{} :Expr (:at 1687413136240) (:by |rJG4IHzWf)
+                        :data $ {}
+                          |T $ %{} :Leaf (:at 1731837930086) (:by |rJG4IHzWf) (:text |&map:get)
+                          |b $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |options)
+                          |h $ %{} :Leaf (:at 1731837916132) (:by |rJG4IHzWf) (:text |:label)
+                      |x $ %{} :Expr (:at 1687413136240) (:by |rJG4IHzWf)
+                        :data $ {}
+                          |T $ %{} :Leaf (:at 1731837930086) (:by |rJG4IHzWf) (:text |&map:get)
+                          |b $ %{} :Leaf (:at 1687413136240) (:by |rJG4IHzWf) (:text |options)
+                          |h $ %{} :Leaf (:at 1731837936054) (:by |rJG4IHzWf) (:text |:compute-options)
         |wgsl-colors $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1679329122236) (:by |rJG4IHzWf)
             :data $ {}
@@ -5768,6 +5798,22 @@
                                         :data $ {}
                                           |T $ %{} :Leaf (:at 1687504538755) (:by |rJG4IHzWf) (:text |chunk-writer!)
                                           |h $ %{} :Leaf (:at 1687100978832) (:by |rJG4IHzWf) (:text |collect!)
+                          |q $ %{} :Expr (:at 1731840418090) (:by |rJG4IHzWf)
+                            :data $ {}
+                              |T $ %{} :Leaf (:at 1731840418090) (:by |rJG4IHzWf) (:text |:get-params)
+                              |b $ %{} :Expr (:at 1731840418090) (:by |rJG4IHzWf)
+                                :data $ {}
+                                  |T $ %{} :Leaf (:at 1731840418090) (:by |rJG4IHzWf) (:text |&map:get)
+                                  |b $ %{} :Leaf (:at 1731840418090) (:by |rJG4IHzWf) (:text |options)
+                                  |h $ %{} :Leaf (:at 1731840418090) (:by |rJG4IHzWf) (:text |:get-params)
+                          |s $ %{} :Expr (:at 1731840423728) (:by |rJG4IHzWf)
+                            :data $ {}
+                              |T $ %{} :Leaf (:at 1731840423728) (:by |rJG4IHzWf) (:text |:compute-options)
+                              |b $ %{} :Expr (:at 1731840423728) (:by |rJG4IHzWf)
+                                :data $ {}
+                                  |T $ %{} :Leaf (:at 1731840423728) (:by |rJG4IHzWf) (:text |&map:get)
+                                  |b $ %{} :Leaf (:at 1731840423728) (:by |rJG4IHzWf) (:text |options)
+                                  |h $ %{} :Leaf (:at 1731840423728) (:by |rJG4IHzWf) (:text |:compute-options)
         |comp-polylines-marked $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1687598969592) (:by |rJG4IHzWf)
             :data $ {}
@@ -5931,6 +5977,14 @@
                                   |T $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |&map:get)
                                   |b $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |options)
                                   |h $ %{} :Leaf (:at 1702731243935) (:by |rJG4IHzWf) (:text |:get-params)
+                          |s $ %{} :Expr (:at 1698591209810) (:by |rJG4IHzWf)
+                            :data $ {}
+                              |T $ %{} :Leaf (:at 1731840401974) (:by |rJG4IHzWf) (:text |:compute-options)
+                              |b $ %{} :Expr (:at 1698591217191) (:by |rJG4IHzWf)
+                                :data $ {}
+                                  |T $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |&map:get)
+                                  |b $ %{} :Leaf (:at 1698591217191) (:by |rJG4IHzWf) (:text |options)
+                                  |h $ %{} :Leaf (:at 1731840404767) (:by |rJG4IHzWf) (:text |:compute-options)
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ %{} :Expr (:at 1697475620895) (:by |rJG4IHzWf)
             :data $ {}
