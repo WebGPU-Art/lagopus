@@ -1397,6 +1397,7 @@
             defn render-app! () $ let
                 tree $ comp-container @*store @*global-textures
               renderLagopusTree tree dispatch!
+              paintLagopusTree
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.main $ :require

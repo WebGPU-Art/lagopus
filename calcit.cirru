@@ -10179,6 +10179,9 @@
                       |T $ %{} :Leaf (:at 1678027058925) (:by |rJG4IHzWf) (:text |renderLagopusTree)
                       |b $ %{} :Leaf (:at 1678027060738) (:by |rJG4IHzWf) (:text |tree)
                       |h $ %{} :Leaf (:at 1678027062952) (:by |rJG4IHzWf) (:text |dispatch!)
+                  |o $ %{} :Expr (:at 1731831869055) (:by |rJG4IHzWf)
+                    :data $ {}
+                      |T $ %{} :Leaf (:at 1731831869055) (:by |rJG4IHzWf) (:text |paintLagopusTree)
       :ns $ %{} :CodeEntry (:doc |)
         :code $ %{} :Expr (:at 1677432884829) (:by |rJG4IHzWf)
           :data $ {}
