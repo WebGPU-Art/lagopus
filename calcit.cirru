@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.7)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:output |src) (:port 6001) (:reload-fn |lagopus.main/reload!) (:storage-key |calcit.cirru) (:version |0.5.6)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
