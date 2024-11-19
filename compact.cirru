@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.8)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.9)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -143,22 +143,26 @@
                   count! $ fn (x) (swap! *counter &+ x)
                   collect! $ fn (chunk)
                     &doseq (record chunk) (count! 1)
-                      map-indexed attrs-list $ fn (idx attr)
-                        let
-                            arr $ js-get bundles idx
-                            data $ do
-                              assert "\"expected tuple" $ tuple? record
-                              if
-                                not= :vertex $ nth record 0
-                                js/console.warn "\"expected :vertex tag" record
-                              nth record $ inc idx
-                          if (tuple? data)
-                            tag-match data $ 
-                              :v3 x y z
-                              do $ .!push arr x y z
-                            if (list? data)
-                              &doseq (d data) (.!push arr d)
-                              .!push arr data
+                      let
+                          *counted $ atom 0
+                        &doseq (attr attrs-list)
+                          let
+                              idx @*counted
+                              arr $ js-get bundles idx
+                              data $ do
+                                assert "\"expected tuple" $ tuple? record
+                                if
+                                  not= :vertex $ nth record 0
+                                  js/console.warn "\"expected :vertex tag" record
+                                nth record $ inc idx
+                            if (tuple? data)
+                              tag-match data $ 
+                                :v3 x y z
+                                do $ .!push arr x y z
+                              if (list? data)
+                                &doseq (d data) (.!push arr d)
+                                .!push arr data
+                          swap! *counted inc
                   buffers $ do
                     noted "\"call writer function to fill data into buffer" $ writer collect!
                     js-array & $ map-indexed attrs-list
@@ -695,26 +699,26 @@
                 (:vertex position width mark)
                   if-let (prev @*prev)
                     let
-                        older $ :older prev
+                        older $ &map:get prev :older
                       reset! *prev $ {} (:position position) (:older older) (:mark mark)
                         :width $ :width prev
                       if (some? older)
                         let
                             p older
-                            q $ :position prev
-                            prev-mark $ :mark prev
+                            q $ &map:get prev :position
+                            prev-mark $ &map:get prev :mark
                             q2 position
                             direction $ &v- q p
                             direction2 $ &v- q2 q
-                            p-width $ :width prev
+                            p-width $ &map:get prev :width
                             q-width width
                           write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
                         let
-                            q $ :position prev
-                            prev-mark $ :mark prev
+                            q $ &map:get prev :position
+                            prev-mark $ &map:get prev :mark
                             q2 position
                             direction $ &v- q2 q
-                            p-width $ :width prev
+                            p-width $ &map:get prev :width
                             q-width width
                           write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark) (:: :vertex q2 0 direction p-width mark) (:: :vertex q2 1 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark)
                     do $ reset! *prev
