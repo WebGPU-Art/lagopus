@@ -1,6 +1,6 @@
 
 {} (:package |lagopus)
-  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.5)
+  :configs $ {} (:init-fn |lagopus.main/main!) (:reload-fn |lagopus.main/reload!) (:version |0.5.9)
     :modules $ [] |memof/ |quaternion/
   :entries $ {}
   :files $ {}
@@ -80,6 +80,11 @@
           :code $ quote
             defn inject-shader-snippets (code)
               -> code (.!replace "\"#import lagopus::simplex" wgsl-simplex) (.!replace "\"#import lagopus::perspective" wgsl-perspective) (.!replace "\"#import lagopus::colors" wgsl-colors) (.!replace "\"#import lagopus::rand" wgsl-rand) (.!replace "\"#import lagopus::rotation" wgsl-rotation) (.!replace "\"#import lagopus::hsluv" wgsl-hsluv)
+        |make-empty-js-arrays $ %{} :CodeEntry (:doc "|create nested array of js, as placeholder for attributes data")
+          :code $ quote
+            defn make-empty-js-arrays (n)
+              -> (new js/Array n) (.!fill 0)
+                .!map $ fn (x i _) (js-array)
         |object $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn object (options)
@@ -107,71 +112,84 @@
                           eprintln "\"buffer size guessed incorrectly"
                         , buffer
                 ; js/console.log vertices-size buffers
-                createRenderer
-                  inject-shader-snippets $ &map:get options :shader
-                  turn-string $ &map:get options :topology
-                  to-js-data attrs-list
-                  , vertices-size buffers nil
-                    if-let
-                      indices $ &map:get options :indices
-                      u32buffer $ let
-                          *arr $ js-array
-                          collect! $ fn (x) (.!push *arr x )
-                        collect-array! indices collect!
-                        , *arr
-                    &map:get options :get-params
-                    js-array & $ either (&map:get options :textures) ([])
-                    &map:get options :label
+                createRenderer $ js-object
+                  :shader $ inject-shader-snippets (&map:get options :shader)
+                  :topology $ turn-string (&map:get options :topology)
+                  :attrsList $ to-js-data attrs-list
+                  :verticesLength vertices-size
+                  :vertices buffers
+                  :hitRegion nil
+                  :indices $ if-let
+                    indices $ &map:get options :indices
+                    u32buffer $ let
+                        *arr $ js-array
+                        collect! $ fn (x) (.!push *arr x )
+                      collect-array! indices collect!
+                      , *arr
+                  :getParams $ &map:get options :get-params
+                  :textures $ js-array &
+                    either (&map:get options :textures) ([])
+                  :label $ &map:get options :label
+                  :computeOptions $ &map:get options :compute-options
         |object-writer $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn object-writer (options)
               let
                   attrs-list $ map (&map:get options :attrs-list) expand-attr
                   writer $ &map:get options :writer
-                  bundles $ js-array &
-                    ->
-                      range $ count attrs-list
-                      map $ fn (_) (js-array)
+                  bundles $ noted "\"actually stores data in this nested list..."
+                    make-empty-js-arrays $ count attrs-list
                   *counter $ atom 0
                   count! $ fn (x) (swap! *counter &+ x)
                   collect! $ fn (chunk)
                     &doseq (record chunk) (count! 1)
-                      map-indexed attrs-list $ fn (idx attr)
-                        let
-                            arr $ aget bundles idx
-                            data $ do
-                              assert "\"expected tuple" $ tuple? record
-                              if
-                                not= :vertex $ nth record 0
-                                js/console.warn "\"expected :vertex tag" record
-                              nth record $ inc idx
-                          if (tuple? data)
-                            tag-match data $ 
-                              :v3 x y z
-                              do $ .!push arr x y z
-                            if (list? data)
-                              &doseq (d data) (.!push arr d)
-                              .!push arr data
-                  buffers $ do (writer collect!)
+                      let
+                          *counted $ atom 0
+                        &doseq (attr attrs-list)
+                          let
+                              idx @*counted
+                              arr $ js-get bundles idx
+                              data $ do
+                                assert "\"expected tuple" $ tuple? record
+                                if
+                                  not= :vertex $ nth record 0
+                                  js/console.warn "\"expected :vertex tag" record
+                                nth record $ inc idx
+                            if (tuple? data)
+                              tag-match data $ 
+                                :v3 x y z
+                                do $ .!push arr x y z
+                              if (list? data)
+                                &doseq (d data) (.!push arr d)
+                                .!push arr data
+                          swap! *counted inc
+                  buffers $ do
+                    noted "\"call writer function to fill data into buffer" $ writer collect!
                     js-array & $ map-indexed attrs-list
                       fn (idx attr)
                         newBufferFormatArray
                           buffer-format $ &map:get attr :format
-                          aget bundles idx
+                          js-get bundles idx
                 ; js/console.log @*counter buffers
-                createRenderer
-                  inject-shader-snippets $ &map:get options :shader
-                  turn-string $ &map:get options :topology
-                  to-js-data attrs-list
-                  , @*counter buffers nil
-                    if-let
-                      indices $ &map:get options :indices
-                      u32buffer $ let
-                          *arr $ js-array
-                          collect! $ fn (x) (.!push *arr x)
-                        collect-array! indices collect!
-                        , *arr
-                    &map:get options :get-params
+                createRenderer $ js-object
+                  :shader $ inject-shader-snippets (&map:get options :shader)
+                  :topology $ turn-string (&map:get options :topology)
+                  :attrsList $ to-js-data attrs-list
+                  :verticesLength @*counter
+                  :vertices buffers
+                  :hitRegion nil
+                  :indices $ if-let
+                    indices $ &map:get options :indices
+                    u32buffer $ let
+                        *arr $ js-array
+                        collect! $ fn (x) (.!push *arr x)
+                      collect-array! indices collect!
+                      , *arr
+                  :getParams $ &map:get options :get-params
+                  :textures $ js-array &
+                    either (&map:get options :textures) ([])
+                  :label $ &map:get options :label
+                  :computeOptions $ &map:get options :compute-options
         |wgsl-colors $ %{} :CodeEntry (:doc |)
           :code $ quote
             def wgsl-colors $ inline-shader "\"lagopus-colors"
@@ -681,26 +699,26 @@
                 (:vertex position width mark)
                   if-let (prev @*prev)
                     let
-                        older $ :older prev
+                        older $ &map:get prev :older
                       reset! *prev $ {} (:position position) (:older older) (:mark mark)
                         :width $ :width prev
                       if (some? older)
                         let
                             p older
-                            q $ :position prev
-                            prev-mark $ :mark prev
+                            q $ &map:get prev :position
+                            prev-mark $ &map:get prev :mark
                             q2 position
                             direction $ &v- q p
                             direction2 $ &v- q2 q
-                            p-width $ :width prev
+                            p-width $ &map:get prev :width
                             q-width width
                           write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
                         let
-                            q $ :position prev
-                            prev-mark $ :mark prev
+                            q $ &map:get prev :position
+                            prev-mark $ &map:get prev :mark
                             q2 position
                             direction $ &v- q2 q
-                            p-width $ :width prev
+                            p-width $ &map:get prev :width
                             q-width width
                           write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark) (:: :vertex q2 0 direction p-width mark) (:: :vertex q2 1 direction q-width mark) (:: :vertex q 1 direction p-width prev-mark)
                     do $ reset! *prev
@@ -786,6 +804,8 @@
                             &doseq (x p) (build-polyline-points *prev x write!)
                             build-polyline-points *prev p write!
                       chunk-writer! collect!
+                  :get-params $ &map:get options :get-params
+                  :compute-options $ &map:get options :compute-options
         |comp-polylines-marked $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn comp-polylines-marked (options)
@@ -805,6 +825,7 @@
                             build-polyline-points-marked *prev p write!
                       chunk-writer! collect!
                   :get-params $ &map:get options :get-params
+                  :compute-options $ &map:get options :compute-options
         |count-hex $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn count-hex (xs)
@@ -1277,11 +1298,8 @@
               if (.blank? bg) nil $ let
                   items $ -> (.split bg "\",")
                     map $ fn (piece) (js/parseFloat piece)
-                {}
-                  :r $ nth items 0
-                  :g $ nth items 1
-                  :b $ nth items 2
-                  :a $ either (nth items 3) 1
+                :: :rgba (nth items 0) (nth items 1) (nth items 2)
+                  either (nth items 3) 1
         |bloom? $ %{} :CodeEntry (:doc |)
           :code $ quote
             def bloom? $ = "\"true" (get-env "\"bloom" "\"false")
@@ -1371,8 +1389,7 @@
                   context $ js-await (initializeContext)
                 js-await $ load-images! (.-device context) *global-textures
               initializeCanvasTextures
-              reset-clear-color! $ either bg-color
-                {} (:r 0.18) (:g 0.2) (:b 0.36) (:a 1)
+              reset-clear-color! $ either bg-color (:: :rgba 0.18 0.2 0.36 1)
               render-app!
               renderControl
               startControlLoop 10 onControlEvent
@@ -1495,7 +1512,12 @@
         |reset-clear-color! $ %{} :CodeEntry (:doc |)
           :code $ quote
             defn reset-clear-color! (color)
-              .!reset atomClearColor $ to-js-data color
+              .!reset atomClearColor $ if (tuple? color)
+                tag-match color
+                    :rgba r g b a
+                    js-object (:r r) (:g g) (:b b) (:a a)
+                  _ $ raise (str "\"unknown color: " color)
+                to-js-data color
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lagopus.util $ :require ("\"bottom-tip" :default hud!)
