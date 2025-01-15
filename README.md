@@ -283,6 +283,10 @@ Math functions in `lagopus.math`
 - `rotate-3d origin axis-0 angle p` rotate point `p` around `axis-0`
 - `rotate-3d origin axis-0 angle` create a function to rotate point p
 
+### Gamepad Controls
+
+![Gamepad](./assets/lagopus.png)
+
 ### Resources
 
 Shader functions from https://gist.github.com/munrocket/236ed5ba7e409b8bdf1ff6eca5dcdc39
