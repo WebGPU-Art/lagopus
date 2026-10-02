@@ -5,6 +5,8 @@
 js-out/
 node_modules/
 dist/
+.calcit/
+.yarn/
 
 yarn-error.log
 
