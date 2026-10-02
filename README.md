@@ -7,6 +7,21 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
+### 开发与部署
+
+使用 Calcit 0.27.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+
+```sh
+caps --ci
+corepack yarn install --immutable
+caps verify --toolchain
+corepack yarn dev
+```
+
+另开终端运行 `corepack yarn watch` 可持续编译 Calcit。`corepack yarn build` 生成前端产物；`js-out/` 和 `dist/` 不纳入版本控制。源码使用 `calcit.cirru` 和 `deps.cirru`。
+
+CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，通过 COS action 的 `public-base-url` 启用内置上传校验。需要 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY` 和原有 `rsync_private_key` secrets。保留原服务器部署路径；PR 仅检查和构建，不上传生产资源。
+
 ### APIs
 
 ```cirru
@@ -193,10 +208,13 @@ comp-bubbles $ {}
 ##### Axis
 
 ```cirru
-laopus.comp.curves :refer $ comp-axis
+lagopus.comp.curves :refer $ comp-axis
 
-comp-axis $ {} (:n 20)
+comp-axis $ %some $ {} (:n 20)
   :unit 20
+
+; use default options
+comp-axis $ %none
 ```
 
 ##### Cube
@@ -205,7 +223,7 @@ comp-axis $ {} (:n 20)
 lagopus.comp.cube :refer $ comp-cube
 
 comp-cube $ {}
-  :position $ [] 40 0 0
+  :position $ v3 40 0 0
   :radius 40
 ```
 
@@ -229,9 +247,12 @@ comp-plate $ {} (; :topology :line-strip)
   :radius 160
   :color $ [] 0.04 0.8 0.6
   :transformer $ fn (i)
-    v+ i $ [] 0 0 -10
-  ; :x-direction $ [] 1 0 0
-  ; :y-direction $ [] 0 1 0
+    hint-fn $ {}
+      :args $ [] 'quaternion.vector/V3
+      :return 'quaternion.vector/V3
+    v+ i $ v3 0 0 -10
+  ; :x-direction $ v3 1 0 0
+  ; :y-direction $ v3 0 1 0
   :chromatism 0.14
 ```
 
@@ -242,23 +263,36 @@ lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
 
 comp-button
   {}
-    :position $ [] 240 260 0
+    :position $ v3 240 260 0
     :color $ [] 0.2 0.9 0.6 1
     :size 20
   fn (e d!)
-    d! :tab :sphere
+    hint-fn $ {}
+      :args $ [] 'JsObject $ :: 'Fn
+        {} (:args $ [] 'Enum) (:return 'Unit)
+      :return 'Unit
+    d! $ :: :tab :sphere
 
 comp-slider
   {} $ :position ([] 0 0 0)
   fn (change on-slide)
-    js/console.log "\"Slide" change
+    hint-fn $ {}
+      :args $ [] 'quaternion.complex/Complex $ :: 'Fn
+        {} (:args $ [] 'Enum) (:return 'Unit)
+      :return 'Unit
+    println |Slide change
+    , &unit
 
 comp-drag-point
   {}
-    :position $ :pos state
+    :position $ &map:get state :pos
     :color $ [] 0.6 0.6 1.0 1.0
   fn (move d!)
-    d! cursor $ assoc state :pos move
+    hint-fn $ {}
+      :args $ [] 'quaternion.vector/V3 $ :: 'Fn
+        {} (:args $ [] 'Enum) (:return 'Unit)
+      :return 'Unit
+    d! $ :: :state cursor $ assoc state :pos move
 ```
 
 ##### Stitch
@@ -281,7 +315,7 @@ Math functions in `lagopus.math`
 
 - `fibo-grid-range total` create a list of points constructing Fibonacci Sphere
 - `rotate-3d origin axis-0 angle p` rotate point `p` around `axis-0`
-- `rotate-3d origin axis-0 angle` create a function to rotate point p
+- `rotate-3d-fn origin axis-0 angle` create a function to rotate point p
 
 ### Gamepad Controls
 
