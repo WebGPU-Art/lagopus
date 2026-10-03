@@ -104,7 +104,7 @@
                 textures $ either (&map:get options :textures) ([])
               create! $ js-object
                 :shader $ inject-shader-snippets $ assert-type (&map:get options :shader) 'String
-                :topology $ turn-string $ &map:get options :topology
+                :topology $ to-string $ decode-map-as (&map:get options :topology) 'Tag
                 :attrsList $ to-js-data attrs-list
                 :verticesLength vertices-size
                 :vertices buffers
@@ -2293,7 +2293,7 @@
             runtime/register-shader-result! handle-compilation
             browser/set-resize-handler! resize!
             runtime/reset-canvas! canvas
-            add-watch *store :change store-changed!
+            add-watch! *store :change store-changed!
             runtime/setup-mouse! canvas
             runtime/load-gamepad!
             runtime/paint!
@@ -2312,7 +2312,7 @@
                     :args $ [] 'String 'String
                     :return 'Unit
               if (js-nullish? build-errors)
-                do (reset-memof1-caches!) (render-app!) (remove-watch *store :change) (add-watch *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
+                do (reset-memof1-caches!) (render-app!) (remove-watch! *store :change) (add-watch! *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
                 show! |error $ unsafe-coerce build-errors 'String
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2627,7 +2627,7 @@
                         nth lines $ dec line-num
                         , |
                       , &newline
-                        .join-str
+                        .join-string
                           repeat "| " $ +
                             count $ str line-num
                             , line-pos
