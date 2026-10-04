@@ -9,7 +9,7 @@
 
 ### 开发与部署
 
-使用 Calcit 0.27.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+使用正式 Calcit 0.28.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
 
 ```sh
 caps --ci
@@ -21,6 +21,10 @@ corepack yarn dev
 另开终端运行 `corepack yarn watch` 可持续编译 Calcit。`corepack yarn build` 生成前端产物；`js-out/` 和 `dist/` 不纳入版本控制。源码使用 `calcit.cirru` 和 `deps.cirru`。
 
 CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，通过 COS action 的 `public-base-url` 启用内置上传校验。需要 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY` 和原有 `rsync_private_key` secrets。保留原服务器部署路径；PR 仅检查和构建，不上传生产资源。
+
+类型门禁使用 `calcit --check-only --warn-dyn-method`，并保留全部 18 个公开命名空间的检查。配置边界的 `:topology` 按下文约定检查为 Tag，再转为 WebGPU 所需字符串；watcher 和字符串拼接使用首选 API 名，不依赖 `calcit fix`。CI 使用可读的正式 Action release tag（并非不可变 SHA），上传验证仅由 COS action v1.2.0 执行。
+
+本轮本地完整严格检查、140 个公开定义检查和 JS/Vite 生产构建通过；尚未验证 WebGPU 实机渲染或实际 COS/服务器部署。
 
 ### APIs
 
