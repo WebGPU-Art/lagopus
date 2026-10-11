@@ -44,8 +44,9 @@ jobs:
           set -euo pipefail
           calcit edit format
           git diff --exit-code -- calcit.cirru
-          calcit --check-only --warn-dyn-method
-          calcit analyze check-public --ns lagopus.alias --ns lagopus.browser --ns lagopus.comp.button --ns lagopus.comp.container --ns lagopus.comp.cube --ns lagopus.comp.curves --ns lagopus.comp.image --ns lagopus.comp.plate --ns lagopus.comp.sphere --ns lagopus.comp.spots --ns lagopus.comp.stitch --ns lagopus.config --ns lagopus.cursor --ns lagopus.gpu --ns lagopus.main --ns lagopus.math --ns lagopus.runtime --ns lagopus.util --summary-only --format json
+          calcit --check-only --all-defs --warn-dyn-method --format json
+          calcit test --require-match --summary-only
+          calcit --check-only --ns lagopus.alias --ns lagopus.browser --ns lagopus.comp.button --ns lagopus.comp.container --ns lagopus.comp.cube --ns lagopus.comp.curves --ns lagopus.comp.image --ns lagopus.comp.plate --ns lagopus.comp.sphere --ns lagopus.comp.spots --ns lagopus.comp.stitch --ns lagopus.config --ns lagopus.cursor --ns lagopus.gpu --ns lagopus.main --ns lagopus.math --ns lagopus.runtime --ns lagopus.util --summary-only --format json
       - name: Select frontend CDN path
         id: asset-path
         env:
