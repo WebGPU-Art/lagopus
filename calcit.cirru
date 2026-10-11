@@ -25,14 +25,9 @@
           :schema $ :: 'Trait
         'buffer-format $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn buffer-format (format)
-            case-default format
-              if (string? format) (assert-type format 'String)
+            match format (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
+              _ $ if (string? format) (assert-type format 'String)
                 do (eprintln "|Unknown format" format) |float32
-              :float32 |float32
-              :float32x2 |float32x2
-              :float32x3 |float32x3
-              :float32x4 |float32x4
-              :uint32 |uint32
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'String)
             :args $ [] 'Dynamic
@@ -107,7 +102,7 @@
                 :topology $ to-string $ decode-map-as (&map:get options :topology) 'Tag
                 :attrsList $ to-js-data attrs-list
                 :verticesLength vertices-size
-                :vertices buffers
+                :vertices $ js-array & buffers
                 :hitRegion nil
                 :indices $ if (nil? indices) nil $ let
                     arr $ unsafe-coerce (js-array) NumberArray
@@ -129,7 +124,7 @@
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] (:: 'Map 'Tag 'Dynamic)
               :: 'List $ :: 'Map 'Tag 'Dynamic
-              , 'Number 'JsObject
+              , 'Number $ :: 'List 'lagopus.alias/NumberBuffer
             :features $ #{} :js-ffi
         'expand-attr $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn expand-attr (x)
@@ -181,6 +176,30 @@
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] 'Number
             :features $ #{} :js-ffi
+        'memo-object $ %{} 'CodeEntry
+          :doc "|Reuse the existing memof singleton cache; check its opaque result is a runtime host object before the renderer consumes it. This does not claim a generic cache proof or change cached values, function identity, arguments or clearing."
+          :code $ quote $ defn memo-object (f)
+            let
+                value $ memof1-call f
+              if
+                = :js-object $ type-of value
+                assert-type value 'JsObject
+                raise "|Expected a cached renderer host object"
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'JsObject)
+            :args $ [] $ :: 'Fn
+              {} (:return 'Dynamic)
+                :args $ []
+            :features $ #{} :js-ffi
+          :tests $ [] $ %{} 'TestEntry (:name |reject-cached-calcit-values)
+            :code $ quote $ let
+                calls $ ref 0
+                make! $ fn () (swap! calls inc) 42
+                reject! $ fn () $ try (memo-object make!)
+                  fn (message) message
+              assert= "|Expected a cached renderer host object" $ reject!
+              assert= "|Expected a cached renderer host object" $ reject!
+              assert= 1 @calls
         'object $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn object (options)
             let
@@ -193,30 +212,30 @@
                   {}
                     :args $ [] 'String 'Number
                     :return 'lagopus.alias/NumberBuffer
-                buffers $ js-array & $ map-indexed attrs-list
-                  fn (idx attr)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
-                      :return 'lagopus.alias/NumberBuffer
-                      :features $ #{} :js-ffi
-                    let
-                        buffer $ make-buffer!
-                          buffer-format $ &map:get attr :format
-                          , vertices-size
-                        *offset $ atom 0
-                        field $ assert-type (&map:get attr :field) 'Tag
-                        write! $ fn (x)
-                          hint-fn $ {}
-                            :args $ [] 'Number
-                            :return 'Unit
-                            :features $ #{} :js-ffi
-                          aset buffer @*offset x
-                          swap! *offset inc
-                      collect-from-records! data field idx write!
-                      if
-                        not= @*offset $ .-length buffer
-                        eprintln "|buffer size guessed incorrectly"
-                      , buffer
+                buffers $ map-indexed attrs-list $ fn (idx attr)
+                  hint-fn $ {}
+                    :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
+                    :return 'lagopus.alias/NumberBuffer
+                    :features $ #{} :js-ffi
+                  let
+                      buffer $ make-buffer!
+                        buffer-format $ &map:get attr :format
+                        , vertices-size
+                      *offset $ atom 0
+                      field $ assert-type (&map:get attr :field) 'Tag
+                      write! $ fn (x)
+                        hint-fn $ {}
+                          :args $ [] 'Number
+                          :return 'Unit
+                          :features $ #{} :js-ffi
+                        aset buffer @*offset x
+                        swap! *offset inc
+                        , &unit
+                    collect-from-records! data field idx write!
+                    if
+                      not= @*offset $ .-length buffer
+                      eprintln "|buffer size guessed incorrectly"
+                    , buffer
               create-object! options attrs-list vertices-size buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -267,18 +286,17 @@
                 make-buffer! $ unsafe-coerce newBufferFormatArray $ :: 'Fn
                   {}
                     :args $ [] 'String 'JsObject
-                    :return 'JsObject
+                    :return 'lagopus.alias/NumberBuffer
               writer collect!
               let
-                  buffers $ js-array & $ map-indexed attrs-list
-                    fn (idx attr)
-                      hint-fn $ {}
-                        :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
-                        :return 'JsObject
-                        :features $ #{} :js-ffi
-                      make-buffer!
-                        buffer-format $ &map:get attr :format
-                        unsafe-coerce (aget bundles idx) 'JsObject
+                  buffers $ map-indexed attrs-list $ fn (idx attr)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
+                      :return 'lagopus.alias/NumberBuffer
+                      :features $ #{} :js-ffi
+                    make-buffer!
+                      buffer-format $ &map:get attr :format
+                      unsafe-coerce (aget bundles idx) 'JsObject
                 create-object! options attrs-list @*counter buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -338,6 +356,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.browser :as browser
             lagopus.gpu :refer $ Texture
+            memof.once :refer $ memof1-call
     'lagopus.browser $ %{} 'FileEntry
       :defs $ {}
         'Canvas $ %{} 'CodeEntry (:doc |)
@@ -348,8 +367,8 @@
         'Document $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Document
             .query-selector $ :: 'Fn $ {}
-              :args $ [] 'Document 'String
-              :return $ :: 'JsNullish 'Canvas
+              :args $ [] 'lagopus.browser/Document 'String
+              :return $ :: 'JsNullish 'lagopus.browser/Canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ :: 'Trait
@@ -500,7 +519,7 @@
         'Motion $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Motion
             .at $ :: 'Fn $ {}
-              :args $ [] 'Motion 'Number
+              :args $ [] 'lagopus.comp.button/Motion 'Number
               :return $ :: 'JsNullish 'Number
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
@@ -686,9 +705,15 @@
               :data $ let
                   size 40
                   d 160
-                -> (range-bothway size)
+                ->
+                  range
+                    inc $ negate size
+                    , size
                   map $ fn (x)
-                    -> (range-bothway size)
+                    ->
+                      range
+                        inc $ negate size
+                        , size
                       map $ fn (y)
                         let
                             x0 $ &* d x
@@ -715,12 +740,12 @@
             let
                 cursor $ []
                 states $ assert-type (&map:get store :states) (:: 'Map 'Tag 'Dynamic)
-              group nil (memof1-call comp-tabs)
-                case-default (&map:get store :tab) (group nil)
-                  :axis $ comp-axis $ %some
+              group nil (lagopus.alias/memo-object comp-tabs)
+                match (&map:get store :tab)
+                  :axis $ comp-axis $ Option :some
                     {} (:n 20) (:unit 20)
-                  :mountains $ memof1-call comp-mountains
-                  :city $ memof1-call comp-city
+                  :mountains $ lagopus.alias/memo-object comp-mountains
+                  :city $ lagopus.alias/memo-object comp-city
                   :bends $ group nil
                   :cube $ comp-cube $ {}
                     :position $ v3 40 0 0
@@ -745,6 +770,7 @@
                   :triangles $ comp-triangles-demo
                   :image $ comp-image-demo textures-dict
                   :kaleidoscope $ comp-kaleidoscope textures-dict
+                  _ $ group nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'lagopus.gpu/Texture)
@@ -803,9 +829,15 @@
               :data $ let
                   size 80
                   d 32
-                -> (range-bothway size)
+                ->
+                  range
+                    inc $ negate size
+                    , size
                   map $ fn (x)
-                    -> (range-bothway size)
+                    ->
+                      range
+                        inc $ negate size
+                        , size
                       map $ fn (y)
                         let
                             x0 $ &* d x
@@ -1097,7 +1129,6 @@
             lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point comp-flat-button
             lagopus.comp.curves :refer $ comp-curves comp-axis comp-polylines comp-polylines-marked break-mark
             lagopus.comp.spots :refer $ comp-spots comp-bubbles
-            memof.once :refer $ memof1-call
             quaternion.vector :refer $ v+ v3
             lagopus.comp.cube :refer $ comp-cube
             lagopus.comp.sphere :refer $ comp-sphere
@@ -1305,19 +1336,25 @@
                         :return 'Unit
                     :return 'Unit
                   &doseq
-                    idx $ range-bothway n
+                    idx $ range
+                      inc $ negate n
+                      , n
                     write! $ :: :vertex
                       v3 (* idx unit) 0 0
                       , w 0
                   write! break-mark
                   &doseq
-                    idx $ range-bothway n
+                    idx $ range
+                      inc $ negate n
+                      , n
                     write! $ :: :vertex
                       v3 0 (* idx unit) 0
                       , w 1
                   write! break-mark
                   &doseq
-                    idx $ range-bothway n
+                    idx $ range
+                      inc $ negate n
+                      , n
                     write! $ :: :vertex
                       v3 0 0 $ * idx unit
                       , w 2
@@ -2062,7 +2099,7 @@
           :code $ quote $ def bg-color
             match (get-env |bg-color)
               (:some value) (parse-bg-color value)
-              (:none) (%none)
+              (:none) (Option :none)
           :examples $ []
           :schema $ :: 'Dynamic
         'bloom? $ %{} 'CodeEntry (:doc |)
@@ -2099,10 +2136,10 @@
           :schema $ :: 'Dynamic
         'parse-bg-color $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-bg-color (bg)
-            if (blank? bg) (%none)
+            if (blank? bg) (Option :none)
               let
                   items $ map (split bg |,) browser/parse-color-channel
-                %some $ :: :rgba
+                Option :some $ :: :rgba
                   .unwrap $ nth items 0
                   .unwrap $ nth items 1
                   .unwrap $ nth items 2
@@ -2272,6 +2309,7 @@
             let
                 texture $ js-await $ gpu/load-texture! gpu-device |https://cdn.tiye.me/logo/tiye.jpg
               swap! *textures assoc :tiye texture
+              , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ :: 'Fn $ {} (:async true) (:return 'Unit)
@@ -2607,7 +2645,7 @@
         'ShaderMessages $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait ShaderMessages
             .at $ :: 'Fn $ {}
-              :args $ [] 'ShaderMessages 'Number
+              :args $ [] 'lagopus.util/ShaderMessages 'Number
               :return $ :: 'JsNullish 'lagopus.util/ShaderMessage
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)

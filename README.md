@@ -9,7 +9,7 @@
 
 ### 开发与部署
 
-使用正式 Calcit 0.28.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+使用正式 Calcit 0.29.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
 
 ```sh
 caps --ci
@@ -22,9 +22,15 @@ corepack yarn dev
 
 CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，通过 COS action 的 `public-base-url` 启用内置上传校验。需要 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY` 和原有 `rsync_private_key` secrets。保留原服务器部署路径；PR 仅检查和构建，不上传生产资源。
 
-类型门禁使用 `calcit --check-only --warn-dyn-method`，并保留全部 18 个公开命名空间的检查。配置边界的 `:topology` 按下文约定检查为 Tag，再转为 WebGPU 所需字符串；watcher 和字符串拼接使用首选 API 名，不依赖 `calcit fix`。CI 使用可读的正式 Action release tag（并非不可变 SHA），上传验证仅由 COS action v1.2.0 执行。
+类型门禁使用 `calcit --check-only --all-defs --warn-dyn-method --format json`，并保留全部 18 个公开命名空间的检查。配置边界的 `:topology` 按下文约定检查为 Tag，再转为 WebGPU 所需字符串；watcher 和字符串拼接使用首选 API 名，不依赖 `calcit fix`。CI 使用可读的正式 Action release tag（并非不可变 SHA），上传验证仅由 COS action v1.2.0 执行。
 
-本轮本地完整严格检查、140 个公开定义检查和 JS/Vite 生产构建通过；尚未验证 WebGPU 实机渲染或实际 COS/服务器部署。
+当前 0.29 迁移通过全部 191 个严格定义、141 个公开定义和 JS/Vite 构建，
+deprecated 与静态动态方法调用均为零。修正 external trait 的限定类型引用、Unit
+返回，以及缓冲区的 `List<NumberBuffer>` 合同。`memo-object` 保留原 memof 缓存，
+在渲染边界检查实际 `type-of` 为 `:js-object` 后再使用类型断言，不声称异构缓存
+已获得泛型证明；附着回归测试验证非宿主缓存结果被拒绝且仍然复用缓存。
+没有新增 unsafe cast、放宽类型或校验脚本。65 个既有类型槽债务仍公开保留；
+WebGPU 实机、PR/main CI 和部署需分别验收。
 
 ### APIs
 
@@ -214,11 +220,11 @@ comp-bubbles $ {}
 ```cirru
 lagopus.comp.curves :refer $ comp-axis
 
-comp-axis $ %some $ {} (:n 20)
+comp-axis $ Option :some $ {} (:n 20)
   :unit 20
 
 ; use default options
-comp-axis $ %none
+comp-axis $ Option :none
 ```
 
 ##### Cube
