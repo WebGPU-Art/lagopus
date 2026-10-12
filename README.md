@@ -34,6 +34,12 @@ WebGPU 实机、PR/main CI 和部署需分别验收。
 
 ### APIs
 
+`lagopus.alias/group` accepts nullable children, so conditional children such as
+`group nil (if show? (comp-axis) js/null)` keep their original child indices. Use
+explicit `js/null` for absent host children rather than Calcit's implicit `nil`.
+Empty children
+are skipped by traversal, not removed from the group's children array.
+
 ```cirru
 :lagopus.alias :refer $ object
 
