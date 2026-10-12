@@ -1,5 +1,5 @@
 {
-  "version": "0.5.11",
+  "version": "0.5.12",
   "dependencies": {
     "@calcit/procs": "0.29.1",
     "@triadica/lagopus": "0.2.0",
