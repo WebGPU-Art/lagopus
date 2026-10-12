@@ -147,14 +147,15 @@
                 make-group $ unsafe-coerce lagopus/group $ :: 'Fn
                   {}
                     :args $ [] 'Nil
-                    :rest 'JsObject
+                    :rest $ :: 'JsNullish 'JsObject
                     :return 'JsObject
               make-group nil & children
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:rest 'JsObject) (:return 'JsObject)
+          :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] 'Dynamic
             :features $ #{} :js-ffi
+            :rest $ :: 'JsNullish 'JsObject
         'inject-shader-snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn inject-shader-snippets (code)
             -> code (browser/replace-first "|#import lagopus::simplex" wgsl-simplex) (browser/replace-first "|#import lagopus::perspective" wgsl-perspective) (browser/replace-first "|#import lagopus::colors" wgsl-colors) (browser/replace-first "|#import lagopus::rand" wgsl-rand) (browser/replace-first "|#import lagopus::rotation" wgsl-rotation) (browser/replace-first "|#import lagopus::hsluv" wgsl-hsluv)
