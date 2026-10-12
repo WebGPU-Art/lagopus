@@ -9,7 +9,7 @@
 
 ### 开发与部署
 
-使用正式 Calcit 0.29.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+使用正式 Calcit 0.29.1、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
 
 ```sh
 caps --ci
@@ -31,6 +31,10 @@ deprecated 与静态动态方法调用均为零。修正 external trait 的限�
 已获得泛型证明；附着回归测试验证非宿主缓存结果被拒绝且仍然复用缓存。
 没有新增 unsafe cast、放宽类型或校验脚本。65 个既有类型槽债务仍公开保留；
 WebGPU 实机、PR/main CI 和部署需分别验收。
+
+候选模块 `0.5.12` 对齐已发布的 Memof `0.0.38`，使下游可使用保留返回类型的
+单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
+边界不变；候选的发布状态以 GitHub Releases 为准。
 
 ### APIs
 
