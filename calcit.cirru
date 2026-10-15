@@ -37,7 +37,7 @@
               &doseq
                 x $ assert-type indices $ :: 'List 'Dynamic
                 collect-array! x collect!
-              collect! $ assert-type indices 'Number
+              collect! $ decode-map-as indices 'Number
             , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
@@ -59,7 +59,7 @@
                   write-attribute! xs write!
               (map? data)
                 let
-                    row $ assert-type data $ :: 'Map 'Tag 'Dynamic
+                    row $ decode-map-as data $ :: 'Map 'Tag 'Dynamic
                   write-attribute!
                     .unwrap $ get row field
                     , write!
@@ -138,7 +138,7 @@
               {}
                 :field $ .unwrap $ nth x 1
                 :format $ .unwrap $ nth x 0
-              assert-type x $ :: 'Map 'Tag 'Dynamic
+              decode-map-as x $ :: 'Map 'Tag 'Dynamic
           :examples $ []
           :schema $ :: 'Fn $ {}
             :args $ [] 'Dynamic
@@ -348,14 +348,14 @@
                 match (assert-type xs 'Enum)
                   (:v3 x y z)
                     do
-                      write! $ assert-type x 'Number
-                      write! $ assert-type y 'Number
-                      write! $ assert-type z 'Number
+                      write! $ decode-map-as x 'Number
+                      write! $ decode-map-as y 'Number
+                      write! $ decode-map-as z 'Number
               (list? xs)
                 &doseq
                   x $ assert-type xs $ :: 'List 'Dynamic
-                  write! $ assert-type x 'Number
-              true $ write! $ assert-type xs 'Number
+                  write! $ decode-map-as x 'Number
+              true $ write! $ decode-map-as xs 'Number
             , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
@@ -1546,7 +1546,7 @@
               .unwrap $ nth point 1
               .unwrap-or
                 get
-                  assert-type point $ :: 'Map 'Tag 'Dynamic
+                  decode-map-as point $ :: 'Map 'Tag 'Dynamic
                   , :position
                 , nil
           :examples $ []
@@ -1554,13 +1554,13 @@
             :args $ [] 'Dynamic
         'curve-width $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn curve-width (point)
-            assert-type
+            decode-map-as
               either
                 if (enum? point)
                   .unwrap-or (nth point 2) nil
                   .unwrap-or
                     get
-                      assert-type point $ :: 'Map 'Tag 'Dynamic
+                      decode-map-as point $ :: 'Map 'Tag 'Dynamic
                       , :width
                     , nil
                 , 1
@@ -1572,7 +1572,7 @@
           :code $ quote $ defn point-v3 (point)
             if (list? point)
               let
-                  values $ assert-type point $ :: 'List 'Number
+                  values $ decode-map-as point $ :: 'List 'Number
                 v3
                   .unwrap $ nth values 0
                   .unwrap $ nth values 1
@@ -2327,8 +2327,8 @@
         'Response $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Response
             .blob $ :: 'Fn $ {}
-              :args $ [] 'Response
-              :return 'Blob
+              :args $ [] 'lagopus.gpu/Response
+              :return 'lagopus.gpu/Blob
               :async true
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
@@ -2810,10 +2810,10 @@
                   match (assert-type color 'Enum)
                     (:rgba r g b a)
                       js-object
-                        :r $ assert-type r 'Number
-                        :g $ assert-type g 'Number
-                        :b $ assert-type b 'Number
-                        :a $ assert-type a 'Number
+                        :r $ decode-map-as r 'Number
+                        :g $ decode-map-as g 'Number
+                        :b $ decode-map-as b 'Number
+                        :a $ decode-map-as a 'Number
                     _ $ raise $ str "|unknown color: " color
                   unsafe-coerce (to-js-data color) 'JsObject
               color-atom .reset host-color
