@@ -100,7 +100,7 @@
                   .unwrap-or (get options :textures) nil
                   []
               create! $ js-object
-                :shader $ inject-shader-snippets $ assert-type
+                :shader $ inject-shader-snippets $ decode-map-as
                   .unwrap-or (get options :shader) nil
                   , 'String
                 :topology $ to-string $ decode-map-as
@@ -211,7 +211,7 @@
           :code $ quote $ defn object (options)
             let
                 attrs-list $ map
-                  assert-type
+                  decode-map-as
                     .unwrap-or (get options :attrs-list) nil
                     :: 'List 'Dynamic
                   , expand-attr
@@ -231,7 +231,7 @@
                         buffer-format $ .unwrap-or (get attr :format) nil
                         , vertices-size
                       *offset $ atom 0
-                      field $ assert-type
+                      field $ decode-map-as
                         .unwrap-or (get attr :field) nil
                         , 'Tag
                       write! $ fn (x)
@@ -257,7 +257,7 @@
           :code $ quote $ defn object-writer (options)
             let
                 attrs-list $ map
-                  assert-type
+                  decode-map-as
                     .unwrap-or (get options :attrs-list) nil
                     :: 'List 'Dynamic
                   , expand-attr
@@ -1172,7 +1172,7 @@
                     .unwrap-or (get options :position) nil
                     v3 0 0 0
                   , 'quaternion.vector/V3
-                radius $ assert-type
+                radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
                     , 80
@@ -1693,17 +1693,17 @@
                     .unwrap-or (get options :y-direction) nil
                     v3 0 1 0
                   , 'quaternion.vector/V3
-                radius $ assert-type
+                radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
                     , 80
                   , 'Number
-                iteration $ assert-type
+                iteration $ decode-map-as
                   either
                     .unwrap-or (get options :iteration) nil
                     , 4
                   , 'Number
-                color $ assert-type
+                color $ decode-map-as
                   either
                     .unwrap-or (get options :color) nil
                     [] 0.6 0.8 0.76
@@ -1717,7 +1717,7 @@
                   :: 'Fn $ {}
                     :args $ [] 'quaternion.vector/V3
                     :return 'quaternion.vector/V3
-                chromatism $ assert-type
+                chromatism $ decode-map-as
                   either
                     .unwrap-or (get options :chromatism) nil
                     , 0.1
@@ -1846,17 +1846,17 @@
                     .unwrap-or (get options :position) nil
                     v3 0 0 0
                   , 'quaternion.vector/V3
-                radius $ assert-type
+                radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
                     , 40
                   , 'Number
-                iteration $ assert-type
+                iteration $ decode-map-as
                   either
                     .unwrap-or (get options :iteration) nil
                     , 2
                   , 'Number
-                color $ assert-type
+                color $ decode-map-as
                   either
                     .unwrap-or (get options :color) nil
                     [] 0.6 0.8 0.76
@@ -1927,7 +1927,7 @@
         'comp-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-bubbles (options)
             let
-                bubbles $ assert-type
+                bubbles $ decode-map-as
                   either
                     .unwrap-or (get options :bubbles) nil
                     [] $ [] 0 0 0 100
@@ -1967,7 +1967,7 @@
         'comp-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-spots (options)
             let
-                points $ assert-type
+                points $ decode-map-as
                   either
                     .unwrap-or (get options :points) nil
                     []
@@ -1975,17 +1975,17 @@
                 color $ either
                   .unwrap-or (get options :color) nil
                   [] 0.8 0.8 1
-                radius $ assert-type
+                radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
                     , 12
                   , 'Number
-                shift $ assert-type
+                shift $ decode-map-as
                   either
                     .unwrap-or (get options :shift) nil
                     , 40
                   , 'Number
-                vertex-count $ &max 3 $ assert-type
+                vertex-count $ &max 3 $ decode-map-as
                   either
                     .unwrap-or (get options :vertex-count) nil
                     , 8

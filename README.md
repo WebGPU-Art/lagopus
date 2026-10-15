@@ -54,6 +54,12 @@ unsafe 或预算例外，原 npm 预发布依赖也未冒充已迁移为正式�
 颜色 atom 值；这不代表 WebGPU 场景验收。Response trait 的 Blob/Response 类型引用
 改用所属命名空间，纹理加载回调证明已通过，未增加 FFI 信任或强转。
 
+五个几何组件的 13 处 Number/List 配置边界，以及对象构建的 4 处属性列表、字段 Tag、
+shader String 边界也已改用真实解码。缺省配置仍在原位置回退；必填字段未增加默认值。
+从实际源码提取的边界表达式通过 native 回放，覆盖缺失、nil、零值/列表与非法值；
+不把该范围等同于完整 GPU 渲染验收。完整 strict 当前仍有 29 项诊断
+（27 项项目问题、2 项 Memof 上游问题），主要还包括 V3、回调、纹理和宿主数组证明。
+
 ### APIs
 
 `lagopus.alias/group` accepts nullable children, so conditional children such as
