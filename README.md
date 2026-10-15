@@ -9,7 +9,7 @@
 
 ### 开发与部署
 
-使用正式 Calcit 0.29.1、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+本分支正在迁移到正式 Calcit 0.30.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
 
 ```sh
 caps --ci
@@ -24,7 +24,7 @@ CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopu
 
 类型门禁使用 `calcit --check-only --all-defs --warn-dyn-method --format json`，并保留全部 18 个公开命名空间的检查。配置边界的 `:topology` 按下文约定检查为 Tag，再转为 WebGPU 所需字符串；watcher 和字符串拼接使用首选 API 名，不依赖 `calcit fix`。CI 使用可读的正式 Action release tag（并非不可变 SHA），上传验证仅由 COS action v1.2.0 执行。
 
-当前 0.29 迁移通过全部 191 个严格定义、141 个公开定义和 JS/Vite 构建，
+此前 0.29 迁移通过全部 191 个严格定义、141 个公开定义和 JS/Vite 构建，
 deprecated 与静态动态方法调用均为零。修正 external trait 的限定类型引用、Unit
 返回，以及缓冲区的 `List<NumberBuffer>` 合同。`memo-object` 保留原 memof 缓存，
 在渲染边界检查实际 `type-of` 为 `:js-object` 后再使用类型断言，不声称异构缓存
@@ -35,6 +35,18 @@ WebGPU 实机、PR/main CI 和部署需分别验收。
 候选模块 `0.5.12` 对齐已发布的 Memof `0.0.38`，使下游可使用保留返回类型的
 单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
 边界不变；候选的发布状态以 GitHub Releases 为准。
+
+本轮本地候选配对 Calcit/procs 0.30.0 与正式 Quaternion 0.2.14。21 个定义中的
+77 处底层 Map 读取改用公开 get/Option，逐项核对 Map 接收者，保留原 nil 回退、
+求值次数与现有配置默认值，不新增逐字段校验层。游标读取改为真实解码既有
+List<Tag> / Map<Tag,Dynamic> 合同；非法形状会比过去的伪类型断言更早失败。
+游标更新按固定 :states 根键和动态子路径分开，保留根 Map 类型及原路径/数据。
+
+当前普通全定义检查 191/191、原测试和 JS/Vite 构建通过；游标作用域的断言、调用及
+返回证明已通过 native/生成 JS 小范围回放。**完整 strict 仍失败**，报告含 41 项项目
+证明错误和 2 项 Memof 上游诊断，不把普通检查通过当成完整类型验收。尚未创建 PR、
+发版或部署；WebGPU 实机及其他输入边界仍须继续处理。没有新增永久 checker、测试框架、
+unsafe 或预算例外，原 npm 预发布依赖也未冒充已迁移为正式版。
 
 ### APIs
 
@@ -305,7 +317,7 @@ comp-slider
 
 comp-drag-point
   {}
-    :position $ &map:get state :pos
+    :position $ (get state :pos).unwrap-or nil
     :color $ [] 0.6 0.6 1.0 1.0
   fn (move d!)
     hint-fn $ {}

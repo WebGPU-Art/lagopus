@@ -95,11 +95,17 @@
                   {}
                     :args $ [] 'JsObject
                     :return 'JsObject
-                indices $ &map:get options :indices
-                textures $ either (&map:get options :textures) ([])
+                indices $ .unwrap-or (get options :indices) nil
+                textures $ either
+                  .unwrap-or (get options :textures) nil
+                  []
               create! $ js-object
-                :shader $ inject-shader-snippets $ assert-type (&map:get options :shader) 'String
-                :topology $ to-string $ decode-map-as (&map:get options :topology) 'Tag
+                :shader $ inject-shader-snippets $ assert-type
+                  .unwrap-or (get options :shader) nil
+                  , 'String
+                :topology $ to-string $ decode-map-as
+                  .unwrap-or (get options :topology) nil
+                  , 'Tag
                 :attrsList $ to-js-data attrs-list
                 :verticesLength vertices-size
                 :vertices $ js-array & buffers
@@ -115,10 +121,10 @@
                       , &unit
                   collect-array! indices collect!
                   index-buffer! $ unsafe-coerce arr 'JsObject
-                :getParams $ &map:get options :get-params
+                :getParams $ .unwrap-or (get options :get-params) nil
                 :textures $ js-array & $ assert-type textures (:: 'List 'lagopus.gpu/Texture)
-                :label $ &map:get options :label
-                :computeOptions $ &map:get options :compute-options
+                :label $ .unwrap-or (get options :label) nil
+                :computeOptions $ .unwrap-or (get options :compute-options) nil
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ :: 'Fn $ {} (:return 'JsObject)
@@ -205,9 +211,11 @@
           :code $ quote $ defn object (options)
             let
                 attrs-list $ map
-                  assert-type (&map:get options :attrs-list) (:: 'List 'Dynamic)
+                  assert-type
+                    .unwrap-or (get options :attrs-list) nil
+                    :: 'List 'Dynamic
                   , expand-attr
-                data $ &map:get options :data
+                data $ .unwrap-or (get options :data) nil
                 vertices-size $ count-recursive data
                 make-buffer! $ unsafe-coerce newBufferFormatLength $ :: 'Fn
                   {}
@@ -220,10 +228,12 @@
                     :features $ #{} :js-ffi
                   let
                       buffer $ make-buffer!
-                        buffer-format $ &map:get attr :format
+                        buffer-format $ .unwrap-or (get attr :format) nil
                         , vertices-size
                       *offset $ atom 0
-                      field $ assert-type (&map:get attr :field) 'Tag
+                      field $ assert-type
+                        .unwrap-or (get attr :field) nil
+                        , 'Tag
                       write! $ fn (x)
                         hint-fn $ {}
                           :args $ [] 'Number
@@ -247,9 +257,12 @@
           :code $ quote $ defn object-writer (options)
             let
                 attrs-list $ map
-                  assert-type (&map:get options :attrs-list) (:: 'List 'Dynamic)
+                  assert-type
+                    .unwrap-or (get options :attrs-list) nil
+                    :: 'List 'Dynamic
                   , expand-attr
-                writer $ assert-type (&map:get options :writer)
+                writer $ assert-type
+                  .unwrap-or (get options :writer) nil
                   :: 'Fn $ {}
                     :args $ [] $ :: 'Fn
                       {}
@@ -296,7 +309,7 @@
                       :return 'lagopus.alias/NumberBuffer
                       :features $ #{} :js-ffi
                     make-buffer!
-                      buffer-format $ &map:get attr :format
+                      buffer-format $ .unwrap-or (get attr :format) nil
                       unsafe-coerce (aget bundles idx) 'JsObject
                 create-object! options attrs-list @*counter buffers
           :examples $ []
@@ -528,7 +541,9 @@
         'comp-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-button (props on-click)
             let
-                position $ v3-js $ assert-type (&map:get props :position) 'quaternion.vector/V3
+                position $ v3-js $ assert-type
+                  .unwrap-or (get props :position) nil
+                  , 'quaternion.vector/V3
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
@@ -555,8 +570,8 @@
         'comp-drag-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-drag-point (props on-drag)
             let
-                color $ &map:get props :color
-                position $ &map:get props :position
+                color $ .unwrap-or (get props :color) nil
+                position $ .unwrap-or (get props :position) nil
                 create! $ unsafe-coerce compDragPoint $ :: 'Fn
                   {}
                     :args $ [] 'JsObject $ :: 'Fn
@@ -599,7 +614,9 @@
         'comp-flat-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-flat-button (props on-click)
             let
-                position $ v3-js $ assert-type (&map:get props :position) 'quaternion.vector/V3
+                position $ v3-js $ assert-type
+                  .unwrap-or (get props :position) nil
+                  , 'quaternion.vector/V3
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
@@ -740,9 +757,12 @@
           :code $ quote $ defn comp-container (store textures-dict)
             let
                 cursor $ []
-                states $ assert-type (&map:get store :states) (:: 'Map 'Tag 'Dynamic)
+                states $ assert-type
+                  .unwrap-or (get store :states) nil
+                  :: 'Map 'Tag 'Dynamic
               group nil (lagopus.alias/memo-object comp-tabs)
-                match (&map:get store :tab)
+                match
+                  .unwrap-or (get store :tab) nil
                   :axis $ comp-axis $ Option :some
                     {} (:n 20) (:unit 20)
                   :mountains $ lagopus.alias/memo-object comp-mountains
@@ -778,9 +798,12 @@
         'comp-control-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-control-demo (states)
             let
-                cursor $ assert-type (&map:get states :cursor) (:: 'List 'Tag)
+                cursor $ assert-type
+                  .unwrap-or (get states :cursor) nil
+                  :: 'List 'Tag
                 state $ assert-type
-                  either (&map:get states :data)
+                  either
+                    .unwrap-or (get states :data) nil
                     {} $ :pos $ [] 60 0 0
                   :: 'Map 'Tag 'Dynamic
               group nil
@@ -796,7 +819,7 @@
                     println |Slide change
                 comp-drag-point
                   {}
-                    :position $ &map:get state :pos
+                    :position $ .unwrap-or (get state :pos) nil
                     :color $ [] 0.6 0.6 1.0 1.0
                   fn (move d!)
                     hint-fn $ {}
@@ -1145,10 +1168,14 @@
           :code $ quote $ defn comp-cube (options)
             let
                 base $ assert-type
-                  either (&map:get options :position) (v3 0 0 0)
+                  either
+                    .unwrap-or (get options :position) nil
+                    v3 0 0 0
                   , 'quaternion.vector/V3
                 radius $ assert-type
-                  either (&map:get options :radius) 80
+                  either
+                    .unwrap-or (get options :radius) nil
+                    , 80
                   , 'Number
               object $ {} (:shader wgsl-cube)
                 :topology $ do :line-strip :triangle-list
@@ -1242,10 +1269,12 @@
                     reset! *prev $ {} (:position position) (:older nil) (:width width)
                     let
                         prev $ assert-type previous $ :: 'Map 'Tag 'Dynamic
-                        older $ &map:get prev :older
-                        q $ point-v3 $ &map:get prev :position
+                        older $ .unwrap-or (get prev :older) nil
+                        q $ point-v3 $ .unwrap-or (get prev :position) nil
                         q2 position
-                        p-width $ assert-type (&map:get prev :width) 'Number
+                        p-width $ assert-type
+                          .unwrap-or (get prev :width) nil
+                          , 'Number
                         q-width width
                         direction2 $ &v- q2 q
                         direction $ if (nil? older) direction2 $ &v- q (point-v3 older)
@@ -1271,12 +1300,16 @@
                     reset! *prev $ {} (:position position) (:older nil) (:width width) (:mark mark)
                     let
                         prev $ assert-type previous $ :: 'Map 'Tag 'Dynamic
-                        older $ &map:get prev :older
-                        q $ point-v3 $ &map:get prev :position
+                        older $ .unwrap-or (get prev :older) nil
+                        q $ point-v3 $ .unwrap-or (get prev :position) nil
                         q2 position
-                        p-width $ assert-type (&map:get prev :width) 'Number
+                        p-width $ assert-type
+                          .unwrap-or (get prev :width) nil
+                          , 'Number
                         q-width width
-                        prev-mark $ assert-type (&map:get prev :mark) 'Number
+                        prev-mark $ assert-type
+                          .unwrap-or (get prev :mark) nil
+                          , 'Number
                         direction2 $ &v- q2 q
                         direction $ if (nil? older) direction2 $ &v- q (point-v3 older)
                       reset! *prev $ {} (:position position) (:older older) (:width p-width) (:mark mark)
@@ -1367,11 +1400,17 @@
           :code $ quote $ defn comp-curves (options)
             let
                 curves $ assert-type
-                  either (&map:get options :curves) ([])
+                  either
+                    .unwrap-or (get options :curves) nil
+                    []
                   :: 'List $ :: 'List 'Dynamic
               object $ {}
-                :shader $ either (&map:get options :shader) wgsl-curves
-                :topology $ either (&map:get options :topology) :triangle-list
+                :shader $ either
+                  .unwrap-or (get options :shader) nil
+                  , wgsl-curves
+                :topology $ either
+                  .unwrap-or (get options :topology) nil
+                  , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
                     size $ count curves
@@ -1387,7 +1426,8 @@
           :code $ quote $ defn comp-polylines (options)
             let
                 chunk-writer! $ assert-type
-                  either (&map:get options :writer)
+                  either
+                    .unwrap-or (get options :writer) nil
                     fn (_collect)
                       hint-fn $ {}
                         :args $ [] $ :: 'Fn
@@ -1403,8 +1443,12 @@
                         :return 'Unit
                     :return 'Unit
               object-writer $ {}
-                :shader $ either (&map:get options :shader) wgsl-polylines
-                :topology $ either (&map:get options :topology) :triangle-list
+                :shader $ either
+                  .unwrap-or (get options :shader) nil
+                  , wgsl-polylines
+                :topology $ either
+                  .unwrap-or (get options :topology) nil
+                  , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
                 :writer $ fn (write!)
                   hint-fn $ {}
@@ -1426,8 +1470,8 @@
                           build-polyline-points *prev (assert-type p 'Enum) write!
                         , &unit
                     chunk-writer! collect!
-                :get-params $ &map:get options :get-params
-                :compute-options $ &map:get options :compute-options
+                :get-params $ .unwrap-or (get options :get-params) nil
+                :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
@@ -1435,7 +1479,8 @@
           :code $ quote $ defn comp-polylines-marked (options)
             let
                 chunk-writer! $ assert-type
-                  either (&map:get options :writer)
+                  either
+                    .unwrap-or (get options :writer) nil
                     fn (_collect)
                       hint-fn $ {}
                         :args $ [] $ :: 'Fn
@@ -1451,8 +1496,12 @@
                         :return 'Unit
                     :return 'Unit
               object-writer $ {}
-                :shader $ either (&map:get options :shader) wgsl-polylines-marked
-                :topology $ either (&map:get options :topology) :triangle-list
+                :shader $ either
+                  .unwrap-or (get options :shader) nil
+                  , wgsl-polylines-marked
+                :topology $ either
+                  .unwrap-or (get options :topology) nil
+                  , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
                 :writer $ fn (write!)
                   hint-fn $ {}
@@ -1474,8 +1523,8 @@
                           build-polyline-points-marked *prev (assert-type p 'Enum) write!
                         , &unit
                     chunk-writer! collect!
-                :get-params $ &map:get options :get-params
-                :compute-options $ &map:get options :compute-options
+                :get-params $ .unwrap-or (get options :get-params) nil
+                :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
@@ -1495,9 +1544,11 @@
           :code $ quote $ defn curve-position (point)
             point-v3 $ if (enum? point)
               .unwrap $ nth point 1
-              &map:get
-                assert-type point $ :: 'Map 'Tag 'Dynamic
-                , :position
+              .unwrap-or
+                get
+                  assert-type point $ :: 'Map 'Tag 'Dynamic
+                  , :position
+                , nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
             :args $ [] 'Dynamic
@@ -1507,9 +1558,11 @@
               either
                 if (enum? point)
                   .unwrap-or (nth point 2) nil
-                  &map:get
-                    assert-type point $ :: 'Map 'Tag 'Dynamic
-                    , :width
+                  .unwrap-or
+                    get
+                      assert-type point $ :: 'Map 'Tag 'Dynamic
+                      , :width
+                    , nil
                 , 1
               , 'Number
           :examples $ []
@@ -1626,36 +1679,56 @@
           :code $ quote $ defn comp-plate (options)
             let
                 base $ assert-type
-                  either (&map:get options :position) (v3 0 0 0)
+                  either
+                    .unwrap-or (get options :position) nil
+                    v3 0 0 0
                   , 'quaternion.vector/V3
                 x-direction $ assert-type
-                  either (&map:get options :x-direction) (v3 1 0 0)
+                  either
+                    .unwrap-or (get options :x-direction) nil
+                    v3 1 0 0
                   , 'quaternion.vector/V3
                 y-direction $ assert-type
-                  either (&map:get options :y-direction) (v3 0 1 0)
+                  either
+                    .unwrap-or (get options :y-direction) nil
+                    v3 0 1 0
                   , 'quaternion.vector/V3
                 radius $ assert-type
-                  either (&map:get options :radius) 80
+                  either
+                    .unwrap-or (get options :radius) nil
+                    , 80
                   , 'Number
                 iteration $ assert-type
-                  either (&map:get options :iteration) 4
+                  either
+                    .unwrap-or (get options :iteration) nil
+                    , 4
                   , 'Number
                 color $ assert-type
-                  either (&map:get options :color) ([] 0.6 0.8 0.76)
+                  either
+                    .unwrap-or (get options :color) nil
+                    [] 0.6 0.8 0.76
                   :: 'List 'Number
                 *counter $ atom 0
                 r-unit $ / radius iteration
                 transformer $ assert-type
-                  either (&map:get options :transformer) identity
+                  either
+                    .unwrap-or (get options :transformer) nil
+                    , identity
                   :: 'Fn $ {}
                     :args $ [] 'quaternion.vector/V3
                     :return 'quaternion.vector/V3
                 chromatism $ assert-type
-                  either (&map:get options :chromatism) 0.1
+                  either
+                    .unwrap-or (get options :chromatism) nil
+                    , 0.1
                   , 'Number
               object $ {}
-                :shader $ either (&map:get options :shader) wgsl-plate
-                :topology $ either (&map:get options :topology) :triangle-list
+                :shader $ either
+                  .unwrap-or (get options :shader) nil
+                  , wgsl-plate
+                :topology $ either
+                  .unwrap-or (get options :topology) nil
+                  , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map (range 6)
                   fn (section-idx)
@@ -1769,21 +1842,33 @@
           :code $ quote $ defn comp-sphere (options)
             let
                 base $ assert-type
-                  either (&map:get options :position) (v3 0 0 0)
+                  either
+                    .unwrap-or (get options :position) nil
+                    v3 0 0 0
                   , 'quaternion.vector/V3
                 radius $ assert-type
-                  either (&map:get options :radius) 40
+                  either
+                    .unwrap-or (get options :radius) nil
+                    , 40
                   , 'Number
                 iteration $ assert-type
-                  either (&map:get options :iteration) 2
+                  either
+                    .unwrap-or (get options :iteration) nil
+                    , 2
                   , 'Number
                 color $ assert-type
-                  either (&map:get options :color) ([] 0.6 0.8 0.76)
+                  either
+                    .unwrap-or (get options :color) nil
+                    [] 0.6 0.8 0.76
                   :: 'List 'Number
                 *counter $ atom 0
               object $ {}
-                :shader $ either (&map:get options :shader) wgsl-sphere
-                :topology $ either (&map:get options :topology) :triangle-list
+                :shader $ either
+                  .unwrap-or (get options :shader) nil
+                  , wgsl-sphere
+                :topology $ either
+                  .unwrap-or (get options :topology) nil
+                  , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map unit-triangles $ fn (xs)
                   hint-fn $ {}
@@ -1843,7 +1928,8 @@
           :code $ quote $ defn comp-bubbles (options)
             let
                 bubbles $ assert-type
-                  either (&map:get options :bubbles)
+                  either
+                    .unwrap-or (get options :bubbles) nil
                     [] $ [] 0 0 0 100
                   :: 'List $ :: 'List 'Number
               object $ {} (:shader wgsl-bubbles) (:topology :line-list)
@@ -1882,21 +1968,35 @@
           :code $ quote $ defn comp-spots (options)
             let
                 points $ assert-type
-                  either (&map:get options :points) ([])
+                  either
+                    .unwrap-or (get options :points) nil
+                    []
                   :: 'List 'Dynamic
-                color $ either (&map:get options :color) ([] 0.8 0.8 1)
+                color $ either
+                  .unwrap-or (get options :color) nil
+                  [] 0.8 0.8 1
                 radius $ assert-type
-                  either (&map:get options :radius) 12
+                  either
+                    .unwrap-or (get options :radius) nil
+                    , 12
                   , 'Number
                 shift $ assert-type
-                  either (&map:get options :shift) 40
+                  either
+                    .unwrap-or (get options :shift) nil
+                    , 40
                   , 'Number
                 vertex-count $ &max 3 $ assert-type
-                  either (&map:get options :vertex-count) 8
+                  either
+                    .unwrap-or (get options :vertex-count) nil
+                    , 8
                   , 'Number
               object $ {}
-                :shader $ either (&map:get options :shader) wgsl-spots
-                :topology $ either (&map:get options :topology) :triangle-list
+                :shader $ either
+                  .unwrap-or (get options :shader) nil
+                  , wgsl-spots
+                :topology $ either
+                  .unwrap-or (get options :topology) nil
+                  , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
                   hint-fn $ {}
@@ -1936,13 +2036,19 @@
           :code $ quote $ defn comp-stitch (props)
             let
                 chars $ assert-type
-                  either (&map:get props :chars) ([] 0x1111)
+                  either
+                    .unwrap-or (get props :chars) nil
+                    [] 0x1111
                   :: 'List 'Number
                 position $ assert-type
-                  either (&map:get props :position) (v3 0 0 0)
+                  either
+                    .unwrap-or (get props :position) nil
+                    v3 0 0 0
                   , 'quaternion.vector/V3
                 size $ assert-type
-                  either (&map:get props :size) 24
+                  either
+                    .unwrap-or (get props :size) nil
+                    , 24
                   , 'Number
                 gap 4
                 s0 $ * 0.1 size
@@ -1965,7 +2071,7 @@
                             v-scale
                               v3 (+ size gap) 0 0
                               , idx
-                  :hit-region $ &map:get props :hit-region
+                  :hit-region $ .unwrap-or (get props :hit-region) nil
                 object $ {} (:topology :triangle-list)
                   :shader $ inline-shader |stitch-line
                   :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
@@ -1980,8 +2086,12 @@
                           :args $ [] $ :: 'Map 'Tag 'Dynamic
                           :return $ :: 'Map 'Tag 'Dynamic
                         let
-                            x $ assert-type (&map:get info :position) 'quaternion.vector/V3
-                            data-idx $ assert-type (&map:get info :data) 'Number
+                            x $ assert-type
+                              .unwrap-or (get info :position) nil
+                              , 'quaternion.vector/V3
+                            data-idx $ assert-type
+                              .unwrap-or (get info :data) nil
+                              , 'Number
                           {} (:base position)
                             :position $ &v+ (v-scale x s0)
                               v-scale
@@ -2168,11 +2278,11 @@
             let
                 parent-cursor $ match (get states :cursor)
                   (:some value)
-                    assert-type value $ :: 'List 'Tag
+                    decode-map-as value $ :: 'List 'Tag
                   (:none) ([])
                 branch $ match (get states k)
                   (:some value)
-                    assert-type value $ :: 'Map 'Tag 'Dynamic
+                    decode-map-as value $ :: 'Map 'Tag 'Dynamic
                   (:none) ({})
               assoc branch :cursor $ conj parent-cursor k
           :examples $ []
@@ -2181,7 +2291,11 @@
             :return $ :: 'Map 'Tag 'Dynamic
         'update-states $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn update-states (store cursor new-state)
-            assoc-in store ([] :states & cursor :data) new-state
+            assoc store :states $ assoc-in
+                get store :states
+                , .unwrap-or nil
+              cursor.append :data
+              , new-state
           :examples $ []
           :schema $ :: 'Fn $ {}
             :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'List 'Tag) 'Dynamic

@@ -33,6 +33,7 @@ jobs:
         with:
           tools: calcit,caps
           caps-version: "0.1.1"
+          deps-file: deps.cirru
       - name: Install immutable dependencies
         run: |
           set -euo pipefail
@@ -45,6 +46,7 @@ jobs:
           calcit edit format
           git diff --exit-code -- calcit.cirru
           calcit --check-only --all-defs --warn-dyn-method --format json
+          calcit fix --workflow strict --verify
           calcit test --require-match --summary-only
           calcit --check-only --ns lagopus.alias --ns lagopus.browser --ns lagopus.comp.button --ns lagopus.comp.container --ns lagopus.comp.cube --ns lagopus.comp.curves --ns lagopus.comp.image --ns lagopus.comp.plate --ns lagopus.comp.sphere --ns lagopus.comp.spots --ns lagopus.comp.stitch --ns lagopus.config --ns lagopus.cursor --ns lagopus.gpu --ns lagopus.main --ns lagopus.math --ns lagopus.runtime --ns lagopus.util --summary-only --format json
       - name: Select frontend CDN path
