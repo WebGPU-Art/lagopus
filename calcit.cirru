@@ -757,7 +757,7 @@
           :code $ quote $ defn comp-container (store textures-dict)
             let
                 cursor $ []
-                states $ assert-type
+                states $ decode-map-as
                   .unwrap-or (get store :states) nil
                   :: 'Map 'Tag 'Dynamic
               group nil (lagopus.alias/memo-object comp-tabs)
@@ -798,10 +798,10 @@
         'comp-control-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-control-demo (states)
             let
-                cursor $ assert-type
+                cursor $ decode-map-as
                   .unwrap-or (get states :cursor) nil
                   :: 'List 'Tag
-                state $ assert-type
+                state $ decode-map-as
                   either
                     .unwrap-or (get states :data) nil
                     {} $ :pos $ [] 60 0 0
@@ -1351,13 +1351,13 @@
           :code $ quote $ defn comp-axis (options)
             let
                 settings $ .unwrap-or options $ {}
-                n $ assert-type
+                n $ decode-map-as
                   .unwrap-or (get settings :n) 20
                   , 'Number
-                unit $ assert-type
+                unit $ decode-map-as
                   .unwrap-or (get settings :unit) 20
                   , 'Number
-                w $ assert-type
+                w $ decode-map-as
                   .unwrap-or (get settings :width) 1
                   , 'Number
               group nil $ comp-polylines-marked $ {}
@@ -1399,7 +1399,7 @@
         'comp-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-curves (options)
             let
-                curves $ assert-type
+                curves $ decode-map-as
                   either
                     .unwrap-or (get options :curves) nil
                     []
@@ -2035,7 +2035,7 @@
         'comp-stitch $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-stitch (props)
             let
-                chars $ assert-type
+                chars $ decode-map-as
                   either
                     .unwrap-or (get props :chars) nil
                     [] 0x1111
@@ -2045,7 +2045,7 @@
                     .unwrap-or (get props :position) nil
                     v3 0 0 0
                   , 'quaternion.vector/V3
-                size $ assert-type
+                size $ decode-map-as
                   either
                     .unwrap-or (get props :size) nil
                     , 24
@@ -2089,7 +2089,7 @@
                             x $ assert-type
                               .unwrap-or (get info :position) nil
                               , 'quaternion.vector/V3
-                            data-idx $ assert-type
+                            data-idx $ decode-map-as
                               .unwrap-or (get info :data) nil
                               , 'Number
                           {} (:base position)
@@ -2410,10 +2410,10 @@
                 next-store $ match op
                   (:state cursor data)
                     update-states store
-                      assert-type cursor $ :: 'List 'Tag
+                      decode-map-as cursor $ :: 'List 'Tag
                       , data
                   (:tab tab)
-                    assoc store :tab $ assert-type tab 'Tag
+                    assoc store :tab $ decode-map-as tab 'Tag
               if (not= next-store store) (reset! *store next-store)
               , &unit
           :examples $ []
