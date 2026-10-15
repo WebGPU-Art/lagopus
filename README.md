@@ -65,6 +65,11 @@ Map/List/Tag/Number 均实际解码，不伪造回调或 V3 证明。轴线缺�
 native 断言通过。完整 strict 仍有 20 项诊断（18 项项目问题、2 项 Memof 上游问题），
 主要还包括 V3、回调、纹理和宿主数组证明。未执行主程序、访问存储或验收 GPU 渲染。
 
+宿主数组返回证明已独立缩小为核心问题 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114)：
+`js-array` 的 spread 构造返回证明为 unknown，而无 spread 对照通过；实际生成 JS 的
+空数组、三个独立子数组及修改其中一个子数组的行为通过。等待既有返回推断修复，
+不以增加返回强转、迁移规则或项目 checker 绕过。
+
 ### APIs
 
 `lagopus.alias/group` accepts nullable children, so conditional children such as
