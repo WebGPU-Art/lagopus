@@ -5,7 +5,7 @@
   :entries $ {} $ :default
     {} (:description |) (:init-fn 'lagopus.main/main!) (:mode :js) (:reload-fn 'lagopus.main/reload!) (:target :browser)
       :feature-policy $ {}
-      :modules $ [] |memof/ |quaternion/
+      :modules $ [] |memof/ |quaternion/ |js-ffi/
       :type-slots $ {}
   :files $ {}
     'lagopus.alias $ %{} 'FileEntry
@@ -122,7 +122,14 @@
                   collect-array! indices collect!
                   index-buffer! $ unsafe-coerce arr 'JsObject
                 :getParams $ .unwrap-or (get options :get-params) nil
-                :textures $ js-array & $ assert-type textures (:: 'List 'lagopus.gpu/Texture)
+                :textures $ js-array & $ map
+                  decode-map-as textures $ :: 'List 'Dynamic
+                  fn (texture)
+                    hint-fn $ {}
+                      :args $ [] 'Dynamic
+                      :return 'lagopus.gpu/Texture
+                      :features $ #{} :js-ffi
+                    js-cast texture 'lagopus.gpu/Texture
                 :label $ .unwrap-or (get options :label) nil
                 :computeOptions $ .unwrap-or (get options :compute-options) nil
           :examples $ []
@@ -190,7 +197,7 @@
                 value $ memof1-call f
               if
                 = :js-object $ type-of value
-                assert-type value 'JsObject
+                contract/expect-object "|cached renderer host object" value
                 raise "|Expected a cached renderer host object"
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'JsObject)
@@ -371,6 +378,7 @@
             lagopus.browser :as browser
             lagopus.gpu :refer $ Texture
             memof.once :refer $ memof1-call
+            js-ffi.contract :as contract
     'lagopus.browser $ %{} 'FileEntry
       :defs $ {}
         'Canvas $ %{} 'CodeEntry (:doc |)

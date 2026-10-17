@@ -37,7 +37,7 @@ jobs:
       - name: Install immutable dependencies
         run: |
           set -euo pipefail
-          caps --ci
+          caps --strict --ci
           yarn install --immutable
           caps verify --toolchain
       - name: Check canonical Calcit and types

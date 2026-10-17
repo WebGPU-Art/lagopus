@@ -9,10 +9,10 @@
 
 ### 开发与部署
 
-本分支正在迁移到正式 Calcit 0.30.0、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+本分支正在迁移到配对 Calcit/procs 0.30.1-alpha.4、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0（编译器仍为预发布）：
 
 ```sh
-caps --ci
+caps --strict --ci
 corepack yarn install --immutable
 caps verify --toolchain
 corepack yarn dev
@@ -36,39 +36,17 @@ WebGPU 实机、PR/main CI 和部署需分别验收。
 单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
 边界不变；候选的发布状态以 GitHub Releases 为准。
 
-本轮本地候选配对 Calcit/procs 0.30.0 与正式 Quaternion 0.2.14。21 个定义中的
-77 处底层 Map 读取改用公开 get/Option，逐项核对 Map 接收者，保留原 nil 回退、
-求值次数与现有配置默认值，不新增逐字段校验层。游标读取改为真实解码既有
-List<Tag> / Map<Tag,Dynamic> 合同；非法形状会比过去的伪类型断言更早失败。
-游标更新按固定 :states 根键和动态子路径分开，保留根 Map 类型及原路径/数据。
+本轮候选配对已发布 Calcit/procs **0.30.1-alpha.4**（仍为编译器预发布），并使用正式 Quaternion 0.2.14、Memof 0.0.38 和 js-ffi 0.2.3。npm Touch Control 最新仍只有 0.0.4-a1，保留并精确固定，不冒充正式版本。
 
-当前普通全定义检查 191/191、原测试和 JS/Vite 构建通过；游标作用域的断言、调用及
-返回证明已通过 native/生成 JS 小范围回放。**完整 strict 仍失败**，不把普通检查通过当成完整类型验收。尚未创建 PR、
-发版或部署；WebGPU 实机及其他输入边界仍须继续处理。没有新增永久 checker、测试框架、
-unsafe 或预算例外，原 npm 预发布依赖也未冒充已迁移为正式版。
+此前 77 处底层 Map 读取已改为公开 get/Option，保留 nil 回退、默认值、求值次数与状态路径。原有 Number/List/Map/Tag 配置和游标边界按实际数据解码，不增加默认空数据。本轮进一步检查纹理 List 容器并通过 js-cast 核对每个 Texture 的宿主成员；该检查保留对象身份与顺序，不证明 GPU 品牌或字段的深层数值合同。缓存的宿主返回值复用正式 js-ffi 检查入口，保留原拒绝消息与缓存调用，不新增 unsafe。
 
-集合、属性、颜色与曲线 helper 中 16 处既有 Number/List/Map 合同改用真实解码，
-错误输入会更早被拒绝，保留合法输入的顺序、零值及缺省值。`point-v3` 的既有 V3
-分支仍保留原断言及待解决的证明：直接解码会复制对象，不能为了通过类型门禁改变
-原对象身份。实际浏览器 helper 回放已确认该身份不变，以及数值收集、width 缺省与
-颜色 atom 值；这不代表 WebGPU 场景验收。Response trait 的 Blob/Response 类型引用
-改用所属命名空间，纹理加载回调证明已通过，未增加 FFI 信任或强转。
+当前普通全定义 **191/191**、原 18 个公开命名空间 **141/141**、immutable 安装和 JS/Vite 生产 CDN 构建通过。两个真实源码边界表达式经实际生成 JS 回放：纹理对象身份/顺序、空 List、七类非法形状和五类非宿主缓存值通过；不初始化 GPU、应用存储或生产服务。
 
-五个几何组件的 13 处 Number/List 配置边界，以及对象构建的 4 处属性列表、字段 Tag、
-shader String 边界也已改用真实解码。缺省配置仍在原位置回退；必填字段未增加默认值。
-从实际源码提取的边界表达式通过 native 回放，覆盖缺失、nil、零值/列表与非法值；
-不把该范围等同于完整 GPU 渲染验收。
+**完整 strict 与原缓存测试仍失败，尚不能发布。** 最新完整 strict 有 23 条诊断，包含更深依赖展开后的消费者诊断，不把旧 20 条与此数简单相减作为改善指标。原缓存测试在旧配对下 1/1 通过，新配对下 0/1：正式 Memof 第二次命中把 Option 当作 MemoEntry，真实结果已补到 [Memof #48](https://github.com/calcit-lang/memof/issues/48#issuecomment-6238595551)。不改测试期待、跳过缓存或修改共享依赖绕过。
 
-状态读取、dispatch payload、轴线与刺绣配置再迁移 12 处既有封闭合同；
-Map/List/Tag/Number 均实际解码，不伪造回调或 V3 证明。轴线缺失键的 Option
-默认值不变，显式 nil 不混同缺失；非法输入会更早拒绝。实际边界表达式的 46 项
-native 断言通过。完整 strict 仍有 20 项诊断（18 项项目问题、2 项 Memof 上游问题），
-主要还包括 V3、回调、纹理和宿主数组证明。未执行主程序、访问存储或验收 GPU 渲染。
+宿主数组返回推断 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114) 已修复合并，但晚于 alpha.4 发布，当前已发布配对仍失败。V3 分支原样返回对象；直接 decode 虽值相等却会在 JS 换对象，而 native 的 identical? 对照为 true，已报 [calcit#2154](https://github.com/calcit-lang/calcit/issues/2154)。该实验没有混入真实 V3 分支，不能为通过门禁改变身份或伪造回调。
 
-宿主数组返回证明已独立缩小为核心问题 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114)：
-`js-array` 的 spread 构造返回证明为 unknown，而无 spread 对照通过；实际生成 JS 的
-空数组、三个独立子数组及修改其中一个子数组的行为通过。等待既有返回推断修复，
-不以增加返回强转、迁移规则或项目 checker 绕过。
+候选保存在独立本地分支，未推送 PR、发版、上传或部署；原测试保留，无新增永久 checker、框架、compiler 规则、类型预算或 FFI 权限放宽。完整输入合同、WebGPU 实机、消费者与远端 fresh CI 仍需分别验收。
 
 ### APIs
 
