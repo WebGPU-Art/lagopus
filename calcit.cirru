@@ -26,17 +26,14 @@
         'buffer-format $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn buffer-format (format)
             match format (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
-              _ $ if (string? format) (assert-type format 'String)
-                do (eprintln "|Unknown format" format) |float32
+              _ $ if (string? format) format $ do (eprintln "|Unknown format" format) |float32
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'String)
             :args $ [] 'Dynamic
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (indices collect!)
             if (list? indices)
-              &doseq
-                x $ assert-type indices $ :: 'List 'Dynamic
-                collect-array! x collect!
+              &doseq (x indices) (collect-array! x collect!)
               collect! $ decode-map-as indices 'Number
             , &unit
           :examples $ []
@@ -48,9 +45,7 @@
           :code $ quote $ defn collect-from-records! (data field idx write!)
             cond
                 list? data
-                &doseq
-                  x $ assert-type data $ :: 'List 'Dynamic
-                  collect-from-records! x field idx write!
+                &doseq (x data) (collect-from-records! x field idx write!)
               (enum? data)
                 let
                     tag $ .unwrap $ nth data 0
@@ -73,13 +68,11 @@
         'count-recursive $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn count-recursive (xs)
             if (list? xs)
-              reduce
-                assert-type xs $ :: 'List 'Dynamic
-                , 0 $ fn (acc y)
-                  hint-fn $ {}
-                    :args $ [] 'Number 'Dynamic
-                    :return 'Number
-                  + acc $ count-recursive y
+              reduce xs 0 $ fn (acc y)
+                hint-fn $ {}
+                  :args $ [] 'Number 'Dynamic
+                  :return 'Number
+                + acc $ count-recursive y
               , 1
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Number)
@@ -352,15 +345,14 @@
           :code $ quote $ defn write-attribute! (xs write!)
             cond
                 enum? xs
-                match (assert-type xs 'Enum)
-                  (:v3 x y z)
-                    do
-                      write! $ decode-map-as x 'Number
-                      write! $ decode-map-as y 'Number
-                      write! $ decode-map-as z 'Number
+                match xs $
+                  :v3 x y z
+                  do
+                    write! $ decode-map-as x 'Number
+                    write! $ decode-map-as y 'Number
+                    write! $ decode-map-as z 'Number
               (list? xs)
-                &doseq
-                  x $ assert-type xs $ :: 'List 'Dynamic
+                &doseq (x xs)
                   write! $ decode-map-as x 'Number
               true $ write! $ decode-map-as xs 'Number
             , &unit
@@ -2815,7 +2807,7 @@
             let
                 color-atom $ unsafe-coerce atomClearColor ColorAtom
                 host-color $ if (enum? color)
-                  match (assert-type color 'Enum)
+                  match color
                     (:rgba r g b a)
                       js-object
                         :r $ decode-map-as r 'Number

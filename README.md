@@ -27,22 +27,24 @@ CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopu
 此前 0.29 迁移通过全部 191 个严格定义、141 个公开定义和 JS/Vite 构建，
 deprecated 与静态动态方法调用均为零。修正 external trait 的限定类型引用、Unit
 返回，以及缓冲区的 `List<NumberBuffer>` 合同。`memo-object` 保留原 memof 缓存，
-在渲染边界检查实际 `type-of` 为 `:js-object` 后再使用类型断言，不声称异构缓存
+在渲染边界检查实际 `type-of` 为 `:js-object` 后使用正式 js-ffi 的受检入口，不声称异构缓存
 已获得泛型证明；附着回归测试验证非宿主缓存结果被拒绝且仍然复用缓存。
 没有新增 unsafe cast、放宽类型或校验脚本。65 个既有类型槽债务仍公开保留；
 WebGPU 实机、PR/main CI 和部署需分别验收。
 
-候选模块 `0.5.12` 对齐已发布的 Memof `0.0.38`，使下游可使用保留返回类型的
+候选模块 `0.5.12` 对齐已发布的 Memof `0.0.39`，使下游可使用保留返回类型的
 单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
 边界不变；候选的发布状态以 GitHub Releases 为准。
 
-本轮候选配对已发布 Calcit/procs **0.30.1-alpha.4**（仍为编译器预发布），并使用正式 Quaternion 0.2.14、Memof 0.0.38 和 js-ffi 0.2.3。npm Touch Control 最新仍只有 0.0.4-a1，保留并精确固定，不冒充正式版本。
+本轮候选配对已发布 Calcit/procs **0.30.1-alpha.4**（仍为编译器预发布），并使用正式 Quaternion 0.2.14、Memof 0.0.39 和 js-ffi 0.2.3。npm Touch Control 最新仍只有 0.0.4-a1，保留并精确固定，不冒充正式版本。Memof Anchor `.deref` 已改为 Option，本项目当前只调用缓存 API；后续调用 Anchor 需要处理缺失值。
 
 此前 77 处底层 Map 读取已改为公开 get/Option，保留 nil 回退、默认值、求值次数与状态路径。原有 Number/List/Map/Tag 配置和游标边界按实际数据解码，不增加默认空数据。本轮进一步检查纹理 List 容器并通过 js-cast 核对每个 Texture 的宿主成员；该检查保留对象身份与顺序，不证明 GPU 品牌或字段的深层数值合同。缓存的宿主返回值复用正式 js-ffi 检查入口，保留原拒绝消息与缓存调用，不新增 unsafe。
 
 当前普通全定义 **191/191**、原 18 个公开命名空间 **141/141**、immutable 安装和 JS/Vite 生产 CDN 构建通过。两个真实源码边界表达式经实际生成 JS 回放：纹理对象身份/顺序、空 List、七类非法形状和五类非宿主缓存值通过；不初始化 GPU、应用存储或生产服务。
 
-**完整 strict 与原缓存测试仍失败，尚不能发布。** 最新完整 strict 有 23 条诊断，包含更深依赖展开后的消费者诊断，不把旧 20 条与此数简单相减作为改善指标。原缓存测试在旧配对下 1/1 通过，新配对下 0/1：正式 Memof 第二次命中把 Option 当作 MemoEntry，真实结果已补到 [Memof #48](https://github.com/calcit-lang/memof/issues/48#issuecomment-6238595551)。不改测试期待、跳过缓存或修改共享依赖绕过。
+**完整 strict 仍失败，尚不能发布。** 正式 Memof 0.0.39 已消除两条依赖诊断，原缓存拒绝/复用测试恢复为 1/1 通过，没有修改测试期待、跳过缓存或修改共享依赖。最新完整 strict 仍有 21 条诊断（20 条未证明断言与 1 条宿主数组返回推断），主要是 V3/回调合同与下文已记录的上游问题，不把普通检查通过当作可发布。
+
+本轮删除 6 个 helper 中 7 处由 list?/enum?/string? 分支已保证的冗余断言，直接使用同一个受检值，不新增重复 decoder。191/191 定义、原缓存测试、JS/Vite 生产构建与实际生成 helper 的浏览器回放通过：递归计数、String/Tag format、嵌套数值与属性写入顺序、真实颜色 atom、非法数字拒绝，V3 原样返回的 JS 身份仍保留。没有初始化 GPU、应用存储或生产服务，不能称已通过 WebGPU 实机验收。其余未证明 V3/回调断言没有机械替换成复制 decoder 或伪 Unit。
 
 宿主数组返回推断 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114) 已修复合并，但晚于 alpha.4 发布，当前已发布配对仍失败。V3 分支原样返回对象；直接 decode 虽值相等却会在 JS 换对象，而 native 的 identical? 对照为 true，已报 [calcit#2154](https://github.com/calcit-lang/calcit/issues/2154)。该实验没有混入真实 V3 分支，不能为通过门禁改变身份或伪造回调。
 
