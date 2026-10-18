@@ -1221,6 +1221,19 @@
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v+ v3
     'lagopus.comp.curves $ %{} 'FileEntry
       :defs $ {}
+        'MarkedPolylinePrevious $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct MarkedPolylinePrevious (:position 'quaternion.vector/V3)
+            :older $ :: 'Option 'quaternion.vector/V3
+            :width 'Number
+            :mark 'Number
+          :examples $ []
+          :schema $ :: 'StructDef
+        'PolylinePrevious $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct PolylinePrevious (:position 'quaternion.vector/V3)
+            :older $ :: 'Option 'quaternion.vector/V3
+            :width 'Number
+          :examples $ []
+          :schema $ :: 'StructDef
         'break-mark $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def break-mark (:: :break)
           :examples $ []
@@ -1259,67 +1272,133 @@
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match p
-              (:break) (reset! *prev nil)
+              (:break)
+                reset! *prev $ Option :none
               (:vertex position-raw width-raw)
                 let
                     position $ point-v3 position-raw
-                    width $ assert-type width-raw 'Number
+                    width $ decode-map-as width-raw 'Number
+                    ; unmarked point has no mark payload
                     previous @*prev
-                  if (nil? previous)
-                    reset! *prev $ {} (:position position) (:older nil) (:width width)
-                    let
-                        prev $ assert-type previous $ :: 'Map 'Tag 'Dynamic
-                        older $ .unwrap-or (get prev :older) nil
-                        q $ point-v3 $ .unwrap-or (get prev :position) nil
-                        q2 position
-                        p-width $ assert-type
-                          .unwrap-or (get prev :width) nil
-                          , 'Number
-                        q-width width
-                        direction2 $ &v- q2 q
-                        direction $ if (nil? older) direction2 $ &v- q (point-v3 older)
-                      reset! *prev $ {} (:position position) (:older older) (:width p-width)
-                      write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction2 q-width) (:: :vertex q 1 direction2 p-width) (:: :vertex q2 0 direction2 p-width) (:: :vertex q2 1 direction2 q-width) (:: :vertex q 1 direction p-width)
-            , &unit
+                  match previous
+                    (:none)
+                      reset! *prev $ Option :some $ PolylinePrevious :position position :older (Option :none) :width width
+                    (:some prev)
+                      let
+                          older $ :older prev
+                          q $ :position prev
+                          q2 position
+                          p-width $ :width prev
+                          q-width width
+                          ; keep original segment width propagation
+                          direction2 $ &v- q2 q
+                          direction $ match older
+                            (:none) direction2
+                            (:some point) (&v- q point)
+                        reset! *prev $ Option :some $ PolylinePrevious :position position :older older :width p-width
+                        write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction2 q-width) (:: :vertex q 1 direction2 p-width) (:: :vertex q2 0 direction2 p-width) (:: :vertex q2 1 direction2 q-width) (:: :vertex q 1 direction p-width)
+            identity &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] (:: 'Ref 'Dynamic) 'Enum $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] $ :: 'List 'Enum
+            :args $ []
+              :: 'Ref $ :: 'Option 'lagopus.comp.curves/PolylinePrevious
+              , 'Enum $ :: 'Fn
+                {} (:return 'Unit)
+                  :args $ [] $ :: 'List 'Enum
+          :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
+            :code $ quote $ let
+                previous $ atom $ Option :none
+                segments $ atom $ assert-type ([])
+                  :: 'List $ :: 'List 'Enum
+                emit $ fn (chunk)
+                  hint-fn $ {}
+                    :args $ [] $ :: 'List 'Enum
+                    :return 'Unit
+                  swap! segments append chunk
+                  identity &unit
+                p0 $ v3 0 0 0
+                p1 $ v3 10 0 0
+                p2 $ v3 10 10 0
+                direction $ v3 10 0 0
+              build-polyline-points previous (:: :vertex p0 2) emit
+              build-polyline-points previous (:: :vertex p1 3) emit
+              assert=
+                [] $ [] (:: :vertex p0 0 direction 2) (:: :vertex p1 0 direction 3) (:: :vertex p0 1 direction 2) (:: :vertex p1 0 direction 2) (:: :vertex p1 1 direction 3) (:: :vertex p0 1 direction 2)
+                , @segments
+              build-polyline-points previous (:: :break) emit
+              assert= (Option :none) @previous
+              build-polyline-points previous (:: :vertex p2 9) emit
+              assert= 1 $ count @segments
+              assert=
+                Option :some $ PolylinePrevious :position p2 :older (Option :none) :width 9
+                , @previous
+            :tags $ #{} :unit
         'build-polyline-points-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points-marked (*prev p write!)
             match p
-              (:break) (reset! *prev nil)
+              (:break)
+                reset! *prev $ Option :none
               (:vertex position-raw width-raw mark-raw)
                 let
                     position $ point-v3 position-raw
-                    width $ assert-type width-raw 'Number
-                    mark $ assert-type mark-raw 'Number
+                    width $ decode-map-as width-raw 'Number
+                    mark $ decode-map-as mark-raw 'Number
                     previous @*prev
-                  if (nil? previous)
-                    reset! *prev $ {} (:position position) (:older nil) (:width width) (:mark mark)
-                    let
-                        prev $ assert-type previous $ :: 'Map 'Tag 'Dynamic
-                        older $ .unwrap-or (get prev :older) nil
-                        q $ point-v3 $ .unwrap-or (get prev :position) nil
-                        q2 position
-                        p-width $ assert-type
-                          .unwrap-or (get prev :width) nil
-                          , 'Number
-                        q-width width
-                        prev-mark $ assert-type
-                          .unwrap-or (get prev :mark) nil
-                          , 'Number
-                        direction2 $ &v- q2 q
-                        direction $ if (nil? older) direction2 $ &v- q (point-v3 older)
-                      reset! *prev $ {} (:position position) (:older older) (:width p-width) (:mark mark)
-                      write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
-            , &unit
+                  match previous
+                    (:none)
+                      reset! *prev $ Option :some $ MarkedPolylinePrevious :position position :older (Option :none) :width width :mark mark
+                    (:some prev)
+                      let
+                          older $ :older prev
+                          q $ :position prev
+                          q2 position
+                          p-width $ :width prev
+                          q-width width
+                          prev-mark $ :mark prev
+                          direction2 $ &v- q2 q
+                          direction $ match older
+                            (:none) direction2
+                            (:some point) (&v- q point)
+                        reset! *prev $ Option :some $ MarkedPolylinePrevious :position position :older older :width p-width :mark mark
+                        write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
+            identity &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] (:: 'Ref 'Dynamic) 'Enum $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] $ :: 'List 'Enum
+            :args $ []
+              :: 'Ref $ :: 'Option 'lagopus.comp.curves/MarkedPolylinePrevious
+              , 'Enum $ :: 'Fn
+                {} (:return 'Unit)
+                  :args $ [] $ :: 'List 'Enum
+          :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
+            :code $ quote $ let
+                previous $ atom $ Option :none
+                segments $ atom $ assert-type ([])
+                  :: 'List $ :: 'List 'Enum
+                emit $ fn (chunk)
+                  hint-fn $ {}
+                    :args $ [] $ :: 'List 'Enum
+                    :return 'Unit
+                  swap! segments append chunk
+                  identity &unit
+                p0 $ v3 0 0 0
+                p1 $ v3 10 0 0
+                p2 $ v3 10 10 0
+                direction $ v3 10 0 0
+                direction2 $ v3 0 10 0
+              build-polyline-points-marked previous (:: :vertex p0 2 4) emit
+              build-polyline-points-marked previous (:: :vertex p1 3 5) emit
+              build-polyline-points-marked previous (:: :vertex p2 4 6) emit
+              assert=
+                []
+                  [] (:: :vertex p0 0 direction 2 4) (:: :vertex p1 0 direction 3 5) (:: :vertex p0 1 direction 2 4) (:: :vertex p1 0 direction 2 5) (:: :vertex p1 1 direction 3 5) (:: :vertex p0 1 direction 2 4)
+                  [] (:: :vertex p1 0 direction2 2 5) (:: :vertex p2 0 direction2 4 6) (:: :vertex p1 1 direction2 2 5) (:: :vertex p2 0 direction2 2 6) (:: :vertex p2 1 direction2 4 6) (:: :vertex p1 1 direction2 2 5)
+                , @segments
+              assert=
+                Option :some $ MarkedPolylinePrevious :position p2 :older (Option :none) :width 2 :mark 6
+                , @previous
+              build-polyline-points-marked previous (:: :break) emit
+              assert= (Option :none) @previous
+            :tags $ #{} :unit
         'char-x $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def char-x
             count-hex $ reverse $ concat
@@ -1458,7 +1537,7 @@
                         :return 'Unit
                     :return 'Unit
                   let
-                      *prev $ atom nil
+                      *prev $ atom $ Option :none
                       collect! $ fn (p)
                         hint-fn $ {}
                           :args $ [] 'Dynamic
@@ -1511,7 +1590,7 @@
                         :return 'Unit
                     :return 'Unit
                   let
-                      *prev $ atom nil
+                      *prev $ atom $ Option :none
                       collect! $ fn (p)
                         hint-fn $ {}
                           :args $ [] 'Dynamic
@@ -2234,11 +2313,10 @@
                   let
                       dir $ if (.ends-with? calcit-dirname |/) calcit-dirname $ str calcit-dirname |/
                     str dir |shaders/ name |.wgsl
-              println |inline: shader
               read-file shader
           :examples $ []
           :schema $ :: 'Macro $ {}
-            :capabilities $ #{} :fs-read :log
+            :capabilities $ #{} :fs-read
             :expansion $ :: 'Expr 'String
             :required $ [] $ :: 'Expr 'String
         'mobile-info $ %{} 'CodeEntry (:doc |)

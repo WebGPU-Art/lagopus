@@ -9,7 +9,7 @@
 
 ### 开发与部署
 
-本分支正在迁移到配对 Calcit/procs 0.30.1-alpha.4、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0（编译器仍为预发布）：
+本分支正在迁移到配对 Calcit/procs 0.30.1-alpha.5、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0（编译器仍为预发布）：
 
 ```sh
 caps --strict --ci
@@ -29,24 +29,41 @@ deprecated 与静态动态方法调用均为零。修正 external trait 的限�
 返回，以及缓冲区的 `List<NumberBuffer>` 合同。`memo-object` 保留原 memof 缓存，
 在渲染边界检查实际 `type-of` 为 `:js-object` 后使用正式 js-ffi 的受检入口，不声称异构缓存
 已获得泛型证明；附着回归测试验证非宿主缓存结果被拒绝且仍然复用缓存。
-没有新增 unsafe cast、放宽类型或校验脚本。65 个既有类型槽债务仍公开保留；
+没有新增 unsafe cast、放宽类型或校验脚本。此前的动态合同债务没有因此清零，当前数量见文末扫描；
 WebGPU 实机、PR/main CI 和部署需分别验收。
 
-候选模块 `0.5.12` 对齐已发布的 Memof `0.0.39`，使下游可使用保留返回类型的
+本地候选暂沿用 `0.5.12` 版本字段，不代表改写了已发布的同名tag；只有完整验收后才选取新的正式版本。
+候选对齐已发布的 Memof `0.0.39`，使下游可使用保留返回类型的
 单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
 边界不变；候选的发布状态以 GitHub Releases 为准。
 
-本轮候选配对已发布 Calcit/procs **0.30.1-alpha.4**（仍为编译器预发布），并使用正式 Quaternion 0.2.14、Memof 0.0.39 和 js-ffi 0.2.3。npm Touch Control 最新仍只有 0.0.4-a1，保留并精确固定，不冒充正式版本。Memof Anchor `.deref` 已改为 Option，本项目当前只调用缓存 API；后续调用 Anchor 需要处理缺失值。
+本轮候选配对已发布 Calcit/procs **0.30.1-alpha.5**（仍为编译器预发布），并使用正式 Quaternion 0.2.14、Memof 0.0.39 和 js-ffi 0.2.3。npm Touch Control 最新仍只有 0.0.4-a1，保留并精确固定，不冒充正式版本。Memof Anchor `.deref` 已改为 Option，本项目当前只调用缓存 API；后续调用 Anchor 需要处理缺失值。
 
 此前 77 处底层 Map 读取已改为公开 get/Option，保留 nil 回退、默认值、求值次数与状态路径。原有 Number/List/Map/Tag 配置和游标边界按实际数据解码，不增加默认空数据。本轮进一步检查纹理 List 容器并通过 js-cast 核对每个 Texture 的宿主成员；该检查保留对象身份与顺序，不证明 GPU 品牌或字段的深层数值合同。缓存的宿主返回值复用正式 js-ffi 检查入口，保留原拒绝消息与缓存调用，不新增 unsafe。
 
-当前普通全定义 **191/191**、原 18 个公开命名空间 **141/141**、immutable 安装和 JS/Vite 生产 CDN 构建通过。两个真实源码边界表达式经实际生成 JS 回放：纹理对象身份/顺序、空 List、七类非法形状和五类非宿主缓存值通过；不初始化 GPU、应用存储或生产服务。
+此前普通全定义 **191/191**、原 18 个公开命名空间 **141/141**、immutable 安装和 JS/Vite 生产 CDN 构建通过。两个真实源码边界表达式经实际生成 JS 回放：纹理对象身份/顺序、空 List、七类非法形状和五类非宿主缓存值通过；不初始化 GPU、应用存储或生产服务。
 
-**完整 strict 仍失败，尚不能发布。** 正式 Memof 0.0.39 已消除两条依赖诊断，原缓存拒绝/复用测试恢复为 1/1 通过，没有修改测试期待、跳过缓存或修改共享依赖。最新完整 strict 仍有 21 条诊断（20 条未证明断言与 1 条宿主数组返回推断），主要是 V3/回调合同与下文已记录的上游问题，不把普通检查通过当作可发布。
+**完整 strict 仍失败，尚不能发布。** 正式 Memof 0.0.39 已消除两条依赖诊断，原缓存拒绝/复用测试保留且通过，没有修改测试期待、跳过缓存或修改共享依赖。alpha.5已消除原宿主数组返回推断诊断，最新完整 strict 仍有20条未证明V3/回调断言，不把普通检查通过当作可发布。
 
 本轮删除 6 个 helper 中 7 处由 list?/enum?/string? 分支已保证的冗余断言，直接使用同一个受检值，不新增重复 decoder。191/191 定义、原缓存测试、JS/Vite 生产构建与实际生成 helper 的浏览器回放通过：递归计数、String/Tag format、嵌套数值与属性写入顺序、真实颜色 atom、非法数字拒绝，V3 原样返回的 JS 身份仍保留。没有初始化 GPU、应用存储或生产服务，不能称已通过 WebGPU 实机验收。其余未证明 V3/回调断言没有机械替换成复制 decoder 或伪 Unit。
 
-宿主数组返回推断 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114) 已修复合并，但晚于 alpha.4 发布，当前已发布配对仍失败。V3 分支原样返回对象；直接 decode 虽值相等却会在 JS 换对象，而 native 的 identical? 对照为 true，已报 [calcit#2154](https://github.com/calcit-lang/calcit/issues/2154)。该实验没有混入真实 V3 分支，不能为通过门禁改变身份或伪造回调。
+宿主数组返回推断 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114) 已随配对alpha.5实际通过本候选。V3分支仍原样返回对象；先前alpha.4的decode实验有JS身份变化，见仍开放的 [calcit#2154](https://github.com/calcit-lang/calcit/issues/2154)，没有把该实验混入真实V3分支或声称alpha.5已解决全部身份问题，不能为通过门禁改变身份或伪造回调。
+
+折线构建器现在以 `Option<PolylinePrevious>` / `Option<MarkedPolylinePrevious>` 保存内部上一点状态，
+不再用动态Map反复断言position/width/mark；八处生产断言被去除，外部width/mark真实检查为Number。
+这不是公开options/writer合同已修复。原顶点顺序、宽度沿用、mark、break断段、状态更新先于writer
+及V3引用身份均保留；没有顺手改动原算法的宽度传播或older字段行为。
+直接调用这两个构建helper的使用者需改用对应typed Option状态Ref（初值为None，而非nil）；
+普通comp-polylines/comp-polylines-marked调用形状未改变。该候选尚未发布，不改变现有正式tag。
+
+当前全部193/193定义、原18个公开namespace的143/143定义、原缓存测试和两条新增折线回归共3/3
+测试、immutable安装、JS/CDN构建通过。实际浏览器对照本轮改动前后生成的两个构建器，普通/带mark
+各12个顶点完全一致，原V3对象身份及三份shader字符串相同；没有初始化GPU、应用存储或生产服务。
+保留49处既有unsafe和75处schema Dynamic，不宣称已逐项清零；没有新增unsafe、放宽基线或改编译器。
+
+shader宏不再打印编译期 `inline:` 消息，并去掉不再需要的 `:log` capability；文件读取和生成shader
+字符串不变。JSON检查报告现在可直接解析，不必丢弃前缀日志。临时对照页/副本都在忽略目录，不新增
+永久checker、测试框架或每项目重复验证脚本。
 
 候选保存在独立本地分支，未推送 PR、发版、上传或部署；原测试保留，无新增永久 checker、框架、compiler 规则、类型预算或 FFI 权限放宽。完整输入合同、WebGPU 实机、消费者与远端 fresh CI 仍需分别验收。
 
