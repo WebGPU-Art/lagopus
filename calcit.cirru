@@ -261,14 +261,7 @@
                     .unwrap-or (get options :attrs-list) nil
                     :: 'List 'Dynamic
                   , expand-attr
-                writer $ assert-type
-                  .unwrap-or (get options :writer) nil
-                  :: 'Fn $ {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] $ :: 'List 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                writer $ .unwrap-or (get options :writer) nil
                 bundles $ make-empty-js-arrays $ count attrs-list
                 *counter $ atom 0
                 collect! $ fn (chunk)
@@ -301,7 +294,7 @@
                   {}
                     :args $ [] 'String 'JsObject
                     :return 'lagopus.alias/NumberBuffer
-              writer collect!
+              if (fn? writer) (writer collect!) (raise "|Expected object writer function")
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
                     hint-fn $ {}
@@ -1504,23 +1497,7 @@
         'comp-polylines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines (options)
             let
-                chunk-writer! $ assert-type
-                  either
-                    .unwrap-or (get options :writer) nil
-                    fn (_collect)
-                      hint-fn $ {}
-                        :args $ [] $ :: 'Fn
-                          {}
-                            :args $ [] 'Dynamic
-                            :return 'Unit
-                        :return 'Unit
-                      eprintln "|expected polylines writer"
-                  :: 'Fn $ {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] 'Dynamic
-                        :return 'Unit
-                    :return 'Unit
+                chunk-writer! $ .unwrap-or (get options :writer) nil
               object-writer $ {}
                 :shader $ either
                   .unwrap-or (get options :shader) nil
@@ -1543,12 +1520,12 @@
                           :args $ [] 'Dynamic
                           :return 'Unit
                         if (list? p)
-                          &doseq
-                            x $ assert-type p $ :: 'List 'Enum
-                            build-polyline-points *prev x write!
-                          build-polyline-points *prev (assert-type p 'Enum) write!
+                          &doseq (x p)
+                            if (enum? x) (build-polyline-points *prev x write!) (raise "|Expected polyline vertex or break Enum")
+                          if (enum? p) (build-polyline-points *prev p write!) (raise "|Expected polyline vertex or break Enum")
                         , &unit
-                    chunk-writer! collect!
+                    if (nil? chunk-writer!) (eprintln "|expected polylines writer")
+                      if (fn? chunk-writer!) (chunk-writer! collect!) (raise "|Expected polylines writer function")
                 :get-params $ .unwrap-or (get options :get-params) nil
                 :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
@@ -1557,23 +1534,7 @@
         'comp-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines-marked (options)
             let
-                chunk-writer! $ assert-type
-                  either
-                    .unwrap-or (get options :writer) nil
-                    fn (_collect)
-                      hint-fn $ {}
-                        :args $ [] $ :: 'Fn
-                          {}
-                            :args $ [] 'Dynamic
-                            :return 'Unit
-                        :return 'Unit
-                      eprintln "|expected polylines writer"
-                  :: 'Fn $ {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] 'Dynamic
-                        :return 'Unit
-                    :return 'Unit
+                chunk-writer! $ .unwrap-or (get options :writer) nil
               object-writer $ {}
                 :shader $ either
                   .unwrap-or (get options :shader) nil
@@ -1596,12 +1557,12 @@
                           :args $ [] 'Dynamic
                           :return 'Unit
                         if (list? p)
-                          &doseq
-                            x $ assert-type p $ :: 'List 'Enum
-                            build-polyline-points-marked *prev x write!
-                          build-polyline-points-marked *prev (assert-type p 'Enum) write!
+                          &doseq (x p)
+                            if (enum? x) (build-polyline-points-marked *prev x write!) (raise "|Expected polyline vertex or break Enum")
+                          if (enum? p) (build-polyline-points-marked *prev p write!) (raise "|Expected polyline vertex or break Enum")
                         , &unit
-                    chunk-writer! collect!
+                    if (nil? chunk-writer!) (eprintln "|expected polylines writer")
+                      if (fn? chunk-writer!) (chunk-writer! collect!) (raise "|Expected polylines writer function")
                 :get-params $ .unwrap-or (get options :get-params) nil
                 :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
