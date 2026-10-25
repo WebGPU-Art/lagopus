@@ -37,12 +37,15 @@ jobs:
           yarn install --immutable
           caps verify --toolchain
           node paired-report.mjs before '${{ matrix.version }}'
+      - name: Official guarded thirteen-site reference migration
+        run: node paired-report.mjs apply '${{ matrix.version }}'
       - name: Original canonical guard
         id: canonical
         continue-on-error: true
         run: |
+          before_blob="$(git hash-object calcit.cirru)"
           calcit calcit.cirru edit format
-          git diff --exit-code -- calcit.cirru
+          test "$(git hash-object calcit.cirru)" = "$before_blob"
       - name: Original all-definition check
         id: definitions
         continue-on-error: true
