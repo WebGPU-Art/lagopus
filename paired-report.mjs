@@ -39,12 +39,19 @@ if(mode==='inventory'){
   for(const s of p.migration.sites){
    const d=expected.defs.find(d=>d.id===s.id),t=s.region==='test'?d.tests.find(t=>t.name===s.testName):null;
    const tree=t?t.code:d.code,node=s.path.reduce((v,i)=>v[i],tree);assert.deepEqual(node,s.before);
-   assert.ok(['atom','defatom'].includes(node[0]));const next=node[0]==='atom'?'ref':'defref';
-   assert.deepEqual(s.after,[next,...node.slice(1)]);node[0]=next;
+   assert.ok(['atom','defatom'].includes(node[0]));let next=[node[0]==='atom'?'ref':'defref',...node.slice(1)];
+   if(s.emptyOptionContext){
+    assert.deepEqual(node,['atom',['Option',':none']]);
+    assert.ok(['lagopus.comp.curves/build-polyline-points','lagopus.comp.curves/build-polyline-points-marked','lagopus.comp.curves/comp-polylines','lagopus.comp.curves/comp-polylines-marked'].includes(s.id));
+    const type=s.id.endsWith('marked')?'lagopus.comp.curves/MarkedPolylinePrevious':'lagopus.comp.curves/PolylinePrevious';
+    next=['ref',['assert-type',node[1],['::',"'Option","'"+type]]];
+   }
+   assert.deepEqual(s.after,next);node.splice(0,node.length,...next);
    if(t)tests.set(s.id+'|'+s.testName,{id:s.id,test:t});
-   else ops.push(['tree','replace',s.id,'--path','@'+[...s.path,0].join('.'),'--input-format','json-ast','--code',JSON.stringify(next)]);
+   else ops.push(['tree','replace',s.id,'--path','@'+[...s.path,...(s.emptyOptionContext?[]:[0])].join('.'),'--input-format','json-ast','--code',JSON.stringify(s.emptyOptionContext?next:next[0])]);
   }
   assert.deepEqual(expected,p.migration.expected);
+  assert.equal(p.migration.sites.filter(s=>s.emptyOptionContext).length,4);
   for(const{id,test}of tests.values())ops.push(['edit','add-test',id,test.name,'--tags',test.tags.join(','),'--input-format','json-ast','--code',JSON.stringify(test.code),'--overwrite']);
   writeFileSync('acceptance/operations.json',JSON.stringify(ops));
   const txn=['calcit.cirru','edit','transaction','--file','acceptance/operations.json','--format','json'];
