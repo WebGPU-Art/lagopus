@@ -50,6 +50,15 @@ if(mode==='inventory'){
    if(t)tests.set(s.id+'|'+s.testName,{id:s.id,test:t});
    else ops.push(['tree','replace',s.id,'--path','@'+[...s.path,...(s.emptyOptionContext?[]:[0])].join('.'),'--input-format','json-ast','--code',JSON.stringify(s.emptyOptionContext?next:next[0])]);
   }
+  const hud=expected.defs.find(d=>d.id==='lagopus.main/reload!');
+  assert.deepEqual(hud.code,p.migration.hud.before);
+  const bindings=hud.code[3][1],error=hud.code[3][2][3];
+  assert.deepEqual(error,['show!','|error',['unsafe-coerce','build-errors',"'String"]]);
+  assert.equal(bindings.length,1);assert.equal(bindings[0][0],'show!');
+  bindings.push(['error-text',['unsafe-coerce','js/String',['::',"'Fn",['{}',[':args',['[]',"'JsObject"]],[':return',"'String"]]]]]);
+  error[2]=['error-text','build-errors'];
+  assert.deepEqual(hud.code,p.migration.hud.after);
+  ops.push(['tree','replace',hud.id,'--path','@3','--input-format','json-ast','--code',JSON.stringify(hud.code[3])]);
   assert.deepEqual(expected,p.migration.expected);
   assert.equal(p.migration.sites.filter(s=>s.emptyOptionContext).length,4);
   for(const{id,test}of tests.values())ops.push(['edit','add-test',id,test.name,'--tags',test.tags.join(','),'--input-format','json-ast','--code',JSON.stringify(test.code),'--overwrite']);
