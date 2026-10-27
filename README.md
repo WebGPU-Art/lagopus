@@ -7,34 +7,32 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
+### 0.5.13 候选：使用者影响
+
+本候选配对正式 Calcit CLI / `@calcit/procs` **0.31.0**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
+
+公开组件继续接收原有 options Map。V3 配置和 Plate transformer 返回值现在经过真实检查：正确的 Quaternion V3 保留对象身份；错误类型、匿名或不同名义 Enum 会更早报错，不把普通 Map 自动转换为 V3。`point-v3` 原有数字 List 转换入口保留。原默认值、几何顺序、回调单次执行和异常传播保持。
+
+直接调用折线构建 helper 的高级使用者需传入 `Ref<Option<PolylinePrevious>>` / `Ref<Option<MarkedPolylinePrevious>>`，初值为对应类型的 None；普通 `comp-polylines` / `comp-polylines-marked` 调用形状不变。两个内部 writer 适配器执行原回调后返回 Unit；该内部返回值本来就不被 `object-writer` 消费，不要求外部 writer 伪造类型。
+
+依赖固定为 js-ffi 0.2.7、Memof 0.0.41、Quaternion 0.2.17；npm Touch Control 保留已使用的精确 0.0.4-a1。Memof Anchor 返回 Option，本项目只使用其缓存 API。HUD 页面报错显示保留，错误消息使用真实字符串转换。
+
 ### 开发与部署
 
-使用正式 Calcit 0.29.1、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.31.0：
 
 ```sh
-caps --ci
+caps --strict --ci
 corepack yarn install --immutable
 caps verify --toolchain
 corepack yarn dev
 ```
 
-另开终端运行 `corepack yarn watch` 可持续编译 Calcit。`corepack yarn build` 生成前端产物；`js-out/` 和 `dist/` 不纳入版本控制。源码使用 `calcit.cirru` 和 `deps.cirru`。
+另开终端运行 `corepack yarn watch` 持续编译。`corepack yarn build` 生成前端产物；源码使用 `calcit.cirru` / `deps.cirru`，`js-out/`、`dist/` 和 `.calcit/` 不入库。
 
-CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，通过 COS action 的 `public-base-url` 启用内置上传校验。需要 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY` 和原有 `rsync_private_key` secrets。保留原服务器部署路径；PR 仅检查和构建，不上传生产资源。
+CI 保留完整 strict、全定义、18 个公开命名空间及附带测试，不跳过 proof audit。生产构建使用 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，COS action 的 `public-base-url` 启用内置校验；服务器部署路径不变。PR 只检查和构建，不上传生产资源。需要原有 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY`、`rsync_private_key` secrets。
 
-类型门禁使用 `calcit --check-only --all-defs --warn-dyn-method --format json`，并保留全部 18 个公开命名空间的检查。配置边界的 `:topology` 按下文约定检查为 Tag，再转为 WebGPU 所需字符串；watcher 和字符串拼接使用首选 API 名，不依赖 `calcit fix`。CI 使用可读的正式 Action release tag（并非不可变 SHA），上传验证仅由 COS action v1.2.0 执行。
-
-当前 0.29 迁移通过全部 191 个严格定义、141 个公开定义和 JS/Vite 构建，
-deprecated 与静态动态方法调用均为零。修正 external trait 的限定类型引用、Unit
-返回，以及缓冲区的 `List<NumberBuffer>` 合同。`memo-object` 保留原 memof 缓存，
-在渲染边界检查实际 `type-of` 为 `:js-object` 后再使用类型断言，不声称异构缓存
-已获得泛型证明；附着回归测试验证非宿主缓存结果被拒绝且仍然复用缓存。
-没有新增 unsafe cast、放宽类型或校验脚本。65 个既有类型槽债务仍公开保留；
-WebGPU 实机、PR/main CI 和部署需分别验收。
-
-候选模块 `0.5.12` 对齐已发布的 Memof `0.0.38`，使下游可使用保留返回类型的
-单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
-边界不变；候选的发布状态以 GitHub Releases 为准。
+这次迁移没有清零全部类型债务：当前仍有 48 处既有 unsafe 宿主边界和 76 处 schema Dynamic（包含新的受检 V3 入口）。没有放宽类型门禁或质量基线；后续应继续按真实宿主合同收窄，而不是以数量取代代码检查。WebGPU 页面验收与 CI、部署状态分别确认。
 
 ### APIs
 
@@ -305,7 +303,7 @@ comp-slider
 
 comp-drag-point
   {}
-    :position $ &map:get state :pos
+    :position $ (get state :pos).unwrap-or nil
     :color $ [] 0.6 0.6 1.0 1.0
   fn (move d!)
     hint-fn $ {}
@@ -322,7 +320,7 @@ lagopus.comp.stitch :refer $ comp-stitch
 
 comp-stitch $ {}
   :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
-  :position $ [] 0 0 0
+  :position $ v3 0 0 0
 ```
 
 ### Cursor
