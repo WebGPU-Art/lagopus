@@ -534,9 +534,8 @@
         'comp-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-button (props on-click)
             let
-                position $ v3-js $ assert-type
+                position $ v3-js $ lagopus.math/require-v3
                   .unwrap-or (get props :position) nil
-                  , 'quaternion.vector/V3
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
@@ -578,7 +577,7 @@
                 host-props $ js-object
                   :color $ to-js-data color
                   :position $ if (enum? position)
-                    v3-js $ assert-type position 'quaternion.vector/V3
+                    v3-js $ lagopus.math/require-v3 position
                     if (list? position) (to-js-data position)
                       do (eprintln "|unknown position" position) (js-array 10 0 0)
               create! host-props $ fn (move d!)
@@ -607,9 +606,8 @@
         'comp-flat-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-flat-button (props on-click)
             let
-                position $ v3-js $ assert-type
+                position $ v3-js $ lagopus.math/require-v3
                   .unwrap-or (get props :position) nil
-                  , 'quaternion.vector/V3
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
@@ -1160,11 +1158,9 @@
         'comp-cube $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-cube (options)
             let
-                base $ assert-type
-                  either
-                    .unwrap-or (get options :position) nil
-                    v3 0 0 0
-                  , 'quaternion.vector/V3
+                base $ lagopus.math/require-v3 $ either
+                  .unwrap-or (get options :position) nil
+                  v3 0 0 0
                 radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
@@ -1526,6 +1522,7 @@
                         , &unit
                     if (nil? chunk-writer!) (eprintln "|expected polylines writer")
                       if (fn? chunk-writer!) (chunk-writer! collect!) (raise "|Expected polylines writer function")
+                  , &unit
                 :get-params $ .unwrap-or (get options :get-params) nil
                 :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
@@ -1563,6 +1560,7 @@
                         , &unit
                     if (nil? chunk-writer!) (eprintln "|expected polylines writer")
                       if (fn? chunk-writer!) (chunk-writer! collect!) (raise "|Expected polylines writer function")
+                  , &unit
                 :get-params $ .unwrap-or (get options :get-params) nil
                 :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
@@ -1617,7 +1615,7 @@
                   .unwrap $ nth values 0
                   .unwrap $ nth values 1
                   .unwrap $ nth values 2
-              assert-type point 'quaternion.vector/V3
+              lagopus.math/require-v3 point
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
             :args $ [] 'Dynamic
@@ -1718,21 +1716,15 @@
         'comp-plate $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-plate (options)
             let
-                base $ assert-type
-                  either
-                    .unwrap-or (get options :position) nil
-                    v3 0 0 0
-                  , 'quaternion.vector/V3
-                x-direction $ assert-type
-                  either
-                    .unwrap-or (get options :x-direction) nil
-                    v3 1 0 0
-                  , 'quaternion.vector/V3
-                y-direction $ assert-type
-                  either
-                    .unwrap-or (get options :y-direction) nil
-                    v3 0 1 0
-                  , 'quaternion.vector/V3
+                base $ lagopus.math/require-v3 $ either
+                  .unwrap-or (get options :position) nil
+                  v3 0 0 0
+                x-direction $ lagopus.math/require-v3 $ either
+                  .unwrap-or (get options :x-direction) nil
+                  v3 1 0 0
+                y-direction $ lagopus.math/require-v3 $ either
+                  .unwrap-or (get options :y-direction) nil
+                  v3 0 1 0
                 radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
@@ -1750,13 +1742,9 @@
                   :: 'List 'Number
                 *counter $ ref 0
                 r-unit $ / radius iteration
-                transformer $ assert-type
-                  either
-                    .unwrap-or (get options :transformer) nil
-                    , identity
-                  :: 'Fn $ {}
-                    :args $ [] 'quaternion.vector/V3
-                    :return 'quaternion.vector/V3
+                transformer $ either
+                  .unwrap-or (get options :transformer) nil
+                  , identity
                 chromatism $ decode-map-as
                   either
                     .unwrap-or (get options :chromatism) nil
@@ -1794,9 +1782,11 @@
                             :return 'quaternion.vector/V3
                           let
                               ratio $ calc-ratio p
-                            &v+ base $ transformer $ &v+
-                              v-scale unit-x $ * ratio $ .unwrap (nth p 0)
-                              v-scale unit-y $ * ratio $ .unwrap (nth p 1)
+                            &v+ base $ if (fn? transformer)
+                              lagopus.math/require-v3 $ transformer $ &v+
+                                v-scale unit-x $ * ratio $ .unwrap (nth p 0)
+                                v-scale unit-y $ * ratio $ .unwrap (nth p 1)
+                              raise |Expected-plate-transformer-function
                       map (range iteration)
                         fn (idx)
                           hint-fn $ {}
@@ -1826,7 +1816,7 @@
                     :args $ []
                     :return 'JsObject
                     :features $ #{} :js-ffi
-                  js-array & color chromatism
+                  js-array & $ .append color chromatism
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
@@ -1881,11 +1871,9 @@
         'comp-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-sphere (options)
             let
-                base $ assert-type
-                  either
-                    .unwrap-or (get options :position) nil
-                    v3 0 0 0
-                  , 'quaternion.vector/V3
+                base $ lagopus.math/require-v3 $ either
+                  .unwrap-or (get options :position) nil
+                  v3 0 0 0
                 radius $ decode-map-as
                   either
                     .unwrap-or (get options :radius) nil
@@ -1923,7 +1911,7 @@
                     :args $ []
                     :return 'JsObject
                     :features $ #{} :js-ffi
-                  js-array & color 1
+                  js-array & $ .append color 1
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'JsObject)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
@@ -2080,11 +2068,9 @@
                     .unwrap-or (get props :chars) nil
                     [] 0x1111
                   :: 'List 'Number
-                position $ assert-type
-                  either
-                    .unwrap-or (get props :position) nil
-                    v3 0 0 0
-                  , 'quaternion.vector/V3
+                position $ lagopus.math/require-v3 $ either
+                  .unwrap-or (get props :position) nil
+                  v3 0 0 0
                 size $ decode-map-as
                   either
                     .unwrap-or (get props :size) nil
@@ -2126,9 +2112,7 @@
                           :args $ [] $ :: 'Map 'Tag 'Dynamic
                           :return $ :: 'Map 'Tag 'Dynamic
                         let
-                            x $ assert-type
-                              .unwrap-or (get info :position) nil
-                              , 'quaternion.vector/V3
+                            x $ lagopus.math/require-v3 $ .unwrap-or (get info :position) nil
                             data-idx $ decode-map-as
                               .unwrap-or (get info :data) nil
                               , 'Number
@@ -2505,7 +2489,7 @@
                     :return 'Unit
               if (js-nullish? build-errors)
                 do (reset-memof1-caches!) (render-app!) (remove-watch! *store :change) (add-watch! *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
-                show! |error $ unsafe-coerce build-errors 'String
+                show! |error $ str build-errors
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ :: 'Fn $ {} (:return 'Unit)
@@ -2573,6 +2557,13 @@
             * 0.5 $ dec $ sqrt 5
           :examples $ []
           :schema $ :: 'Dynamic
+        'require-v3 $ %{} 'CodeEntry
+          :doc "|Validate an existing nominal V3 without accepting Map or List conversions. Calcit 0.31.0 preserves the validated value identity."
+          :code $ quote $ defn require-v3 (value)
+            if (enum? value) (decode-map-as value 'quaternion.vector/V3) (raise |Expected-V3)
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
+            :args $ [] 'Dynamic
         'rotate-3d $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rotate-3d (origin axis-0 angle p)
             let

@@ -1,7 +1,7 @@
 
 {}
   :calcit-version |0.31.0
-  :version |0.5.12
+  :version |0.5.13
   :dependencies $ {}
     |calcit-lang/js-ffi |0.2.7
     |calcit-lang/memof |0.0.41

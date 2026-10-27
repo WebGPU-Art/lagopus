@@ -7,9 +7,19 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
+### 0.5.13 候选：使用者影响
+
+本候选配对正式 Calcit CLI / `@calcit/procs` **0.31.0**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
+
+公开组件继续接收原有 options Map。V3 配置和 Plate transformer 返回值现在经过真实检查：正确的 Quaternion V3 保留对象身份；错误类型、匿名或不同名义 Enum 会更早报错，不把普通 Map 自动转换为 V3。`point-v3` 原有数字 List 转换入口保留。原默认值、几何顺序、回调单次执行和异常传播保持。
+
+直接调用折线构建 helper 的高级使用者需传入 `Ref<Option<PolylinePrevious>>` / `Ref<Option<MarkedPolylinePrevious>>`，初值为对应类型的 None；普通 `comp-polylines` / `comp-polylines-marked` 调用形状不变。两个内部 writer 适配器执行原回调后返回 Unit；该内部返回值本来就不被 `object-writer` 消费，不要求外部 writer 伪造类型。
+
+依赖固定为 js-ffi 0.2.7、Memof 0.0.41、Quaternion 0.2.17；npm Touch Control 保留已使用的精确 0.0.4-a1。Memof Anchor 返回 Option，本项目只使用其缓存 API。HUD 页面报错显示保留，错误消息使用真实字符串转换。
+
 ### 开发与部署
 
-本分支正在迁移到配对 Calcit/procs 0.30.1-alpha.5、Caps 0.1.1、Node.js 24 和 Yarn 4.18.0（编译器仍为预发布）：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.31.0：
 
 ```sh
 caps --strict --ci
@@ -18,66 +28,11 @@ caps verify --toolchain
 corepack yarn dev
 ```
 
-另开终端运行 `corepack yarn watch` 可持续编译 Calcit。`corepack yarn build` 生成前端产物；`js-out/` 和 `dist/` 不纳入版本控制。源码使用 `calcit.cirru` 和 `deps.cirru`。
+另开终端运行 `corepack yarn watch` 持续编译。`corepack yarn build` 生成前端产物；源码使用 `calcit.cirru` / `deps.cirru`，`js-out/`、`dist/` 和 `.calcit/` 不入库。
 
-CI 为生产构建设置 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，通过 COS action 的 `public-base-url` 启用内置上传校验。需要 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY` 和原有 `rsync_private_key` secrets。保留原服务器部署路径；PR 仅检查和构建，不上传生产资源。
+CI 保留完整 strict、全定义、18 个公开命名空间及附带测试，不跳过 proof audit。生产构建使用 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，COS action 的 `public-base-url` 启用内置校验；服务器部署路径不变。PR 只检查和构建，不上传生产资源。需要原有 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY`、`rsync_private_key` secrets。
 
-类型门禁使用 `calcit --check-only --all-defs --warn-dyn-method --format json`，并保留全部 18 个公开命名空间的检查。配置边界的 `:topology` 按下文约定检查为 Tag，再转为 WebGPU 所需字符串；watcher 和字符串拼接使用首选 API 名，不依赖 `calcit fix`。CI 使用可读的正式 Action release tag（并非不可变 SHA），上传验证仅由 COS action v1.2.0 执行。
-
-此前 0.29 迁移通过全部 191 个严格定义、141 个公开定义和 JS/Vite 构建，
-deprecated 与静态动态方法调用均为零。修正 external trait 的限定类型引用、Unit
-返回，以及缓冲区的 `List<NumberBuffer>` 合同。`memo-object` 保留原 memof 缓存，
-在渲染边界检查实际 `type-of` 为 `:js-object` 后使用正式 js-ffi 的受检入口，不声称异构缓存
-已获得泛型证明；附着回归测试验证非宿主缓存结果被拒绝且仍然复用缓存。
-没有新增 unsafe cast、放宽类型或校验脚本。此前的动态合同债务没有因此清零，当前数量见文末扫描；
-WebGPU 实机、PR/main CI 和部署需分别验收。
-
-本地候选暂沿用 `0.5.12` 版本字段，不代表改写了已发布的同名tag；只有完整验收后才选取新的正式版本。
-候选对齐已发布的 Memof `0.0.39`，使下游可使用保留返回类型的
-单参数 memo API，而无需混用两个版本的 Memof。Lagopus 自身的缓存、渲染和类型
-边界不变；候选的发布状态以 GitHub Releases 为准。
-
-本轮候选配对已发布 Calcit/procs **0.30.1-alpha.5**（仍为编译器预发布），并使用正式 Quaternion 0.2.14、Memof 0.0.39 和 js-ffi 0.2.3。npm Touch Control 最新仍只有 0.0.4-a1，保留并精确固定，不冒充正式版本。Memof Anchor `.deref` 已改为 Option，本项目当前只调用缓存 API；后续调用 Anchor 需要处理缺失值。
-
-此前 77 处底层 Map 读取已改为公开 get/Option，保留 nil 回退、默认值、求值次数与状态路径。原有 Number/List/Map/Tag 配置和游标边界按实际数据解码，不增加默认空数据。本轮进一步检查纹理 List 容器并通过 js-cast 核对每个 Texture 的宿主成员；该检查保留对象身份与顺序，不证明 GPU 品牌或字段的深层数值合同。缓存的宿主返回值复用正式 js-ffi 检查入口，保留原拒绝消息与缓存调用，不新增 unsafe。
-
-此前普通全定义 **191/191**、原 18 个公开命名空间 **141/141**、immutable 安装和 JS/Vite 生产 CDN 构建通过。两个真实源码边界表达式经实际生成 JS 回放：纹理对象身份/顺序、空 List、七类非法形状和五类非宿主缓存值通过；不初始化 GPU、应用存储或生产服务。
-
-**完整 strict 仍失败，尚不能发布。** 正式 Memof 0.0.39 已消除两条依赖诊断，原缓存拒绝/复用测试保留且通过，没有修改测试期待、跳过缓存或修改共享依赖。alpha.5已消除原宿主数组返回推断诊断，本轮回调边界修正后最新完整 strict 仍有15条未证明V3断言，不把普通检查通过当作可发布。
-
-本轮删除 6 个 helper 中 7 处由 list?/enum?/string? 分支已保证的冗余断言，直接使用同一个受检值，不新增重复 decoder。191/191 定义、原缓存测试、JS/Vite 生产构建与实际生成 helper 的浏览器回放通过：递归计数、String/Tag format、嵌套数值与属性写入顺序、真实颜色 atom、非法数字拒绝，V3 原样返回的 JS 身份仍保留。没有初始化 GPU、应用存储或生产服务，不能称已通过 WebGPU 实机验收。其余未证明 V3/回调断言没有机械替换成复制 decoder 或伪 Unit。
-
-宿主数组返回推断 [calcit#2114](https://github.com/calcit-lang/calcit/issues/2114) 已随配对alpha.5实际通过本候选。V3分支仍原样返回对象；先前alpha.4的decode实验有JS身份变化，见仍开放的 [calcit#2154](https://github.com/calcit-lang/calcit/issues/2154)，没有把该实验混入真实V3分支或声称alpha.5已解决全部身份问题，不能为通过门禁改变身份或伪造回调。
-
-折线构建器现在以 `Option<PolylinePrevious>` / `Option<MarkedPolylinePrevious>` 保存内部上一点状态，
-不再用动态Map反复断言position/width/mark；八处生产断言被去除，外部width/mark真实检查为Number。
-这不是公开options/writer合同已修复。原顶点顺序、宽度沿用、mark、break断段、状态更新先于writer
-及V3引用身份均保留；没有顺手改动原算法的宽度传播或older字段行为。
-直接调用这两个构建helper的使用者需改用对应typed Option状态Ref（初值为None，而非nil）；
-普通comp-polylines/comp-polylines-marked调用形状未改变。该候选尚未发布，不改变现有正式tag。
-
-当前全部193/193定义、原18个公开namespace的143/143定义、原缓存测试和两条新增折线回归共3/3
-测试、immutable安装、JS/CDN构建通过。实际浏览器对照本轮改动前后生成的两个构建器，普通/带mark
-各12个顶点完全一致，原V3对象身份及三份shader字符串相同；没有初始化GPU、应用存储或生产服务。
-保留49处既有unsafe和75处schema Dynamic，不宣称已逐项清零；没有新增unsafe、放宽基线或改编译器。
-
-shader宏不再打印编译期 `inline:` 消息，并去掉不再需要的 `:log` capability；文件读取和生成shader
-字符串不变。JSON检查报告现在可直接解析，不必丢弃前缀日志。临时对照页/副本都在忽略目录，不新增
-永久checker、测试框架或每项目重复验证脚本。
-
-writer 边界不再用 `assert-type` 把 Map 中的任意值伪装成完整回调合同：
-`object-writer` 调用前检查 `fn?`；两种折线 writer 保留缺失时的原警告，
-实际调用前同样检查可调用。没有默认的伪回调或额外包装函数，回调和异常仍原样传递。
-折线 collect 对已有 List 逐项检查 Enum，或检查单个 Enum，直接交给原构建器，
-不复制或重新解码顶点与 V3。该检查只保证可调用/Enum 边界，不声称运行时证明任意函数的完整参数合同。
-
-完整 strict workflow 的失败由20项降至15项，剩余均涉及真实 nominal V3边界；
-所有193/193定义、原3/3附带业务测试及JS/Vite构建仍通过。既有忽略目录的浏览器回放验证
-普通/带mark的实际生成回调、单顶点/批次、原异常身份，以及错误writer/批次元素拒绝；
-正例在数据收集后主动抛出同一测试异常以停止于GPU创建前，没有mock renderer或初始化GPU。
-这不是完整WebGPU应用验收，也不是全部V3合同已经解决。
-
-候选保存在独立本地分支，未推送 PR、发版、上传或部署；原测试保留，无新增永久 checker、框架、compiler 规则、类型预算或 FFI 权限放宽。完整输入合同、WebGPU 实机、消费者与远端 fresh CI 仍需分别验收。
+这次迁移没有清零全部类型债务：当前仍有 48 处既有 unsafe 宿主边界和 76 处 schema Dynamic（包含新的受检 V3 入口）。没有放宽类型门禁或质量基线；后续应继续按真实宿主合同收窄，而不是以数量取代代码检查。WebGPU 页面验收与 CI、部署状态分别确认。
 
 ### APIs
 
@@ -365,7 +320,7 @@ lagopus.comp.stitch :refer $ comp-stitch
 
 comp-stitch $ {}
   :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
-  :position $ [] 0 0 0
+  :position $ v3 0 0 0
 ```
 
 ### Cursor
