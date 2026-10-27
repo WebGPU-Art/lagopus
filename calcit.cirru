@@ -230,7 +230,7 @@
                       buffer $ make-buffer!
                         buffer-format $ .unwrap-or (get attr :format) nil
                         , vertices-size
-                      *offset $ atom 0
+                      *offset $ ref 0
                       field $ decode-map-as
                         .unwrap-or (get attr :field) nil
                         , 'Tag
@@ -263,7 +263,7 @@
                   , expand-attr
                 writer $ .unwrap-or (get options :writer) nil
                 bundles $ make-empty-js-arrays $ count attrs-list
-                *counter $ atom 0
+                *counter $ ref 0
                 collect! $ fn (chunk)
                   hint-fn $ {}
                     :args $ [] $ :: 'List 'Enum
@@ -271,7 +271,7 @@
                     :features $ #{} :js-ffi
                   &doseq (record chunk) (swap! *counter inc)
                     let
-                        *index $ atom 0
+                        *index $ ref 0
                       &doseq (attr attrs-list)
                         let
                             idx @*index
@@ -1300,8 +1300,8 @@
                   :args $ [] $ :: 'List 'Enum
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
-                previous $ atom $ Option :none
-                segments $ atom $ assert-type ([])
+                previous $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/PolylinePrevious)
+                segments $ ref $ assert-type ([])
                   :: 'List $ :: 'List 'Enum
                 emit $ fn (chunk)
                   hint-fn $ {}
@@ -1364,8 +1364,8 @@
                   :args $ [] $ :: 'List 'Enum
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
-                previous $ atom $ Option :none
-                segments $ atom $ assert-type ([])
+                previous $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/MarkedPolylinePrevious)
+                segments $ ref $ assert-type ([])
                   :: 'List $ :: 'List 'Enum
                 emit $ fn (chunk)
                   hint-fn $ {}
@@ -1514,7 +1514,7 @@
                         :return 'Unit
                     :return 'Unit
                   let
-                      *prev $ atom $ Option :none
+                      *prev $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/PolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ {}
                           :args $ [] 'Dynamic
@@ -1551,7 +1551,7 @@
                         :return 'Unit
                     :return 'Unit
                   let
-                      *prev $ atom $ Option :none
+                      *prev $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/MarkedPolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ {}
                           :args $ [] 'Dynamic
@@ -1748,7 +1748,7 @@
                     .unwrap-or (get options :color) nil
                     [] 0.6 0.8 0.76
                   :: 'List 'Number
-                *counter $ atom 0
+                *counter $ ref 0
                 r-unit $ / radius iteration
                 transformer $ assert-type
                   either
@@ -1901,7 +1901,7 @@
                     .unwrap-or (get options :color) nil
                     [] 0.6 0.8 0.76
                   :: 'List 'Number
-                *counter $ atom 0
+                *counter $ ref 0
               object $ {}
                 :shader $ either
                   .unwrap-or (get options :shader) nil
@@ -2427,11 +2427,11 @@
       :defs $ {}
         '*global-textures $ %{} 'CodeEntry
           :doc "|track textures with a hashmap, this is global states passing to container"
-          :code $ quote $ defatom *global-textures ({})
+          :code $ quote $ defref *global-textures ({})
           :examples $ []
           :schema $ :: 'Ref $ :: 'Map 'Tag 'lagopus.gpu/Texture
         '*store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defatom *store
+          :code $ quote $ defref *store
             {}
               :states $ {}
               :tab :axis
