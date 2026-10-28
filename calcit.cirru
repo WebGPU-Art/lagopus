@@ -12,24 +12,21 @@
       :defs $ {}
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
-            .push $ :: 'Fn $ {}
-              :args $ [] 'NumberArray 'Number
-              :return 'Number
+            .push $ quote $ Fn NumberArray Number (-> Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'NumberBuffer $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberBuffer (:length 'Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'buffer-format $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn buffer-format (format)
             match format (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
               _ $ if (string? format) format $ do (eprintln "|Unknown format" format) |float32
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> String)
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (indices collect!)
             if (list? indices)
@@ -37,10 +34,9 @@
               collect! $ decode-map-as indices 'Number
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] 'Number
+          :schema $ quote $ Fn Dynamic
+            Fn Number $ -> Unit
+            -> Unit
         'collect-from-records! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-from-records! (data field idx write!)
             cond
@@ -61,33 +57,25 @@
               true $ raise "|unknown data"
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic 'Tag 'Number $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] 'Number
+          :schema $ quote $ Fn Dynamic Tag Number
+            Fn Number $ -> Unit
+            -> Unit
         'count-recursive $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn count-recursive (xs)
             if (list? xs)
               reduce xs 0 $ fn (acc y)
-                hint-fn $ {}
-                  :args $ [] 'Number 'Dynamic
-                  :return 'Number
+                hint-fn $ Fn Number Dynamic $ -> Number
                 + acc $ count-recursive y
               , 1
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> Number)
         'create-object! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn create-object! (options attrs-list vertices-size buffers)
             let
-                create! $ unsafe-coerce createRenderer $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject
-                    :return 'JsObject
-                index-buffer! $ unsafe-coerce u32buffer $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject
-                    :return 'JsObject
+                create! $ unsafe-coerce createRenderer $ quote
+                  Fn JsObject $ -> JsObject
+                index-buffer! $ unsafe-coerce u32buffer $ quote
+                  Fn JsObject $ -> JsObject
                 indices $ .unwrap-or (get options :indices) nil
                 textures $ either
                   .unwrap-or (get options :textures) nil
@@ -106,10 +94,7 @@
                 :indices $ if (nil? indices) nil $ let
                     arr $ unsafe-coerce (js-array) NumberArray
                     collect! $ fn (x)
-                      hint-fn $ {}
-                        :args $ [] 'Number
-                        :return 'Unit
-                        :features $ #{} :js-ffi
+                      hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                       arr .push x
                       , &unit
                   collect-array! indices collect!
@@ -118,20 +103,15 @@
                 :textures $ js-array & $ map
                   decode-map-as textures $ :: 'List 'Dynamic
                   fn (texture)
-                    hint-fn $ {}
-                      :args $ [] 'Dynamic
-                      :return 'lagopus.gpu/Texture
-                      :features $ #{} :js-ffi
+                    hint-fn $ Fn Dynamic (-> lagopus.gpu/Texture) (:features :js-ffi)
                     js-cast texture 'lagopus.gpu/Texture
                 :label $ .unwrap-or (get options :label) nil
                 :computeOptions $ .unwrap-or (get options :compute-options) nil
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] (:: 'Map 'Tag 'Dynamic)
-              :: 'List $ :: 'Map 'Tag 'Dynamic
-              , 'Number $ :: 'List 'lagopus.alias/NumberBuffer
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic)
+            List $ Map Tag Dynamic
+            , Number (List lagopus.alias/NumberBuffer) (-> JsObject) (:features :js-ffi)
         'expand-attr $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn expand-attr (x)
             if (enum? x)
@@ -140,9 +120,8 @@
                 :format $ .unwrap $ nth x 0
               decode-map-as x $ :: 'Map 'Tag 'Dynamic
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'Dynamic
-            :return $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn Dynamic
+            -> $ Map Tag Dynamic
         'group $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn group (a & children)
             if
@@ -150,39 +129,27 @@
                 = a $ {}
               eprintln "|group options is not used at current" a
             let
-                make-group $ unsafe-coerce lagopus/group $ :: 'Fn
-                  {}
-                    :args $ [] 'Nil
-                    :rest $ :: 'JsNullish 'JsObject
-                    :return 'JsObject
+                make-group $ unsafe-coerce lagopus/group $ quote
+                  Fn Nil & (JsNullish JsObject) (-> JsObject)
               make-group nil & children
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
-            :rest $ :: 'JsNullish 'JsObject
+          :schema $ quote $ Fn Dynamic & (JsNullish JsObject) (-> JsObject) (:features :js-ffi)
         'inject-shader-snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn inject-shader-snippets (code)
             -> code (browser/replace-first "|#import lagopus::simplex" wgsl-simplex) (browser/replace-first "|#import lagopus::perspective" wgsl-perspective) (browser/replace-first "|#import lagopus::colors" wgsl-colors) (browser/replace-first "|#import lagopus::rand" wgsl-rand) (browser/replace-first "|#import lagopus::rotation" wgsl-rotation) (browser/replace-first "|#import lagopus::hsluv" wgsl-hsluv)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] 'String
+          :schema $ quote $ Fn String (-> String)
         'make-empty-js-arrays $ %{} 'CodeEntry
           :doc "|create nested array of js, as placeholder for attributes data"
           :code $ quote $ defn make-empty-js-arrays (n)
             js-array & $ map (range n)
               fn (_idx)
-                hint-fn $ {}
-                  :args $ [] 'Number
-                  :return 'JsObject
-                  :features $ #{} :js-ffi
+                hint-fn $ Fn Number (-> JsObject) (:features :js-ffi)
                 js-array
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] 'Number
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Number (-> JsObject) (:features :js-ffi)
         'memo-object $ %{} 'CodeEntry
           :doc "|Reuse the existing memof singleton cache; check its opaque result is a runtime host object before the renderer consumes it. This does not claim a generic cache proof or change cached values, function identity, arguments or clearing."
           :code $ quote $ defn memo-object (f)
@@ -193,11 +160,10 @@
                 contract/expect-object "|cached renderer host object" value
                 raise "|Expected a cached renderer host object"
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Fn
-              {} (:return 'Dynamic)
-                :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn
+            Fn $ -> Dynamic
+            -> JsObject
+            :features :js-ffi
           :tests $ [] $ %{} 'TestEntry (:name |reject-cached-calcit-values)
             :code $ quote $ let
                 calls $ ref 0
@@ -217,15 +183,10 @@
                   , expand-attr
                 data $ .unwrap-or (get options :data) nil
                 vertices-size $ count-recursive data
-                make-buffer! $ unsafe-coerce newBufferFormatLength $ :: 'Fn
-                  {}
-                    :args $ [] 'String 'Number
-                    :return 'lagopus.alias/NumberBuffer
+                make-buffer! $ unsafe-coerce newBufferFormatLength $ quote
+                  Fn String Number $ -> lagopus.alias/NumberBuffer
                 buffers $ map-indexed attrs-list $ fn (idx attr)
-                  hint-fn $ {}
-                    :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
-                    :return 'lagopus.alias/NumberBuffer
-                    :features $ #{} :js-ffi
+                  hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
                   let
                       buffer $ make-buffer!
                         buffer-format $ .unwrap-or (get attr :format) nil
@@ -235,10 +196,7 @@
                         .unwrap-or (get attr :field) nil
                         , 'Tag
                       write! $ fn (x)
-                        hint-fn $ {}
-                          :args $ [] 'Number
-                          :return 'Unit
-                          :features $ #{} :js-ffi
+                        hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                         aset buffer @*offset x
                         swap! *offset inc
                         , &unit
@@ -250,9 +208,7 @@
               create-object! options attrs-list vertices-size buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
         'object-writer $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn object-writer (options)
             let
@@ -265,10 +221,7 @@
                 bundles $ make-empty-js-arrays $ count attrs-list
                 *counter $ ref 0
                 collect! $ fn (chunk)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'List 'Enum
-                    :return 'Unit
-                    :features $ #{} :js-ffi
+                  hint-fn $ Fn (List Enum) (-> Unit) (:features :js-ffi)
                   &doseq (record chunk) (swap! *counter inc)
                     let
                         *index $ ref 0
@@ -278,10 +231,7 @@
                             arr $ unsafe-coerce (aget bundles idx) NumberArray
                             data $ .unwrap $ nth record (inc idx)
                             write! $ fn (value)
-                              hint-fn $ {}
-                                :args $ [] 'Number
-                                :return 'Unit
-                                :features $ #{} :js-ffi
+                              hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                               arr .push value
                               , &unit
                           if
@@ -290,50 +240,43 @@
                           write-attribute! data write!
                         swap! *index inc
                   , &unit
-                make-buffer! $ unsafe-coerce newBufferFormatArray $ :: 'Fn
-                  {}
-                    :args $ [] 'String 'JsObject
-                    :return 'lagopus.alias/NumberBuffer
+                make-buffer! $ unsafe-coerce newBufferFormatArray $ quote
+                  Fn String JsObject $ -> lagopus.alias/NumberBuffer
               if (fn? writer) (writer collect!) (raise "|Expected object writer function")
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Map 'Tag 'Dynamic
-                      :return 'lagopus.alias/NumberBuffer
-                      :features $ #{} :js-ffi
+                    hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
                     make-buffer!
                       buffer-format $ .unwrap-or (get attr :format) nil
                       unsafe-coerce (aget bundles idx) 'JsObject
                 create-object! options attrs-list @*counter buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
         'wgsl-colors $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-colors (inline-shader |lagopus-colors)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-hsluv $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-hsluv (inline-shader |lagopus-hsluv)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-perspective $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-perspective (inline-shader |lagopus-perspective)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-rand (inline-shader |lagopus-rand)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-rotation $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-rotation (inline-shader |lagopus-rotation)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-simplex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-simplex (inline-shader |lagopus-simplex)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'write-attribute! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn write-attribute! (xs write!)
             cond
@@ -350,10 +293,9 @@
               true $ write! $ decode-map-as xs 'Number
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] 'Number
+          :schema $ quote $ Fn Dynamic
+            Fn Number $ -> Unit
+            -> Unit
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.alias
           :require
@@ -370,69 +312,52 @@
           :code $ quote $ deftrait Canvas (:width 'Number) (:height 'Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Document $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Document
-            .query-selector $ :: 'Fn $ {}
-              :args $ [] 'lagopus.browser/Document 'String
-              :return $ :: 'JsNullish 'lagopus.browser/Canvas
+            .query-selector $ quote $ Fn lagopus.browser/Document String
+              -> $ JsNullish lagopus.browser/Canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'MobileInfo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileInfo (:any 'Bool)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'TextHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait TextHost
-            .replace $ :: 'Fn $ {}
-              :args $ [] 'TextHost 'String 'String
-              :return 'String
-            .slice $ :: 'Fn $ {}
-              :args $ [] 'TextHost 'Number
-              :return 'String
-            .pad-start $ :: 'Fn $ {}
-              :args $ [] 'TextHost 'Number 'String
-              :return 'String
+            .replace $ quote $ Fn TextHost String String (-> String)
+            .slice $ quote $ Fn TextHost Number (-> String)
+            .pad-start $ quote $ Fn TextHost Number String (-> String)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Window $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Window
-            :onresize $ :: 'Fn $ {}
-              :args $ [] 'JsObject
-              :return 'Unit
+            :onresize $ quote $ Fn JsObject (-> Unit)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :writable $ #{} :onresize
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'atan2 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn atan2 (y x)
             let
-                invoke $ unsafe-coerce js/Math.atan2 $ :: 'Fn
-                  {}
-                    :args $ [] 'Number 'Number
-                    :return 'Number
+                invoke $ unsafe-coerce js/Math.atan2 $ quote
+                  Fn Number Number $ -> Number
               invoke y x
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'Number 'Number
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Number Number (-> Number) (:features :js-ffi)
         'parse-color-channel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-color-channel (text)
             let
-                parse $ unsafe-coerce js/parseFloat $ :: 'Fn
-                  {}
-                    :args $ [] 'String
-                    :return 'Number
+                parse $ unsafe-coerce js/parseFloat $ quote
+                  Fn String $ -> Number
               parse text
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String (-> Number) (:features :js-ffi)
         'query-canvas! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn query-canvas! ()
             let
@@ -441,36 +366,26 @@
               if (js-nullish? canvas) (raise "|Missing canvas element") canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'lagopus.browser/Canvas)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> lagopus.browser/Canvas) (:features :js-ffi)
         'rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand (n)
             let
-                random! $ unsafe-coerce js/Math.random $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Number
+                random! $ unsafe-coerce js/Math.random $ quote
+                  Fn $ -> Number
               * (random!) n
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'Number
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Number (-> Number) (:features :js-ffi)
         'rand-shift $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand-shift (n dn)
             let
-                random! $ unsafe-coerce js/Math.random $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Number
+                random! $ unsafe-coerce js/Math.random $ quote
+                  Fn $ -> Number
               + (- n dn)
                 * 2 dn $ random!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'Number 'Number
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Number Number (-> Number) (:features :js-ffi)
         'read-mobile-info! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn read-mobile-info! ()
             let
@@ -481,9 +396,7 @@
               detect $ unsafe-coerce js/window.navigator 'JsObject
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'lagopus.browser/MobileInfo)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> lagopus.browser/MobileInfo) (:features :js-ffi)
         'replace-first $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn replace-first (text pattern replacement)
             let
@@ -491,9 +404,7 @@
               host .replace pattern replacement
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] 'String 'String 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn String String String (-> String) (:features :js-ffi)
         'set-resize-handler! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn set-resize-handler! (handler)
             let
@@ -502,11 +413,10 @@
               , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] 'JsObject
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn
+            Fn JsObject $ -> Unit
+            -> Unit
+            :features :js-ffi
         'stitch-pattern $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn stitch-pattern (value)
             let
@@ -515,9 +425,7 @@
               digits .pad-start 32 |0
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'String)
-            :args $ [] 'Number
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Number (-> String) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.browser
           :require $ |ismobilejs :default ismobile
@@ -525,12 +433,11 @@
       :defs $ {}
         'Motion $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Motion
-            .at $ :: 'Fn $ {}
-              :args $ [] 'lagopus.comp.button/Motion 'Number
-              :return $ :: 'JsNullish 'Number
+            .at $ quote $ Fn lagopus.comp.button/Motion Number
+              -> $ JsNullish Number
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'comp-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-button (props on-click)
             let
@@ -539,41 +446,32 @@
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
-                create! $ unsafe-coerce compButton $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'JsObject $ :: 'Fn
-                          {}
-                            :args $ [] 'Enum
-                            :return 'Unit
-                        :return 'Unit
-                    :return 'JsObject
+                create! $ unsafe-coerce compButton $ quote
+                  Fn JsObject
+                    Fn JsObject
+                      Fn Enum $ -> Unit
+                      -> Unit
+                    -> JsObject
               create! host-props on-click
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] (:: 'Map 'Tag 'Dynamic)
-              :: 'Fn $ {} (:return 'Unit)
-                :args $ [] 'JsObject $ :: 'Fn
-                  {} (:return 'Unit)
-                    :args $ [] 'Enum
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic)
+            Fn JsObject
+              Fn Enum $ -> Unit
+              -> Unit
+            -> JsObject
+            :features :js-ffi
         'comp-drag-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-drag-point (props on-drag)
             let
                 color $ .unwrap-or (get props :color) nil
                 position $ .unwrap-or (get props :position) nil
-                create! $ unsafe-coerce compDragPoint $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'lagopus.comp.button/Motion $ :: 'Fn
-                          {}
-                            :args $ [] 'Enum
-                            :return 'Unit
-                        :return 'Unit
-                    :return 'JsObject
+                create! $ unsafe-coerce compDragPoint $ quote
+                  Fn JsObject
+                    Fn lagopus.comp.button/Motion
+                      Fn Enum $ -> Unit
+                      -> Unit
+                    -> JsObject
                 host-props $ js-object
                   :color $ to-js-data color
                   :position $ if (enum? position)
@@ -581,13 +479,10 @@
                     if (list? position) (to-js-data position)
                       do (eprintln "|unknown position" position) (js-array 10 0 0)
               create! host-props $ fn (move d!)
-                hint-fn $ {}
-                  :args $ [] 'lagopus.comp.button/Motion $ :: 'Fn
-                    {}
-                      :args $ [] 'Enum
-                      :return 'Unit
-                  :return 'Unit
-                  :features $ #{} :js-ffi
+                hint-fn $ Fn lagopus.comp.button/Motion
+                  Fn Enum $ -> Unit
+                  -> Unit
+                  :features :js-ffi
                 on-drag
                   v3
                     .unwrap $ js-nullish->option $ move .at 0
@@ -596,13 +491,12 @@
                   , d!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] (:: 'Map 'Tag 'Dynamic)
-              :: 'Fn $ {} (:return 'Unit)
-                :args $ [] 'quaternion.vector/V3 $ :: 'Fn
-                  {} (:return 'Unit)
-                    :args $ [] 'Enum
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic)
+            Fn quaternion.vector/V3
+              Fn Enum $ -> Unit
+              -> Unit
+            -> JsObject
+            :features :js-ffi
         'comp-flat-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-flat-button (props on-click)
             let
@@ -611,49 +505,37 @@
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
-                create! $ unsafe-coerce compFlatButton $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'JsObject $ :: 'Fn
-                          {}
-                            :args $ [] 'Enum
-                            :return 'Unit
-                        :return 'Unit
-                    :return 'JsObject
+                create! $ unsafe-coerce compFlatButton $ quote
+                  Fn JsObject
+                    Fn JsObject
+                      Fn Enum $ -> Unit
+                      -> Unit
+                    -> JsObject
               create! host-props on-click
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] (:: 'Map 'Tag 'Dynamic)
-              :: 'Fn $ {} (:return 'Unit)
-                :args $ [] 'JsObject $ :: 'Fn
-                  {} (:return 'Unit)
-                    :args $ [] 'Enum
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic)
+            Fn JsObject
+              Fn Enum $ -> Unit
+              -> Unit
+            -> JsObject
+            :features :js-ffi
         'comp-slider $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-slider (props on-slide)
             let
-                create! $ unsafe-coerce compSlider $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'lagopus.comp.button/Motion $ :: 'Fn
-                          {}
-                            :args $ [] 'Enum
-                            :return 'Unit
-                        :return 'Unit
-                    :return 'JsObject
+                create! $ unsafe-coerce compSlider $ quote
+                  Fn JsObject
+                    Fn lagopus.comp.button/Motion
+                      Fn Enum $ -> Unit
+                      -> Unit
+                    -> JsObject
               create!
                 unsafe-coerce (to-js-data props) 'JsObject
                 fn (move d!)
-                  hint-fn $ {}
-                    :args $ [] 'lagopus.comp.button/Motion $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
-                    :features $ #{} :js-ffi
+                  hint-fn $ Fn lagopus.comp.button/Motion
+                    Fn Enum $ -> Unit
+                    -> Unit
+                    :features :js-ffi
                   on-slide
                     complex
                       .unwrap $ js-nullish->option $ move .at 0
@@ -661,13 +543,12 @@
                     , d!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] (:: 'Map 'Tag 'Dynamic)
-              :: 'Fn $ {} (:return 'Unit)
-                :args $ [] 'quaternion.complex/Complex $ :: 'Fn
-                  {} (:return 'Unit)
-                    :args $ [] 'Enum
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic)
+            Fn quaternion.complex/Complex
+              Fn Enum $ -> Unit
+              -> Unit
+            -> JsObject
+            :features :js-ffi
         'v3-js $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn v3-js (position)
             match position $
@@ -675,9 +556,7 @@
               js-array x y z
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] 'quaternion.vector/V3
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn quaternion.vector/V3 (-> JsObject) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.button
           :require
@@ -693,7 +572,7 @@
         'color-default $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def color-default ([] 1 0 0 1)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'comp-bubbles-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-bubbles-demo ()
             let
@@ -704,8 +583,7 @@
                     [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area)
                       + 6 $ rand 120
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-city $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-city ()
             object $ {} (:shader city-wgsl)
@@ -742,8 +620,7 @@
                             [] (:: :vertex p0 5 4) (:: :vertex p0 5 5) (:: :vertex p0 5 6)
                             [] (:: :vertex p0 5 4) (:: :vertex p0 5 6) (:: :vertex p0 5 7)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-container (store textures-dict)
             let
@@ -769,9 +646,7 @@
                   :plate $ comp-plate $ {} (; :topology :line-strip) (:iteration 20) (:radius 160)
                     :color $ [] 0.04 0.8 0.6
                     :transformer $ fn (i)
-                      hint-fn $ {}
-                        :args $ [] 'quaternion.vector/V3
-                        :return 'quaternion.vector/V3
+                      hint-fn $ Fn quaternion.vector/V3 $ -> quaternion.vector/V3
                       v+ i $ v3 0 0 -10
                     ; :x-direction $ v3 1 0 0
                     ; :y-direction $ v3 0 1 0
@@ -784,8 +659,7 @@
                   :kaleidoscope $ comp-kaleidoscope textures-dict
                   _ $ group nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'lagopus.gpu/Texture)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Map Tag lagopus.gpu/Texture) (-> JsObject)
         'comp-control-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-control-demo (states)
             let
@@ -801,24 +675,18 @@
                 comp-slider
                   {} $ :position $ [] 0 0 0
                   fn (change _dispatch!)
-                    hint-fn $ {}
-                      :args $ [] 'quaternion.complex/Complex $ :: 'Fn
-                        {}
-                          :args $ [] 'Enum
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn quaternion.complex/Complex
+                      Fn Enum $ -> Unit
+                      -> Unit
                     println |Slide change
                 comp-drag-point
                   {}
                     :position $ .unwrap-or (get state :pos) nil
                     :color $ [] 0.6 0.6 1.0 1.0
                   fn (move d!)
-                    hint-fn $ {}
-                      :args $ [] 'quaternion.vector/V3 $ :: 'Fn
-                        {}
-                          :args $ [] 'Enum
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn quaternion.vector/V3
+                      Fn Enum $ -> Unit
+                      -> Unit
                     d! $ :: :state cursor $ assoc state :pos move
                 comp-flat-button
                   {}
@@ -826,16 +694,12 @@
                     :color $ [] 0.9 0.4 0.5 1
                     :size 40
                   fn (_event _dispatch!)
-                    hint-fn $ {}
-                      :args $ [] 'JsObject $ :: 'Fn
-                        {}
-                          :args $ [] 'Enum
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn JsObject
+                      Fn Enum $ -> Unit
+                      -> Unit
                     println |CLICKED
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-mountains $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-mountains ()
             object $ {} (:shader mountains-wgsl)
@@ -869,8 +733,7 @@
                               :: :vertex $ [] x1 y1
                               :: :vertex $ [] x0 y1
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-necklace $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-necklace ()
             comp-spots $ {} (; :topology :line-strip) (:radius 6) (:vertex-count 8) (:shift 12)
@@ -882,8 +745,7 @@
                       * r $ cos $ * 0.1129 idx
                       * r $ sin $ * 0.123 idx
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-ribbon $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-ribbon ()
             comp-curves $ {} (; :topology :line-strip)
@@ -899,15 +761,13 @@
                         * r $ sin angle
                       :width 2
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-stitch-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-stitch-demo ()
             group nil $ comp-stitch $ {}
               :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-tabs $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-tabs ()
             group nil
@@ -917,12 +777,9 @@
                   :color $ [] 0.5 0.5 0.9 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :axis
               comp-button
                 {}
@@ -930,12 +787,9 @@
                   :color $ [] 0.9 0.4 0.5 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :mountains
               comp-button
                 {}
@@ -943,12 +797,9 @@
                   :color $ [] 0.8 0.9 0.2 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :city
               comp-button
                 {}
@@ -956,12 +807,9 @@
                   :color $ [] 0.3 0.9 0.2 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :cube
               comp-button
                 {}
@@ -969,12 +817,9 @@
                   :color $ [] 0.8 0.0 0.9 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :ribbon
               comp-button
                 {}
@@ -982,12 +827,9 @@
                   :color $ [] 0.2 0.9 0.6 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :necklace
               comp-button
                 {}
@@ -995,12 +837,9 @@
                   :color $ [] 0.2 0.9 0.6 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :sphere
               comp-button
                 {}
@@ -1008,12 +847,9 @@
                   :color $ [] 0.9 0.4 0.6 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :plate
               comp-button
                 {}
@@ -1021,12 +857,9 @@
                   :color $ [] 0.7 0.8 0.9 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :control
               comp-button
                 {}
@@ -1034,12 +867,9 @@
                   :color $ [] 0.9 0.7 0.6 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :stitch
               comp-button
                 {}
@@ -1047,12 +877,9 @@
                   :color $ [] 0.9 0.3 0.8 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :bubbles
               comp-button
                 {}
@@ -1060,12 +887,9 @@
                   :color $ [] 0.1 0.6 0.8 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :triangles
               comp-button
                 {}
@@ -1073,12 +897,9 @@
                   :color $ [] 0.9 0.2 0.99 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :image
               comp-button
                 {}
@@ -1086,16 +907,12 @@
                   :color $ [] 0.9 0.8 0.99 1
                   :size 20
                 fn (e d!)
-                  hint-fn $ {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
                   d! $ : tab :kaleidoscope
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'comp-triangles-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-triangles-demo ()
             let
@@ -1115,12 +932,9 @@
                         , break-mark
                 comp-polylines-marked $ {} (; :topology :line-strip)
                   :writer $ fn (write!)
-                    hint-fn $ {}
-                      :args $ [] $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn
+                      Fn Dynamic $ -> Unit
+                      -> Unit
                     write! $ []
                       : vertex (v3 0 0 0) width 0
                       : vertex (v3 100 100 0) width 0
@@ -1132,8 +946,7 @@
                         : vertex (v3 100 20 200) width 2
                         , break-mark
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ []
+          :schema $ quote $ Fn (-> JsObject)
         'mountains-wgsl $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mountains-wgsl (inline-shader |mountains)
           :examples $ []
@@ -1196,12 +1009,11 @@
                     v3 1 -1 1
                 :indices $ [] ([] 0 1 2 0 2 3) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'wgsl-cube $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-cube (inline-shader |cube)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.cube
           :require
@@ -1212,21 +1024,21 @@
       :defs $ {}
         'MarkedPolylinePrevious $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct MarkedPolylinePrevious (:position 'quaternion.vector/V3)
-            :older $ :: 'Option 'quaternion.vector/V3
+            :older $ quote $ Option quaternion.vector/V3
             :width 'Number
             :mark 'Number
           :examples $ []
-          :schema $ :: 'StructDef
+          :schema $ quote StructDef
         'PolylinePrevious $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct PolylinePrevious (:position 'quaternion.vector/V3)
-            :older $ :: 'Option 'quaternion.vector/V3
+            :older $ quote $ Option quaternion.vector/V3
             :width 'Number
           :examples $ []
-          :schema $ :: 'StructDef
+          :schema $ quote StructDef
         'break-mark $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def break-mark (:: :break)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
             let
@@ -1234,9 +1046,7 @@
               map
                 range $ dec size
                 fn (idx)
-                  hint-fn $ {}
-                    :args $ [] 'Number
-                    :return $ :: 'List 'Enum
+                  hint-fn $ Fn Number $ -> (List Enum)
                   let
                       idx+1 $ inc idx
                       p-raw $ .unwrap $ nth points idx
@@ -1255,9 +1065,8 @@
                       q-width $ curve-width q-raw
                     [] (:: :vertex p 0 direction curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction2 curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q 1 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction curve-ratio idx p-width)
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] (:: 'List 'Dynamic) 'Number
-            :return $ :: 'List $ :: 'List 'Enum
+          :schema $ quote $ Fn (List Dynamic) Number
+            -> $ List $ List Enum
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match p
@@ -1288,21 +1097,19 @@
                         write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction2 q-width) (:: :vertex q 1 direction2 p-width) (:: :vertex q2 0 direction2 p-width) (:: :vertex q2 1 direction2 q-width) (:: :vertex q 1 direction p-width)
             identity &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-              :: 'Ref $ :: 'Option 'lagopus.comp.curves/PolylinePrevious
-              , 'Enum $ :: 'Fn
-                {} (:return 'Unit)
-                  :args $ [] $ :: 'List 'Enum
+          :schema $ quote $ Fn
+            Ref $ Option lagopus.comp.curves/PolylinePrevious
+            , Enum
+              Fn (List Enum) (-> Unit)
+              -> Unit
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/PolylinePrevious)
+                previous $ ref $ assert-type (Option :none)
+                  quote $ Option lagopus.comp.curves/PolylinePrevious
                 segments $ ref $ assert-type ([])
-                  :: 'List $ :: 'List 'Enum
+                  quote $ List $ List Enum
                 emit $ fn (chunk)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'List 'Enum
-                    :return 'Unit
+                  hint-fn $ Fn (List Enum) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1352,21 +1159,19 @@
                         write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
             identity &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-              :: 'Ref $ :: 'Option 'lagopus.comp.curves/MarkedPolylinePrevious
-              , 'Enum $ :: 'Fn
-                {} (:return 'Unit)
-                  :args $ [] $ :: 'List 'Enum
+          :schema $ quote $ Fn
+            Ref $ Option lagopus.comp.curves/MarkedPolylinePrevious
+            , Enum
+              Fn (List Enum) (-> Unit)
+              -> Unit
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/MarkedPolylinePrevious)
+                previous $ ref $ assert-type (Option :none)
+                  quote $ Option lagopus.comp.curves/MarkedPolylinePrevious
                 segments $ ref $ assert-type ([])
-                  :: 'List $ :: 'List 'Enum
+                  quote $ List $ List Enum
                 emit $ fn (chunk)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'List 'Enum
-                    :return 'Unit
+                  hint-fn $ Fn (List Enum) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1396,7 +1201,7 @@
               [] false false false true true false true false
               [] false true false false false false true false
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'char-y $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def char-y
             count-hex $ reverse $ concat
@@ -1405,7 +1210,7 @@
               [] false false false false true true false false
               [] false false false false true true false false
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'char-z $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def char-z
             count-hex $ reverse $ concat
@@ -1414,7 +1219,7 @@
               [] false false false true false false false false
               [] false true true true true true true true true
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'comp-axis $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-axis (options)
             let
@@ -1431,12 +1236,9 @@
               group nil $ comp-polylines-marked $ {}
                 :shader $ inline-shader |axis
                 :writer $ fn (write!)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] 'Dynamic
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn
+                    Fn Dynamic $ -> Unit
+                    -> Unit
                   &doseq
                     idx $ range
                       inc $ negate n
@@ -1462,8 +1264,9 @@
                       , w 2
                   write! break-mark
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Option (:: 'Map 'Tag 'Dynamic)
+          :schema $ quote $ Fn
+            Option $ Map Tag Dynamic
+            -> JsObject
         'comp-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-curves (options)
             let
@@ -1483,13 +1286,11 @@
                 :data $ let
                     size $ count curves
                   map-indexed curves $ fn (idx c)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'List 'Dynamic
-                      :return $ :: 'List $ :: 'List 'Enum
+                    hint-fn $ Fn Number (List Dynamic)
+                      -> $ List $ List Enum
                     build-curve-points c $ / idx size
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines (options)
             let
@@ -1503,18 +1304,14 @@
                   , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
                 :writer $ fn (write!)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] $ :: 'List 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn
+                    Fn (List Enum) (-> Unit)
+                    -> Unit
                   let
-                      *prev $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/PolylinePrevious)
+                      *prev $ ref $ assert-type (Option :none)
+                        quote $ Option lagopus.comp.curves/PolylinePrevious
                       collect! $ fn (p)
-                        hint-fn $ {}
-                          :args $ [] 'Dynamic
-                          :return 'Unit
+                        hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
                           &doseq (x p)
                             if (enum? x) (build-polyline-points *prev x write!) (raise "|Expected polyline vertex or break Enum")
@@ -1526,8 +1323,7 @@
                 :get-params $ .unwrap-or (get options :get-params) nil
                 :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines-marked (options)
             let
@@ -1541,18 +1337,14 @@
                   , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
                 :writer $ fn (write!)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] $ :: 'List 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                  hint-fn $ Fn
+                    Fn (List Enum) (-> Unit)
+                    -> Unit
                   let
-                      *prev $ ref $ assert-type (Option :none) (:: 'Option 'lagopus.comp.curves/MarkedPolylinePrevious)
+                      *prev $ ref $ assert-type (Option :none)
+                        quote $ Option lagopus.comp.curves/MarkedPolylinePrevious
                       collect! $ fn (p)
-                        hint-fn $ {}
-                          :args $ [] 'Dynamic
-                          :return 'Unit
+                        hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
                           &doseq (x p)
                             if (enum? x) (build-polyline-points-marked *prev x write!) (raise "|Expected polyline vertex or break Enum")
@@ -1564,20 +1356,16 @@
                 :get-params $ .unwrap-or (get options :get-params) nil
                 :compute-options $ .unwrap-or (get options :compute-options) nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'count-hex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn count-hex (xs)
             -> xs
               map-indexed $ fn (idx v)
-                hint-fn $ {}
-                  :args $ [] 'Number 'Bool
-                  :return 'Number
+                hint-fn $ Fn Number Bool $ -> Number
                 * (if v 1 0) (pow 2 idx)
               reduce 0 &+
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] $ :: 'List 'Bool
+          :schema $ quote $ Fn (List Bool) (-> Number)
         'curve-position $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn curve-position (point)
             point-v3 $ if (enum? point)
@@ -1588,8 +1376,7 @@
                   , :position
                 , nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
         'curve-width $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn curve-width (point)
             decode-map-as
@@ -1604,8 +1391,7 @@
                 , 1
               , 'Number
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> Number)
         'point-v3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn point-v3 (point)
             if (list? point)
@@ -1617,20 +1403,19 @@
                   .unwrap $ nth values 2
               lagopus.math/require-v3 point
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
         'wgsl-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-curves (inline-shader |curves)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-polylines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-polylines (inline-shader |polylines)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-polylines-marked (inline-shader |polylines-marked)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.curves
           :require
@@ -1658,8 +1443,7 @@
                   :: :vertex ([] 0 0 0) ([] 0 0)
               :textures $ [] $ .unwrap (get textures-dict :tiye)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'lagopus.gpu/Texture
+          :schema $ quote $ Fn (Map Tag lagopus.gpu/Texture) (-> JsObject)
         'comp-kaleidoscope $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-kaleidoscope (textures-dict)
             object $ {} (:label :image) (:shader wgsl-kaleidoscope)
@@ -1678,16 +1462,15 @@
                   :: :vertex ([] 0 0 0) ([] 0 0)
               :textures $ [] $ .unwrap (get textures-dict :tiye)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'lagopus.gpu/Texture
+          :schema $ quote $ Fn (Map Tag lagopus.gpu/Texture) (-> JsObject)
         'wgsl-image $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-image (inline-shader |image)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-kaleidoscope $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-kaleidoscope (inline-shader |kaleidoscope)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.image
           :require
@@ -1711,8 +1494,7 @@
               * 0.5 $ * sqrt-3 $ cos
                 - radian $ / &PI 6
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] $ :: 'List 'Number
+          :schema $ quote $ Fn (List Number) (-> Number)
         'comp-plate $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-plate (options)
             let
@@ -1760,9 +1542,7 @@
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map (range 6)
                   fn (section-idx)
-                    hint-fn $ {}
-                      :args $ [] 'Number
-                      :return $ :: 'List 'Dynamic
+                    hint-fn $ Fn Number $ -> (List Dynamic)
                     let
                         angle $ * section-idx $ / &PI 3
                         angle-next $ * (inc section-idx) (/ &PI 3)
@@ -1777,9 +1557,7 @@
                             v-scale y-direction $ sin angle-next
                           , r-unit
                         point $ fn (p)
-                          hint-fn $ {}
-                            :args $ [] $ :: 'List 'Number
-                            :return 'quaternion.vector/V3
+                          hint-fn $ Fn (List Number) (-> quaternion.vector/V3)
                           let
                               ratio $ calc-ratio p
                             &v+ base $ if (fn? transformer)
@@ -1789,15 +1567,11 @@
                               raise |Expected-plate-transformer-function
                       map (range iteration)
                         fn (idx)
-                          hint-fn $ {}
-                            :args $ [] 'Number
-                            :return $ :: 'List 'Dynamic
+                          hint-fn $ Fn Number $ -> (List Dynamic)
                           map
                             range $ - iteration idx
                             fn (j)
-                              hint-fn $ {}
-                                :args $ [] 'Number
-                                :return $ :: 'List 'Dynamic
+                              hint-fn $ Fn Number $ -> (List Dynamic)
                               let
                                   c @*counter
                                   c1 $ inc c
@@ -1812,23 +1586,18 @@
                                     [] (:: :vertex ps3 c1) (:: :vertex ps1 c1) (:: :vertex ps2 c1)
                                     []
                 :get-params $ fn ()
-                  hint-fn $ {}
-                    :args $ []
-                    :return 'JsObject
-                    :features $ #{} :js-ffi
+                  hint-fn $ Fn (-> JsObject) (:features :js-ffi)
                   js-array & $ .append color chromatism
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
         'sqrt-3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def sqrt-3 (sqrt 3)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-plate $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-plate (inline-shader |plate)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.plate
           :require
@@ -1865,9 +1634,8 @@
                   build-sphere-triangles base radius (dec depth) *counter p2 p02 p12
                   build-sphere-triangles base radius (dec depth) *counter p01 p12 p02
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'quaternion.vector/V3 'Number 'Number (:: 'Ref 'Number) 'quaternion.vector/V3 'quaternion.vector/V3 'quaternion.vector/V3
-            :return $ :: 'List 'Dynamic
+          :schema $ quote $ Fn quaternion.vector/V3 Number Number (Ref Number) quaternion.vector/V3 quaternion.vector/V3 quaternion.vector/V3
+            -> $ List Dynamic
         'comp-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-sphere (options)
             let
@@ -1899,23 +1667,17 @@
                   , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map unit-triangles $ fn (xs)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'List 'quaternion.vector/V3
-                    :return $ :: 'List 'Dynamic
+                  hint-fn $ Fn (List quaternion.vector/V3)
+                    -> $ List Dynamic
                   build-sphere-triangles base radius iteration *counter
                     .unwrap $ nth xs 0
                     .unwrap $ nth xs 1
                     .unwrap $ nth xs 2
                 :get-params $ fn ()
-                  hint-fn $ {}
-                    :args $ []
-                    :return 'JsObject
-                    :features $ #{} :js-ffi
+                  hint-fn $ Fn (-> JsObject) (:features :js-ffi)
                   js-array & $ .append color 1
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
         'pick-radian-middle $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn pick-radian-middle (p0 p1)
             let
@@ -1925,8 +1687,7 @@
                 p-mid-unit $ v-scale p-mid ratio
               , p-mid-unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-            :args $ [] 'quaternion.vector/V3 'quaternion.vector/V3
+          :schema $ quote $ Fn quaternion.vector/V3 quaternion.vector/V3 (-> quaternion.vector/V3)
         'unit-triangles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def unit-triangles
             []
@@ -1939,11 +1700,11 @@
               [] (v3 -1 0 0) (v3 0 -1 0) (v3 0 0 1)
               [] (v3 -1 0 0) (v3 0 -1 0) (v3 0 0 -1)
           :examples $ []
-          :schema $ :: 'List $ :: 'List 'quaternion.vector/V3
+          :schema $ quote $ List (List quaternion.vector/V3)
         'wgsl-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-sphere (inline-shader |sphere)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.sphere
           :require
@@ -1963,9 +1724,8 @@
               object $ {} (:shader wgsl-bubbles) (:topology :line-list)
                 :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
                 :data $ map bubbles $ fn (info)
-                  hint-fn $ {}
-                    :args $ [] $ :: 'List 'Number
-                    :return $ :: 'List $ :: 'List (:: 'Map 'Tag 'Dynamic)
+                  hint-fn $ Fn (List Number)
+                    -> $ List $ List (Map Tag Dynamic)
                   let
                       position $ take info 3
                       radius $ .unwrap $ nth info 3
@@ -1973,9 +1733,8 @@
                       step $ / (* 2 &PI) size
                     map (range size)
                       fn (idx)
-                        hint-fn $ {}
-                          :args $ [] 'Number
-                          :return $ :: 'List $ :: 'Map 'Tag 'Dynamic
+                        hint-fn $ Fn Number $ ->
+                          List $ Map Tag Dynamic
                         []
                           let
                               radian $ * step idx
@@ -1990,8 +1749,7 @@
                                 * radius $ cos radian
                                 * radius $ sin radian
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-spots (options)
             let
@@ -2027,30 +1785,26 @@
                   , :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
-                  hint-fn $ {}
-                    :args $ [] 'Number 'Dynamic
-                    :return $ :: 'List $ :: 'List 'Enum
+                  hint-fn $ Fn Number Dynamic $ ->
+                    List $ List Enum
                   map
                     range $ - vertex-count 2
                     fn (angle-idx)
-                      hint-fn $ {}
-                        :args $ [] 'Number
-                        :return $ :: 'List 'Enum
+                      hint-fn $ Fn Number $ -> (List Enum)
                       []
                         :: :vertex base color radius vertex-count 0 shift spot-idx
                         :: :vertex base color radius vertex-count (+ 1 angle-idx) shift spot-idx
                         :: :vertex base color radius vertex-count (+ 2 angle-idx) shift spot-idx
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'wgsl-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-bubbles (inline-shader |bubbles)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'wgsl-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-spots (inline-shader |spots)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.spots
           :require
@@ -2083,15 +1837,12 @@
                   :shader $ inline-shader |stitch-bg
                   :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
                   :data $ map-indexed chars $ fn (idx c)
-                    hint-fn $ {}
-                      :args $ [] 'Number 'Number
-                      :return $ :: 'List $ :: 'Map 'Tag 'Dynamic
+                    hint-fn $ Fn Number Number $ ->
+                      List $ Map Tag Dynamic
                     ->
                       [] (v3 0 0 0) (v3 1 0 0) (v3 1 -1 0) (v3 0 0 0) (v3 1 -1 0) (v3 0 -1 0)
                       map $ fn (x)
-                        hint-fn $ {}
-                          :args $ [] 'quaternion.vector/V3
-                          :return $ :: 'Map 'Tag 'Dynamic
+                        hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag Dynamic)
                         {} (:base position)
                           :position $ &v+ (v-scale x size)
                             v-scale
@@ -2102,15 +1853,13 @@
                   :shader $ inline-shader |stitch-line
                   :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
                   :data $ map-indexed chars $ fn (idx c)
-                    hint-fn $ {}
-                      :args $ [] 'Number 'Number
-                      :return $ :: 'List $ :: 'Map 'Tag 'Dynamic
+                    hint-fn $ Fn Number Number $ ->
+                      List $ Map Tag Dynamic
                     let
                         pattern $ stitch-pattern c
                       map stitch-strokes $ fn (info)
-                        hint-fn $ {}
-                          :args $ [] $ :: 'Map 'Tag 'Dynamic
-                          :return $ :: 'Map 'Tag 'Dynamic
+                        hint-fn $ Fn (Map Tag Dynamic)
+                          -> $ Map Tag Dynamic
                         let
                             x $ lagopus.math/require-v3 $ .unwrap-or (get info :position) nil
                             data-idx $ decode-map-as
@@ -2125,8 +1874,7 @@
                               = |1 $ .unwrap $ get pattern data-idx
                               , 1 0
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'stitch-strokes $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def stitch-strokes
             let
@@ -2220,7 +1968,7 @@
                             :position $ &v+ base-bottom-left $ v3 -0.2 -0.2 0
                             :data base-idx-next
           :examples $ []
-          :schema $ :: 'List $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ List (Map Tag Dynamic)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.stitch
           :require
@@ -2236,21 +1984,21 @@
               (:some value) (parse-bg-color value)
               (:none) (Option :none)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'bloom? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def bloom?
             match (get-env |bloom)
               (:some value) (= value |true)
               (:none) false
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def dev?
             match (get-env |mode)
               (:some value) (= value |dev)
               (:none) false
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'inline-shader $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defmacro inline-shader (name)
             let
@@ -2260,14 +2008,13 @@
                     str dir |shaders/ name |.wgsl
               read-file shader
           :examples $ []
-          :schema $ :: 'Macro $ {}
-            :capabilities $ #{} :fs-read
-            :expansion $ :: 'Expr 'String
-            :required $ [] $ :: 'Expr 'String
+          :schema $ quote $ Macro (Expr String)
+            -> $ Expr String
+            :capabilities :fs-read
         'mobile-info $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mobile-info (browser/read-mobile-info!)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'parse-bg-color $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-bg-color (bg)
             if (blank? bg) (Option :none)
@@ -2279,16 +2026,15 @@
                   .unwrap $ nth items 2
                   .unwrap-or (nth items 3) 1
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'String
-            :return $ :: 'Option 'Enum
+          :schema $ quote $ Fn String
+            -> $ Option Enum
         'remote-control? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def remote-control?
             match (get-env |remote-control)
               (:some value) true
               (:none) false
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.config
           :require
@@ -2309,9 +2055,8 @@
                   (:none) ({})
               assoc branch :cursor $ conj parent-cursor k
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
-            :return $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) Tag
+            -> $ Map Tag Dynamic
         'update-states $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn update-states (store cursor new-state)
             assoc store :states $ assoc-in
@@ -2320,9 +2065,8 @@
               cursor.append :data
               , new-state
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'List 'Tag) 'Dynamic
-            :return $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (List Tag) Dynamic
+            -> $ Map Tag Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.cursor
     'lagopus.gpu $ %{} 'FileEntry
@@ -2331,36 +2075,33 @@
           :code $ quote $ deftrait Bitmap (:width 'Number) (:height 'Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Blob $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Blob (:size 'Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Context $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Context (:device 'lagopus.gpu/Device)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Device $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Device (:label 'String)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Response $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Response
-            .blob $ :: 'Fn $ {}
-              :args $ [] 'lagopus.gpu/Response
-              :return 'lagopus.gpu/Blob
-              :async true
+            .blob $ quote $ Fn lagopus.gpu/Response (-> lagopus.gpu/Blob) (:async)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'Texture $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Texture (:width 'Number) (:height 'Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'initialize-device! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn initialize-device! ()
             let
@@ -2373,9 +2114,7 @@
               if (js-nullish? context) (raise "|WebGPU context initialization failed") (.-device context)
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:async true) (:return 'lagopus.gpu/Device)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> lagopus.gpu/Device) (:features :js-ffi) (:async)
         'load-texture! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-texture! (device url)
             let
@@ -2401,9 +2140,7 @@
                 :h $ .-height bitmap
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:async true) (:return 'lagopus.gpu/Texture)
-            :args $ [] 'lagopus.gpu/Device 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn lagopus.gpu/Device String (-> lagopus.gpu/Texture) (:features :js-ffi) (:async)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.gpu
           :require $ |@triadica/lagopus :refer $ createTextureFromSource initializeContext
@@ -2413,18 +2150,18 @@
           :doc "|track textures with a hashmap, this is global states passing to container"
           :code $ quote $ defref *global-textures ({})
           :examples $ []
-          :schema $ :: 'Ref $ :: 'Map 'Tag 'lagopus.gpu/Texture
+          :schema $ quote $ Ref (Map Tag lagopus.gpu/Texture)
         '*store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *store
             {}
               :states $ {}
               :tab :axis
           :examples $ []
-          :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Ref (Map Tag Dynamic)
         'canvas $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def canvas (browser/query-canvas!)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             if dev? $ println op
@@ -2440,8 +2177,7 @@
               if (not= next-store store) (reset! *store next-store)
               , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Enum
+          :schema $ quote $ Fn Enum (-> Unit)
         'load-images! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-images! (gpu-device *textures)
             let
@@ -2450,9 +2186,11 @@
               , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:async true) (:return 'Unit)
-            :args $ [] 'lagopus.gpu/Device $ :: 'Ref (:: 'Map 'Tag 'lagopus.gpu/Texture)
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn lagopus.gpu/Device
+            Ref $ Map Tag lagopus.gpu/Texture
+            -> Unit
+            :features :js-ffi
+            :async
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             if
@@ -2477,24 +2215,18 @@
             , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:async true) (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi) (:async)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             let
-                show! $ unsafe-coerce hud! $ :: 'Fn
-                  {}
-                    :args $ [] 'String 'String
-                    :return 'Unit
+                show! $ unsafe-coerce hud! $ quote
+                  Fn String String $ -> Unit
               if (js-nullish? build-errors)
                 do (reset-memof1-caches!) (render-app!) (remove-watch! *store :change) (add-watch! *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
                 show! |error $ str build-errors
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
@@ -2502,18 +2234,15 @@
               runtime/render-tree! tree dispatch!
               runtime/paint!
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
         'resize! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn resize! (_event) (runtime/reset-canvas! canvas) (runtime/initialize-textures!) (runtime/paint!)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'JsObject
+          :schema $ quote $ Fn JsObject (-> Unit)
         'store-changed! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn store-changed! (_next _previous) (render-app!)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'Dynamic)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Map Tag Dynamic) (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.main
           :require
@@ -2541,29 +2270,26 @@
                 y $ &* t $ sin t2
               v3 x y z
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-            :args $ [] 'Number 'Number
+          :schema $ quote $ Fn Number Number (-> quaternion.vector/V3)
         'fibo-grid-range $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn fibo-grid-range (total)
             -> (range total)
               map $ fn (n)
                 fibo-grid-n (inc n) total
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'Number
-            :return $ :: 'List 'quaternion.vector/V3
+          :schema $ quote $ Fn Number
+            -> $ List quaternion.vector/V3
         'phi $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def phi
             * 0.5 $ dec $ sqrt 5
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ quote Dynamic
         'require-v3 $ %{} 'CodeEntry
           :doc "|Validate an existing nominal V3 without accepting Map or List conversions. Calcit 0.31.0 preserves the validated value identity."
           :code $ quote $ defn require-v3 (value)
             if (enum? value) (decode-map-as value 'quaternion.vector/V3) (raise |Expected-V3)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-            :args $ [] 'Dynamic
+          :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
         'rotate-3d $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rotate-3d (origin axis-0 angle p)
             let
@@ -2577,8 +2303,7 @@
                 rot-v $ v-scale rot-direction $ v-length flat-p-v
               v+ origin h-v (v-scale flat-p-v cos-d) (v-scale rot-v sin-d)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-            :args $ [] 'quaternion.vector/V3 'quaternion.vector/V3 'Number 'quaternion.vector/V3
+          :schema $ quote $ Fn quaternion.vector/V3 quaternion.vector/V3 Number quaternion.vector/V3 (-> quaternion.vector/V3)
         'rotate-3d-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rotate-3d-fn (origin axis angle)
             let
@@ -2586,9 +2311,7 @@
                 cos-d $ cos angle
                 sin-d $ sin angle
               defn rotate-3d-apply (p)
-                hint-fn $ {}
-                  :args $ [] 'quaternion.vector/V3
-                  :return 'quaternion.vector/V3
+                hint-fn $ Fn quaternion.vector/V3 $ -> quaternion.vector/V3
                 let
                     p-v $ &v- p origin
                     h $ v-dot axis-0 p-v
@@ -2598,10 +2321,8 @@
                     rot-v $ v-scale rot-direction $ v-length flat-p-v
                   v+ origin h-v (v-scale flat-p-v cos-d) (v-scale rot-v sin-d)
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'quaternion.vector/V3 'quaternion.vector/V3 'Number
-            :return $ :: 'Fn $ {} (:return 'quaternion.vector/V3)
-              :args $ [] 'quaternion.vector/V3
+          :schema $ quote $ Fn quaternion.vector/V3 quaternion.vector/V3 Number
+            -> $ Fn quaternion.vector/V3 $ -> quaternion.vector/V3
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.math
           :require $ quaternion.vector :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length v3
@@ -2610,155 +2331,110 @@
         'enable-bloom! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn enable-bloom! ()
             let
-                invoke! $ unsafe-coerce enableBloom $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Unit
+                invoke! $ unsafe-coerce enableBloom $ quote
+                  Fn $ -> Unit
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'initialize-textures! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn initialize-textures! ()
             let
-                invoke! $ unsafe-coerce initializeCanvasTextures $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Unit
+                invoke! $ unsafe-coerce initializeCanvasTextures $ quote
+                  Fn $ -> Unit
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'load-gamepad! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-gamepad! ()
             let
-                invoke! $ unsafe-coerce loadGamepadControl $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Unit
+                invoke! $ unsafe-coerce loadGamepadControl $ quote
+                  Fn $ -> Unit
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'paint! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn paint! ()
             let
-                invoke! $ unsafe-coerce paintLagopusTree $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Unit
+                invoke! $ unsafe-coerce paintLagopusTree $ quote
+                  Fn $ -> Unit
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'register-shader-result! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn register-shader-result! (handler)
             let
-                register! $ unsafe-coerce registerShaderResult $ :: 'Fn
-                  {}
-                    :args $ [] $ :: 'Fn
-                      {}
-                        :args $ [] 'lagopus.util/CompilationInfo 'String
-                        :return 'Unit
-                    :return 'Unit
+                register! $ unsafe-coerce registerShaderResult $ quote
+                  Fn
+                    Fn lagopus.util/CompilationInfo String $ -> Unit
+                    -> Unit
               register! handler
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] 'lagopus.util/CompilationInfo 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn
+            Fn lagopus.util/CompilationInfo String $ -> Unit
+            -> Unit
+            :features :js-ffi
         'render-tree! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-tree! (tree dispatch!)
             let
-                render! $ unsafe-coerce renderLagopusTree $ :: 'Fn
-                  {}
-                    :args $ [] 'JsObject $ :: 'Fn
-                      {}
-                        :args $ [] 'Enum
-                        :return 'Unit
-                    :return 'Unit
+                render! $ unsafe-coerce renderLagopusTree $ quote
+                  Fn JsObject
+                    Fn Enum $ -> Unit
+                    -> Unit
               render! tree dispatch!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'JsObject $ :: 'Fn
-              {} (:return 'Unit)
-                :args $ [] 'Enum
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn JsObject
+            Fn Enum $ -> Unit
+            -> Unit
+            :features :js-ffi
         'reset-canvas! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reset-canvas! (canvas)
             let
-                invoke! $ unsafe-coerce resetCanvasSize $ :: 'Fn
-                  {}
-                    :args $ [] 'lagopus.browser/Canvas
-                    :return 'Unit
+                invoke! $ unsafe-coerce resetCanvasSize $ quote
+                  Fn lagopus.browser/Canvas $ -> Unit
               invoke! canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'lagopus.browser/Canvas
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn lagopus.browser/Canvas (-> Unit) (:features :js-ffi)
         'setup-mouse! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn setup-mouse! (canvas)
             let
-                invoke! $ unsafe-coerce setupMouseEvents $ :: 'Fn
-                  {}
-                    :args $ [] 'lagopus.browser/Canvas
-                    :return 'Unit
+                invoke! $ unsafe-coerce setupMouseEvents $ quote
+                  Fn lagopus.browser/Canvas $ -> Unit
               invoke! canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'lagopus.browser/Canvas
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn lagopus.browser/Canvas (-> Unit) (:features :js-ffi)
         'setup-remote! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn setup-remote! ()
             let
-                invoke! $ unsafe-coerce setupRemoteControl $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Unit
+                invoke! $ unsafe-coerce setupRemoteControl $ quote
+                  Fn $ -> Unit
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'start-controls! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn start-controls! ()
             let
-                render! $ unsafe-coerce renderControl $ :: 'Fn
-                  {}
-                    :args $ []
-                    :return 'Unit
-                control! $ unsafe-coerce onControlEvent $ :: 'Fn
-                  {}
-                    :args $ [] 'Number 'JsObject 'JsObject
-                    :return 'Unit
-                start! $ unsafe-coerce startControlLoop $ :: 'Fn
-                  {}
-                    :args $ [] 'Number $ :: 'Fn
-                      {}
-                        :args $ [] 'Number 'JsObject 'JsObject
-                        :return 'Unit
-                    :return 'Unit
+                render! $ unsafe-coerce renderControl $ quote
+                  Fn $ -> Unit
+                control! $ unsafe-coerce onControlEvent $ quote
+                  Fn Number JsObject JsObject $ -> Unit
+                start! $ unsafe-coerce startControlLoop $ quote
+                  Fn Number
+                    Fn Number JsObject JsObject $ -> Unit
+                    -> Unit
               render!
               start! 10 control!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.runtime
           :require
@@ -2771,30 +2447,27 @@
       :defs $ {}
         'ColorAtom $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait ColorAtom
-            .reset $ :: 'Fn $ {}
-              :args $ [] 'ColorAtom 'JsObject
-              :return 'Unit
+            .reset $ quote $ Fn ColorAtom JsObject (-> Unit)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'CompilationInfo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait CompilationInfo (:messages 'lagopus.util/ShaderMessages)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'ShaderMessage $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait ShaderMessage (:line-num 'Number) (:line-pos 'Number) (:message 'String)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'ShaderMessages $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait ShaderMessages
-            .at $ :: 'Fn $ {}
-              :args $ [] 'lagopus.util/ShaderMessages 'Number
-              :return $ :: 'JsNullish 'lagopus.util/ShaderMessage
+            .at $ quote $ Fn lagopus.util/ShaderMessages Number
+              -> $ JsNullish lagopus.util/ShaderMessage
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'handle-compilation $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn handle-compilation (info code)
             let
@@ -2816,22 +2489,16 @@
                             , line-pos
                           , |
                         , "|^ " $ .-message error
-                    log! $ unsafe-coerce js/console.error $ :: 'Fn
-                      {}
-                        :args $ [] 'String
-                        :return 'Unit
-                    show! $ unsafe-coerce hud! $ :: 'Fn
-                      {}
-                        :args $ [] 'String 'String
-                        :return 'Unit
+                    log! $ unsafe-coerce js/console.error $ quote
+                      Fn String $ -> Unit
+                    show! $ unsafe-coerce hud! $ quote
+                      Fn String String $ -> Unit
                   log! $ str "|WGSL Error:" &newline message
                   show! |error $ str "|WGSL Errors:" &newline message
               , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'lagopus.util/CompilationInfo 'String
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn lagopus.util/CompilationInfo String (-> Unit) (:features :js-ffi)
         'reset-clear-color! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reset-clear-color! (color)
             let
@@ -2849,9 +2516,7 @@
               color-atom .reset host-color
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.util
           :require (|bottom-tip :default hud!)

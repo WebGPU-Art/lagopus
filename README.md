@@ -7,19 +7,21 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### 0.5.13 候选：使用者影响
+### 0.5.14 候选：使用者影响
 
-本候选配对正式 Calcit CLI / `@calcit/procs` **0.31.0**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
+本候选配对正式 Calcit CLI / `@calcit/procs` **0.32.0**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
+
+本次将类型标注迁为 0.32.0 的 quoted 类型表达式；144 个定义的 schema 与迁移前一致，公开接口和运行行为保持。以下受检 V3 和 writer 合同沿用上一版迁移。
 
 公开组件继续接收原有 options Map。V3 配置和 Plate transformer 返回值现在经过真实检查：正确的 Quaternion V3 保留对象身份；错误类型、匿名或不同名义 Enum 会更早报错，不把普通 Map 自动转换为 V3。`point-v3` 原有数字 List 转换入口保留。原默认值、几何顺序、回调单次执行和异常传播保持。
 
 直接调用折线构建 helper 的高级使用者需传入 `Ref<Option<PolylinePrevious>>` / `Ref<Option<MarkedPolylinePrevious>>`，初值为对应类型的 None；普通 `comp-polylines` / `comp-polylines-marked` 调用形状不变。两个内部 writer 适配器执行原回调后返回 Unit；该内部返回值本来就不被 `object-writer` 消费，不要求外部 writer 伪造类型。
 
-依赖固定为 js-ffi 0.2.7、Memof 0.0.41、Quaternion 0.2.17；npm Touch Control 保留已使用的精确 0.0.4-a1。Memof Anchor 返回 Option，本项目只使用其缓存 API。HUD 页面报错显示保留，错误消息使用真实字符串转换。
+依赖固定为 js-ffi 0.2.8、Memof 0.0.42、Quaternion 0.2.18；npm Touch Control 保留已使用的精确 0.0.4-a1。Memof Anchor 返回 Option，本项目只使用其缓存 API。HUD 页面报错显示保留，错误消息使用真实字符串转换。
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.31.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.32.0：
 
 ```sh
 caps --strict --ci
