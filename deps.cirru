@@ -1,8 +1,8 @@
 
 {}
-  :calcit-version |0.31.0
-  :version |0.5.13
+  :calcit-version |0.32.0
+  :version |0.5.14
   :dependencies $ {}
-    |calcit-lang/js-ffi |0.2.7
-    |calcit-lang/memof |0.0.41
-    |calcit-lang/quaternion |0.2.17
+    |calcit-lang/js-ffi |0.2.8
+    |calcit-lang/memof |0.0.42
+    |calcit-lang/quaternion |0.2.18
