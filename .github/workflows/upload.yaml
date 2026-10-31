@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           calcit edit format
-          git diff --exit-code -- calcit.cirru
+          git diff --quiet -- calcit.cirru
           calcit --check-only --all-defs --warn-dyn-method --format json
           calcit fix --workflow strict --verify
           calcit test --require-match --summary-only
