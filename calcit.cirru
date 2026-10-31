@@ -256,27 +256,27 @@
         'wgsl-colors $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-colors (inline-shader |lagopus-colors)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-hsluv $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-hsluv (inline-shader |lagopus-hsluv)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-perspective $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-perspective (inline-shader |lagopus-perspective)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-rand (inline-shader |lagopus-rand)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-rotation $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-rotation (inline-shader |lagopus-rotation)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-simplex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-simplex (inline-shader |lagopus-simplex)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'write-attribute! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn write-attribute! (xs write!)
             cond
@@ -1593,7 +1593,7 @@
         'sqrt-3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def sqrt-3 (sqrt 3)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Number
         'wgsl-plate $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-plate (inline-shader |plate)
           :examples $ []
@@ -1984,7 +1984,7 @@
               (:some value) (parse-bg-color value)
               (:none) (Option :none)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote $ Option Enum
         'bloom? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def bloom?
             match (get-env |bloom)
@@ -2161,7 +2161,7 @@
         'canvas $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def canvas (browser/query-canvas!)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote lagopus.browser/Canvas
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             if dev? $ println op
@@ -2283,7 +2283,7 @@
           :code $ quote $ def phi
             * 0.5 $ dec $ sqrt 5
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Number
         'require-v3 $ %{} 'CodeEntry
           :doc "|Validate an existing nominal V3 without accepting Map or List conversions. Calcit 0.31.0 preserves the validated value identity."
           :code $ quote $ defn require-v3 (value)

@@ -9,19 +9,19 @@
 
 ### 0.5.14 候选：使用者影响
 
-本候选配对正式 Calcit CLI / `@calcit/procs` **0.32.0**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
+本候选配对正式 Calcit CLI / `@calcit/procs` **0.32.1**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
 
-本次将类型标注迁为 0.32.0 的 quoted 类型表达式；144 个定义的 schema 与迁移前一致，公开接口和运行行为保持。以下受检 V3 和 writer 合同沿用上一版迁移。
+此前已迁移 quoted 类型表达式；本次只补齐 10 个真实常量的 String、Number、Canvas 和 Option<Enum> 标注。144 个定义的运行时代码、测试和公开函数合同不变。以下受检 V3 和 writer 合同沿用上一版迁移。
 
 公开组件继续接收原有 options Map。V3 配置和 Plate transformer 返回值现在经过真实检查：正确的 Quaternion V3 保留对象身份；错误类型、匿名或不同名义 Enum 会更早报错，不把普通 Map 自动转换为 V3。`point-v3` 原有数字 List 转换入口保留。原默认值、几何顺序、回调单次执行和异常传播保持。
 
 直接调用折线构建 helper 的高级使用者需传入 `Ref<Option<PolylinePrevious>>` / `Ref<Option<MarkedPolylinePrevious>>`，初值为对应类型的 None；普通 `comp-polylines` / `comp-polylines-marked` 调用形状不变。两个内部 writer 适配器执行原回调后返回 Unit；该内部返回值本来就不被 `object-writer` 消费，不要求外部 writer 伪造类型。
 
-依赖固定为 js-ffi 0.2.8、Memof 0.0.42、Quaternion 0.2.18；npm Touch Control 保留已使用的精确 0.0.4-a1。Memof Anchor 返回 Option，本项目只使用其缓存 API。HUD 页面报错显示保留，错误消息使用真实字符串转换。
+依赖固定为 js-ffi 0.2.9、Memof 0.0.43、Quaternion 0.2.19；npm Touch Control 保留已使用的精确 0.0.4-a1。Memof Anchor 返回 Option，本项目只使用其缓存 API。HUD 页面报错显示保留，错误消息使用真实字符串转换。
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.32.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.32.1：
 
 ```sh
 caps --strict --ci
@@ -32,11 +32,13 @@ corepack yarn dev
 
 另开终端运行 `corepack yarn watch` 持续编译。`corepack yarn build` 生成前端产物；源码使用 `calcit.cirru` / `deps.cirru`，`js-out/`、`dist/` 和 `.calcit/` 不入库。
 
-CI 保留完整 strict、全定义、18 个公开命名空间及附带测试，不跳过 proof audit。生产构建使用 `VITE_BASE_URL=https://cos-sh.tiye.me/WebGPU-Art/lagopus/`，COS action 的 `public-base-url` 启用内置校验；服务器部署路径不变。PR 只检查和构建，不上传生产资源。需要原有 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY`、`rsync_private_key` secrets。
+CI 保留完整 strict、全定义、18 个公开命名空间及附带测试，不跳过 proof audit。生产构建使用 `VITE_BASE_URL=https://cos-sh.tiye.me/Triadica/lagopus/`，COS action 的 `public-base-url` 启用内置校验；服务器部署路径不变。PR 只检查和构建，不上传生产资源。需要原有 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY`、`rsync_private_key` secrets。
 
 这次迁移没有清零全部类型债务：当前仍有 48 处既有 unsafe 宿主边界和 76 处 schema Dynamic（包含新的受检 V3 入口）。没有放宽类型门禁或质量基线；后续应继续按真实宿主合同收窄，而不是以数量取代代码检查。WebGPU 页面验收与 CI、部署状态分别确认。
 
 ### APIs
+
+以下是浏览器组件用法片段，不是独立 native 程序。每段开头的命名空间引用行需并入应用的 `ns :require`；`demo-wgsl`、`width`、`state`、`cursor` 等由调用上下文提供。回调采用当前 `Fn` 类型写法，实际渲染需要浏览器 WebGPU 宿主。
 
 `lagopus.alias/group` accepts nullable children, so conditional children such as
 `group nil (if show? (comp-axis) js/null)` keep their original child indices. Use
@@ -45,7 +47,7 @@ Empty children
 are skipped by traversal, not removed from the group's children array.
 
 ```cirru
-:lagopus.alias :refer $ object
+lagopus.alias :refer $ object
 
 object $ {}
   :shader demo-wgsl
@@ -172,7 +174,7 @@ It does not require "flatterned" list so is supposed to be a little performant.
 
 ```cirru
 comp-polylines $ {} (; :topology :line-strip)
-  :writer $ fn $ (write!)
+  :writer $ fn (write!)
     write! $ []
       : vertex ([] 0 0 0) width
       : vertex ([] 100 100 0) width
@@ -267,9 +269,7 @@ comp-plate $ {} (; :topology :line-strip)
   :radius 160
   :color $ [] 0.04 0.8 0.6
   :transformer $ fn (i)
-    hint-fn $ {}
-      :args $ [] 'quaternion.vector/V3
-      :return 'quaternion.vector/V3
+    hint-fn $ Fn quaternion.vector/V3 (-> quaternion.vector/V3)
     v+ i $ v3 0 0 -10
   ; :x-direction $ v3 1 0 0
   ; :y-direction $ v3 0 1 0
@@ -287,19 +287,13 @@ comp-button
     :color $ [] 0.2 0.9 0.6 1
     :size 20
   fn (e d!)
-    hint-fn $ {}
-      :args $ [] 'JsObject $ :: 'Fn
-        {} (:args $ [] 'Enum) (:return 'Unit)
-      :return 'Unit
+    hint-fn $ Fn JsObject (Fn Enum (-> Unit)) (-> Unit)
     d! $ :: :tab :sphere
 
 comp-slider
   {} $ :position ([] 0 0 0)
   fn (change on-slide)
-    hint-fn $ {}
-      :args $ [] 'quaternion.complex/Complex $ :: 'Fn
-        {} (:args $ [] 'Enum) (:return 'Unit)
-      :return 'Unit
+    hint-fn $ Fn quaternion.complex/Complex (Fn Enum (-> Unit)) (-> Unit)
     println |Slide change
     , &unit
 
@@ -308,10 +302,7 @@ comp-drag-point
     :position $ (get state :pos).unwrap-or nil
     :color $ [] 0.6 0.6 1.0 1.0
   fn (move d!)
-    hint-fn $ {}
-      :args $ [] 'quaternion.vector/V3 $ :: 'Fn
-        {} (:args $ [] 'Enum) (:return 'Unit)
-      :return 'Unit
+    hint-fn $ Fn quaternion.vector/V3 (Fn Enum (-> Unit)) (-> Unit)
     d! $ :: :state cursor $ assoc state :pos move
 ```
 
