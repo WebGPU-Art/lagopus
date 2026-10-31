@@ -34,7 +34,7 @@ corepack yarn dev
 
 CI 保留完整 strict、全定义、18 个公开命名空间及附带测试，不跳过 proof audit。生产构建使用 `VITE_BASE_URL=https://cos-sh.tiye.me/Triadica/lagopus/`，COS action 的 `public-base-url` 启用内置校验；服务器部署路径不变。PR 只检查和构建，不上传生产资源。需要原有 `COS_BUCKET`、`COS_SECRET_ID`、`COS_SECRET_KEY`、`rsync_private_key` secrets。
 
-这次迁移没有清零全部类型债务：当前仍有 48 处既有 unsafe 宿主边界和 76 处 schema Dynamic（包含新的受检 V3 入口）。没有放宽类型门禁或质量基线；后续应继续按真实宿主合同收窄，而不是以数量取代代码检查。WebGPU 页面验收与 CI、部署状态分别确认。
+这次迁移没有清零全部类型债务：当前仍有 48 处既有 unsafe 宿主边界；schema Dynamic 从 76 降至 66（保留真实受检 V3 入口）。没有放宽类型门禁或质量基线；后续应继续按真实宿主合同收窄，而不是以数量取代代码检查。WebGPU 页面验收与 CI、部署状态分别确认。
 
 ### APIs
 
