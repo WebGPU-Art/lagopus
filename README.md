@@ -7,7 +7,20 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### 0.5.14 候选：使用者影响
+### 0.5.15 候选：使用者影响
+
+补齐 `lagopus.comp.curves/break-mark` 的准确 Enum 类型，值仍是 `:: :break`。
+消费者传给 `List<Enum> -> Unit` writer 时，不再因未标注常量把整个列表推成 Dynamic。
+组件参数、分段标记、顺序、几何、wire 格式和 JS 宿主行为不变；不改公开函数合同。
+CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收前不以 main/hash 代替。
+
+该问题由 Play Rotor 实际 strict 检查发现；仅补一个真实常量 schema，不在消费者
+添加断言／强转，也不扩展编译器 fix/proof。本轮执行原库门禁及真实消费者的
+完整 strict；临时候选模块夹具不等于已发布依赖验收，发版后必须重新严格安装消费者。
+既有 48 处宿主 unsafe 与 [City 遮挡问题 #36](https://github.com/WebGPU-Art/lagopus/issues/36)
+未由这个类型补充修复，不宣称清零或全场景正确。
+
+### 0.5.14：既有 0.32.1 迁移
 
 本候选配对正式 Calcit CLI / `@calcit/procs` **0.32.1**。消费者需要同步工具链并重新生成 JS；正式 Git tag 发布前，不用 main 或提交号代替已发布依赖。
 

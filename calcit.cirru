@@ -1038,7 +1038,7 @@
         'break-mark $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def break-mark (:: :break)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Enum
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
             let
