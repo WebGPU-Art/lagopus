@@ -7,7 +7,13 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### 0.5.15 候选：使用者影响
+### 0.5.16：Calcit 0.34.3
+
+配对正式 Calcit CLI / `@calcit/procs` **0.34.3**，依赖升到 JS-FFI 0.2.10、memof 0.0.44、quaternion 0.2.20。
+`create-object!` 在没有 `:indices` 时给 JS 宿主传 `js/undefined` 而不是 nil，以通过 0.34 的 `E_IMPLICIT_NIL_BRANCH`；
+宿主只做真值判断，行为不变。`edit format` 迁移旧类型写法。消费者需同步工具链并重新生成 JS。
+
+### 0.5.15：使用者影响
 
 补齐 `lagopus.comp.curves/break-mark` 的准确 Enum 类型，值仍是 `:: :break`。
 消费者传给 `List<Enum> -> Unit` writer 时，不再因未标注常量把整个列表推成 Dynamic。
@@ -34,7 +40,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.32.1：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.34.3：
 
 ```sh
 caps --strict --ci
