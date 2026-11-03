@@ -50,7 +50,7 @@
                   write-attribute! xs write!
               (map? data)
                 let
-                    row $ decode-map-as data $ :: 'Map 'Tag 'Dynamic
+                    row $ decode-map-as data $ quote (Map Tag Dynamic)
                   write-attribute!
                     .unwrap $ get row field
                     , write!
@@ -91,7 +91,7 @@
                 :verticesLength vertices-size
                 :vertices $ js-array & buffers
                 :hitRegion nil
-                :indices $ if (nil? indices) nil $ let
+                :indices $ if (nil? indices) js/undefined $ let
                     arr $ unsafe-coerce (js-array) NumberArray
                     collect! $ fn (x)
                       hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
@@ -101,7 +101,7 @@
                   index-buffer! $ unsafe-coerce arr 'JsObject
                 :getParams $ .unwrap-or (get options :get-params) nil
                 :textures $ js-array & $ map
-                  decode-map-as textures $ :: 'List 'Dynamic
+                  decode-map-as textures $ quote $ List Dynamic
                   fn (texture)
                     hint-fn $ Fn Dynamic (-> lagopus.gpu/Texture) (:features :js-ffi)
                     js-cast texture 'lagopus.gpu/Texture
@@ -118,7 +118,7 @@
               {}
                 :field $ .unwrap $ nth x 1
                 :format $ .unwrap $ nth x 0
-              decode-map-as x $ :: 'Map 'Tag 'Dynamic
+              decode-map-as x $ quote $ Map Tag Dynamic
           :examples $ []
           :schema $ quote $ Fn Dynamic
             -> $ Map Tag Dynamic
@@ -179,7 +179,7 @@
                 attrs-list $ map
                   decode-map-as
                     .unwrap-or (get options :attrs-list) nil
-                    :: 'List 'Dynamic
+                    quote $ List Dynamic
                   , expand-attr
                 data $ .unwrap-or (get options :data) nil
                 vertices-size $ count-recursive data
@@ -215,7 +215,7 @@
                 attrs-list $ map
                   decode-map-as
                     .unwrap-or (get options :attrs-list) nil
-                    :: 'List 'Dynamic
+                    quote $ List Dynamic
                   , expand-attr
                 writer $ .unwrap-or (get options :writer) nil
                 bundles $ make-empty-js-arrays $ count attrs-list
@@ -627,7 +627,7 @@
                 cursor $ []
                 states $ decode-map-as
                   .unwrap-or (get store :states) nil
-                  :: 'Map 'Tag 'Dynamic
+                  quote $ Map Tag Dynamic
               group nil (lagopus.alias/memo-object comp-tabs)
                 match
                   .unwrap-or (get store :tab) nil
@@ -665,12 +665,12 @@
             let
                 cursor $ decode-map-as
                   .unwrap-or (get states :cursor) nil
-                  :: 'List 'Tag
+                  quote $ List Tag
                 state $ decode-map-as
                   either
                     .unwrap-or (get states :data) nil
                     {} $ :pos $ [] 60 0 0
-                  :: 'Map 'Tag 'Dynamic
+                  quote $ Map Tag Dynamic
               group nil
                 comp-slider
                   {} $ :position $ [] 0 0 0
@@ -1023,16 +1023,16 @@
     'lagopus.comp.curves $ %{} 'FileEntry
       :defs $ {}
         'MarkedPolylinePrevious $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct MarkedPolylinePrevious (:position 'quaternion.vector/V3)
+          :code $ quote $ defstruct MarkedPolylinePrevious (:position quaternion.vector/V3)
             :older $ quote $ Option quaternion.vector/V3
-            :width 'Number
-            :mark 'Number
+            :width Number
+            :mark Number
           :examples $ []
           :schema $ quote StructDef
         'PolylinePrevious $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct PolylinePrevious (:position 'quaternion.vector/V3)
+          :code $ quote $ defstruct PolylinePrevious (:position quaternion.vector/V3)
             :older $ quote $ Option quaternion.vector/V3
-            :width 'Number
+            :width Number
           :examples $ []
           :schema $ quote StructDef
         'break-mark $ %{} 'CodeEntry (:doc |)
@@ -1274,7 +1274,7 @@
                   either
                     .unwrap-or (get options :curves) nil
                     []
-                  :: 'List $ :: 'List 'Dynamic
+                  quote $ List $ List Dynamic
               object $ {}
                 :shader $ either
                   .unwrap-or (get options :shader) nil
@@ -1372,7 +1372,7 @@
               .unwrap $ nth point 1
               .unwrap-or
                 get
-                  decode-map-as point $ :: 'Map 'Tag 'Dynamic
+                  decode-map-as point $ quote $ Map Tag Dynamic
                   , :position
                 , nil
           :examples $ []
@@ -1385,7 +1385,7 @@
                   .unwrap-or (nth point 2) nil
                   .unwrap-or
                     get
-                      decode-map-as point $ :: 'Map 'Tag 'Dynamic
+                      decode-map-as point $ quote $ Map Tag Dynamic
                       , :width
                     , nil
                 , 1
@@ -1396,7 +1396,7 @@
           :code $ quote $ defn point-v3 (point)
             if (list? point)
               let
-                  values $ decode-map-as point $ :: 'List 'Number
+                  values $ decode-map-as point $ quote (List Number)
                 v3
                   .unwrap $ nth values 0
                   .unwrap $ nth values 1
@@ -1521,7 +1521,7 @@
                   either
                     .unwrap-or (get options :color) nil
                     [] 0.6 0.8 0.76
-                  :: 'List 'Number
+                  quote $ List Number
                 *counter $ ref 0
                 r-unit $ / radius iteration
                 transformer $ either
@@ -1656,7 +1656,7 @@
                   either
                     .unwrap-or (get options :color) nil
                     [] 0.6 0.8 0.76
-                  :: 'List 'Number
+                  quote $ List Number
                 *counter $ ref 0
               object $ {}
                 :shader $ either
@@ -1720,7 +1720,7 @@
                   either
                     .unwrap-or (get options :bubbles) nil
                     [] $ [] 0 0 0 100
-                  :: 'List $ :: 'List 'Number
+                  quote $ List $ List Number
               object $ {} (:shader wgsl-bubbles) (:topology :line-list)
                 :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
                 :data $ map bubbles $ fn (info)
@@ -1757,7 +1757,7 @@
                   either
                     .unwrap-or (get options :points) nil
                     []
-                  :: 'List 'Dynamic
+                  quote $ List Dynamic
                 color $ either
                   .unwrap-or (get options :color) nil
                   [] 0.8 0.8 1
@@ -1821,7 +1821,7 @@
                   either
                     .unwrap-or (get props :chars) nil
                     [] 0x1111
-                  :: 'List 'Number
+                  quote $ List Number
                 position $ lagopus.math/require-v3 $ either
                   .unwrap-or (get props :position) nil
                   v3 0 0 0
@@ -2047,11 +2047,11 @@
             let
                 parent-cursor $ match (get states :cursor)
                   (:some value)
-                    decode-map-as value $ :: 'List 'Tag
+                    decode-map-as value $ quote $ List Tag
                   (:none) ([])
                 branch $ match (get states k)
                   (:some value)
-                    decode-map-as value $ :: 'Map 'Tag 'Dynamic
+                    decode-map-as value $ quote $ Map Tag Dynamic
                   (:none) ({})
               assoc branch :cursor $ conj parent-cursor k
           :examples $ []
@@ -2170,7 +2170,7 @@
                 next-store $ match op
                   (:state cursor data)
                     update-states store
-                      decode-map-as cursor $ :: 'List 'Tag
+                      decode-map-as cursor $ quote $ List Tag
                       , data
                   (:tab tab)
                     assoc store :tab $ decode-map-as tab 'Tag
