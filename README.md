@@ -7,6 +7,17 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
+### 0.5.17 配对 Calcit 0.37.0
+
+重新安装正式依赖并生成 JS。按钮和渲染入口从回调推导项目自己的操作类型。
+普通组件仍接收原 options Map，折线 writer 仍能传入旧匿名 `:: :vertex` 和 `:: :break`。
+直接调用曲线、折线构建 helper 时，输出顶点和 `break-mark` 现在是具名枚举。
+读取标签和位置的方式保持，直接比较旧匿名枚举值的调用方需同步改用新类型。
+背景色解析返回具名 `ClearColor`，原 `reset-clear-color!` 仍能读取旧 RGBA 值。
+
+GPU 属性在写入前校验为数字、数字列表或 V3。数字列表、名义 V3 和合法的旧匿名 V3
+保持原分量顺序。原着色器、页面 HUD、前端部署路径和类型门禁保持。
+
 ### 0.5.16：Calcit 0.34.3
 
 配对正式 Calcit CLI / `@calcit/procs` **0.34.3**，依赖升到 JS-FFI 0.2.10、memof 0.0.44、quaternion 0.2.20。
@@ -40,7 +51,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.34.3：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.37.0：
 
 ```sh
 caps --strict --ci

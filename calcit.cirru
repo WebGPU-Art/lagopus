@@ -12,7 +12,7 @@
       :defs $ {}
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
-            .push $ quote $ Fn NumberArray Number (-> Number)
+            .push $ Fn NumberArray Number $ -> Number
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
@@ -21,6 +21,10 @@
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
+        'VertexAttribute $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion VertexAttribute Number quaternion.vector/V3 (List Number)
+          :examples $ []
+          :schema $ quote UnionDef
         'buffer-format $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn buffer-format (format)
             match format (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
@@ -50,7 +54,7 @@
                   write-attribute! xs write!
               (map? data)
                 let
-                    row $ decode-map-as data $ quote (Map Tag Dynamic)
+                    row $ decode-map-as data $ Map Tag Dynamic
                   write-attribute!
                     .unwrap $ get row field
                     , write!
@@ -72,53 +76,73 @@
         'create-object! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn create-object! (options attrs-list vertices-size buffers)
             let
-                create! $ unsafe-coerce createRenderer $ quote
-                  Fn JsObject $ -> JsObject
-                index-buffer! $ unsafe-coerce u32buffer $ quote
-                  Fn JsObject $ -> JsObject
-                indices $ .unwrap-or (get options :indices) nil
-                textures $ either
-                  .unwrap-or (get options :textures) nil
-                  []
+                create! $ unsafe-coerce createRenderer $ Fn JsObject (-> JsObject)
+                index-buffer! $ unsafe-coerce u32buffer $ Fn JsObject (-> JsObject)
+                indices $ get options :indices
+                textures $ match (get options :textures)
+                  (:some matched-field-value)
+                    either matched-field-value $ []
+                  (:none) ([])
               create! $ js-object
                 :shader $ inject-shader-snippets $ decode-map-as
-                  .unwrap-or (get options :shader) nil
+                  .unwrap $ get options :shader
                   , 'String
                 :topology $ to-string $ decode-map-as
-                  .unwrap-or (get options :topology) nil
+                  .unwrap $ get options :topology
                   , 'Tag
                 :attrsList $ to-js-data attrs-list
                 :verticesLength vertices-size
                 :vertices $ js-array & buffers
                 :hitRegion nil
-                :indices $ if (nil? indices) js/undefined $ let
-                    arr $ unsafe-coerce (js-array) NumberArray
-                    collect! $ fn (x)
-                      hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
-                      arr .push x
-                      , &unit
-                  collect-array! indices collect!
-                  index-buffer! $ unsafe-coerce arr 'JsObject
-                :getParams $ .unwrap-or (get options :get-params) nil
+                :indices $ match indices
+                  (:none) js/undefined
+                  (:some indices)
+                    if (nil? indices) js/undefined $ let
+                        arr $ unsafe-coerce (js-array) NumberArray
+                        collect! $ fn (x)
+                          hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
+                          arr .push x
+                          , &unit
+                      collect-array! indices collect!
+                      index-buffer! $ unsafe-coerce arr 'JsObject
+                :getParams $ match (get options :get-params)
+                  (:some value) value
+                  (:none) js/null
                 :textures $ js-array & $ map
-                  decode-map-as textures $ quote $ List Dynamic
+                  decode-map-as textures $ List Dynamic
                   fn (texture)
                     hint-fn $ Fn Dynamic (-> lagopus.gpu/Texture) (:features :js-ffi)
                     js-cast texture 'lagopus.gpu/Texture
-                :label $ .unwrap-or (get options :label) nil
-                :computeOptions $ .unwrap-or (get options :compute-options) nil
+                :label $ match (get options :label)
+                  (:some value) value
+                  (:none) js/null
+                :computeOptions $ match (get options :compute-options)
+                  (:some value) value
+                  (:none) js/null
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
             List $ Map Tag Dynamic
             , Number (List lagopus.alias/NumberBuffer) (-> JsObject) (:features :js-ffi)
+        'decode-vertex-attribute $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn decode-vertex-attribute (value)
+            cond
+                enum? value
+                match value $
+                  :v3 x y z
+                  quaternion.vector/v3 (decode-map-as x Number) (decode-map-as y Number) (decode-map-as z Number)
+              (list? value)
+                decode-map-as value $ List Number
+              true $ decode-map-as value Number
+          :examples $ []
+          :schema $ quote $ Fn Dynamic (-> lagopus.alias/VertexAttribute)
         'expand-attr $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn expand-attr (x)
             if (enum? x)
               {}
                 :field $ .unwrap $ nth x 1
                 :format $ .unwrap $ nth x 0
-              decode-map-as x $ quote $ Map Tag Dynamic
+              decode-map-as x $ Map Tag Dynamic
           :examples $ []
           :schema $ quote $ Fn Dynamic
             -> $ Map Tag Dynamic
@@ -129,12 +153,14 @@
                 = a $ {}
               eprintln "|group options is not used at current" a
             let
-                make-group $ unsafe-coerce lagopus/group $ quote
-                  Fn Nil & (JsNullish JsObject) (-> JsObject)
+                make-group $ unsafe-coerce lagopus/group $ Fn Nil & (JsNullish JsObject) (-> JsObject)
               make-group nil & children
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn Dynamic & (JsNullish JsObject) (-> JsObject) (:features :js-ffi)
+          :schema $ quote $ Fn Dynamic
+            & $ JsNullish JsObject
+            -> JsObject
+            :features :js-ffi
         'inject-shader-snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn inject-shader-snippets (code)
             -> code (browser/replace-first "|#import lagopus::simplex" wgsl-simplex) (browser/replace-first "|#import lagopus::perspective" wgsl-perspective) (browser/replace-first "|#import lagopus::colors" wgsl-colors) (browser/replace-first "|#import lagopus::rand" wgsl-rand) (browser/replace-first "|#import lagopus::rotation" wgsl-rotation) (browser/replace-first "|#import lagopus::hsluv" wgsl-hsluv)
@@ -178,22 +204,21 @@
             let
                 attrs-list $ map
                   decode-map-as
-                    .unwrap-or (get options :attrs-list) nil
-                    quote $ List Dynamic
+                    .unwrap $ get options :attrs-list
+                    List Dynamic
                   , expand-attr
-                data $ .unwrap-or (get options :data) nil
+                data $ .unwrap $ get options :data
                 vertices-size $ count-recursive data
-                make-buffer! $ unsafe-coerce newBufferFormatLength $ quote
-                  Fn String Number $ -> lagopus.alias/NumberBuffer
+                make-buffer! $ unsafe-coerce newBufferFormatLength $ Fn String Number (-> lagopus.alias/NumberBuffer)
                 buffers $ map-indexed attrs-list $ fn (idx attr)
                   hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
                   let
                       buffer $ make-buffer!
-                        buffer-format $ .unwrap-or (get attr :format) nil
+                        buffer-format $ .unwrap $ get attr :format
                         , vertices-size
                       *offset $ ref 0
                       field $ decode-map-as
-                        .unwrap-or (get attr :field) nil
+                        .unwrap $ get attr :field
                         , 'Tag
                       write! $ fn (x)
                         hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
@@ -214,14 +239,14 @@
             let
                 attrs-list $ map
                   decode-map-as
-                    .unwrap-or (get options :attrs-list) nil
-                    quote $ List Dynamic
+                    .unwrap $ get options :attrs-list
+                    List Dynamic
                   , expand-attr
-                writer $ .unwrap-or (get options :writer) nil
+                writer $ .unwrap $ get options :writer
                 bundles $ make-empty-js-arrays $ count attrs-list
                 *counter $ ref 0
                 collect! $ fn (chunk)
-                  hint-fn $ Fn (List Enum) (-> Unit) (:features :js-ffi)
+                  hint-fn $ Fn (List AnyEnum) (-> Unit) (:features :js-ffi)
                   &doseq (record chunk) (swap! *counter inc)
                     let
                         *index $ ref 0
@@ -240,14 +265,13 @@
                           write-attribute! data write!
                         swap! *index inc
                   , &unit
-                make-buffer! $ unsafe-coerce newBufferFormatArray $ quote
-                  Fn String JsObject $ -> lagopus.alias/NumberBuffer
+                make-buffer! $ unsafe-coerce newBufferFormatArray $ Fn String JsObject (-> lagopus.alias/NumberBuffer)
               if (fn? writer) (writer collect!) (raise "|Expected object writer function")
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
                     hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
                     make-buffer!
-                      buffer-format $ .unwrap-or (get attr :format) nil
+                      buffer-format $ .unwrap $ get attr :format
                       unsafe-coerce (aget bundles idx) 'JsObject
                 create-object! options attrs-list @*counter buffers
           :examples $ []
@@ -279,23 +303,34 @@
           :schema $ quote String
         'write-attribute! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn write-attribute! (xs write!)
-            cond
-                enum? xs
-                match xs $
+            match (decode-vertex-attribute xs)
+              (Number value) (write! value)
+              (V3 vector)
+                match vector $
                   :v3 x y z
-                  do
-                    write! $ decode-map-as x 'Number
-                    write! $ decode-map-as y 'Number
-                    write! $ decode-map-as z 'Number
-              (list? xs)
-                &doseq (x xs)
-                  write! $ decode-map-as x 'Number
-              true $ write! $ decode-map-as xs 'Number
+                  do (write! x) (write! y) (write! z)
+              (List values)
+                &doseq (value values) (write! value)
             , &unit
           :examples $ []
           :schema $ quote $ Fn Dynamic
             Fn Number $ -> Unit
             -> Unit
+          :tests $ [] $ %{} 'TestEntry (:name |packs-scalar-list-and-vectors)
+            :code $ quote $ let
+                values $ ref $ assert-type ([]) (List Number)
+                write! $ fn (value)
+                  hint-fn $ Fn Number $ -> Unit
+                  swap! values append value
+                  , &unit
+              write-attribute! 1 write!
+              write-attribute! ([] 2 3) write!
+              write-attribute! (:: :v3 4 5 6) write!
+              write-attribute! (quaternion.vector/v3 7 8 9) write!
+              assert=
+                [] 1 2 3 4 5 6 7 8 9
+                , @values
+            :tags $ #{} :unit
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.alias
           :require
@@ -315,8 +350,7 @@
           :schema $ quote Trait
         'Document $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Document
-            .query-selector $ quote $ Fn lagopus.browser/Document String
-              -> $ JsNullish lagopus.browser/Canvas
+            .query-selector $ Fn lagopus.browser/Document String $ -> (JsNullish lagopus.browser/Canvas)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
@@ -327,15 +361,15 @@
           :schema $ quote Trait
         'TextHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait TextHost
-            .replace $ quote $ Fn TextHost String String (-> String)
-            .slice $ quote $ Fn TextHost Number (-> String)
-            .pad-start $ quote $ Fn TextHost Number String (-> String)
+            .replace $ Fn TextHost String String $ -> String
+            .slice $ Fn TextHost Number $ -> String
+            .pad-start $ Fn TextHost Number String $ -> String
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
         'Window $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Window
-            :onresize $ quote $ Fn JsObject (-> Unit)
+            :onresize $ Fn JsObject $ -> Unit
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :writable $ #{} :onresize
@@ -343,8 +377,7 @@
         'atan2 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn atan2 (y x)
             let
-                invoke $ unsafe-coerce js/Math.atan2 $ quote
-                  Fn Number Number $ -> Number
+                invoke $ unsafe-coerce js/Math.atan2 $ Fn Number Number (-> Number)
               invoke y x
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -352,8 +385,7 @@
         'parse-color-channel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-color-channel (text)
             let
-                parse $ unsafe-coerce js/parseFloat $ quote
-                  Fn String $ -> Number
+                parse $ unsafe-coerce js/parseFloat $ Fn String (-> Number)
               parse text
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -370,8 +402,7 @@
         'rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand (n)
             let
-                random! $ unsafe-coerce js/Math.random $ quote
-                  Fn $ -> Number
+                random! $ unsafe-coerce js/Math.random $ Fn (-> Number)
               * (random!) n
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -379,8 +410,7 @@
         'rand-shift $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand-shift (n dn)
             let
-                random! $ unsafe-coerce js/Math.random $ quote
-                  Fn $ -> Number
+                random! $ unsafe-coerce js/Math.random $ Fn (-> Number)
               + (- n dn)
                 * 2 dn $ random!
           :examples $ []
@@ -433,8 +463,7 @@
       :defs $ {}
         'Motion $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Motion
-            .at $ quote $ Fn lagopus.comp.button/Motion Number
-              -> $ JsNullish Number
+            .at $ Fn lagopus.comp.button/Motion Number $ -> (JsNullish Number)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
@@ -442,45 +471,50 @@
           :code $ quote $ defn comp-button (props on-click)
             let
                 position $ v3-js $ lagopus.math/require-v3
-                  .unwrap-or (get props :position) nil
+                  .unwrap $ get props :position
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
-                create! $ unsafe-coerce compButton $ quote
+                create! $ unsafe-coerce compButton $ Fn JsObject
                   Fn JsObject
-                    Fn JsObject
-                      Fn Enum $ -> Unit
-                      -> Unit
-                    -> JsObject
+                    Fn Op $ -> Unit
+                    -> Unit
+                  -> JsObject
               create! host-props on-click
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
             Fn JsObject
-              Fn Enum $ -> Unit
+              Fn Op $ -> Unit
               -> Unit
             -> JsObject
+            :generics Op
             :features :js-ffi
         'comp-drag-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-drag-point (props on-drag)
             let
-                color $ .unwrap-or (get props :color) nil
-                position $ .unwrap-or (get props :position) nil
-                create! $ unsafe-coerce compDragPoint $ quote
-                  Fn JsObject
-                    Fn lagopus.comp.button/Motion
-                      Fn Enum $ -> Unit
-                      -> Unit
-                    -> JsObject
+                color $ get props :color
+                position $ get props :position
+                create! $ unsafe-coerce compDragPoint $ Fn JsObject
+                  Fn lagopus.comp.button/Motion
+                    Fn Op $ -> Unit
+                    -> Unit
+                  -> JsObject
                 host-props $ js-object
-                  :color $ to-js-data color
-                  :position $ if (enum? position)
-                    v3-js $ lagopus.math/require-v3 position
-                    if (list? position) (to-js-data position)
-                      do (eprintln "|unknown position" position) (js-array 10 0 0)
+                  :color $ match color
+                    (:some value) (to-js-data value)
+                    (:none) js/null
+                  :position $ match position
+                    (:none)
+                      do (eprintln "|unknown position" nil) (js-array 10 0 0)
+                    (:some position)
+                      if (enum? position)
+                        v3-js $ lagopus.math/require-v3 position
+                        if (list? position) (to-js-data position)
+                          do (eprintln "|unknown position" position) (js-array 10 0 0)
               create! host-props $ fn (move d!)
                 hint-fn $ Fn lagopus.comp.button/Motion
-                  Fn Enum $ -> Unit
+                  Fn Op $ -> Unit
                   -> Unit
                   :features :js-ffi
                 on-drag
@@ -493,47 +527,47 @@
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
             Fn quaternion.vector/V3
-              Fn Enum $ -> Unit
+              Fn Op $ -> Unit
               -> Unit
             -> JsObject
+            :generics Op
             :features :js-ffi
         'comp-flat-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-flat-button (props on-click)
             let
                 position $ v3-js $ lagopus.math/require-v3
-                  .unwrap-or (get props :position) nil
+                  .unwrap $ get props :position
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
                   , 'JsObject
-                create! $ unsafe-coerce compFlatButton $ quote
+                create! $ unsafe-coerce compFlatButton $ Fn JsObject
                   Fn JsObject
-                    Fn JsObject
-                      Fn Enum $ -> Unit
-                      -> Unit
-                    -> JsObject
+                    Fn Op $ -> Unit
+                    -> Unit
+                  -> JsObject
               create! host-props on-click
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
             Fn JsObject
-              Fn Enum $ -> Unit
+              Fn Op $ -> Unit
               -> Unit
             -> JsObject
+            :generics Op
             :features :js-ffi
         'comp-slider $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-slider (props on-slide)
             let
-                create! $ unsafe-coerce compSlider $ quote
-                  Fn JsObject
-                    Fn lagopus.comp.button/Motion
-                      Fn Enum $ -> Unit
-                      -> Unit
-                    -> JsObject
+                create! $ unsafe-coerce compSlider $ Fn JsObject
+                  Fn lagopus.comp.button/Motion
+                    Fn Op $ -> Unit
+                    -> Unit
+                  -> JsObject
               create!
                 unsafe-coerce (to-js-data props) 'JsObject
                 fn (move d!)
                   hint-fn $ Fn lagopus.comp.button/Motion
-                    Fn Enum $ -> Unit
+                    Fn Op $ -> Unit
                     -> Unit
                     :features :js-ffi
                   on-slide
@@ -545,9 +579,10 @@
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
             Fn quaternion.complex/Complex
-              Fn Enum $ -> Unit
+              Fn Op $ -> Unit
               -> Unit
             -> JsObject
+            :generics Op
             :features :js-ffi
         'v3-js $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn v3-js (position)
@@ -626,11 +661,11 @@
             let
                 cursor $ []
                 states $ decode-map-as
-                  .unwrap-or (get store :states) nil
-                  quote $ Map Tag Dynamic
+                  .unwrap $ get store :states
+                  Map Tag Dynamic
               group nil (lagopus.alias/memo-object comp-tabs)
                 match
-                  .unwrap-or (get store :tab) nil
+                  .unwrap-or (get store :tab) :lagopus/no-tab
                   :axis $ comp-axis $ Option :some
                     {} (:n 20) (:unit 20)
                   :mountains $ lagopus.alias/memo-object comp-mountains
@@ -664,30 +699,35 @@
           :code $ quote $ defn comp-control-demo (states)
             let
                 cursor $ decode-map-as
-                  .unwrap-or (get states :cursor) nil
-                  quote $ List Tag
+                  .unwrap $ get states :cursor
+                  List Tag
                 state $ decode-map-as
-                  either
-                    .unwrap-or (get states :data) nil
-                    {} $ :pos $ [] 60 0 0
-                  quote $ Map Tag Dynamic
+                  match (get states :data)
+                    (:some matched-field-value)
+                      either matched-field-value $ {} $ :pos ([] 60 0 0)
+                    (:none)
+                      {} $ :pos $ [] 60 0 0
+                  Map Tag Dynamic
               group nil
                 comp-slider
                   {} $ :position $ [] 0 0 0
                   fn (change _dispatch!)
                     hint-fn $ Fn quaternion.complex/Complex
-                      Fn Enum $ -> Unit
+                      Fn lagopus.main/DemoOp $ -> Unit
                       -> Unit
                     println |Slide change
                 comp-drag-point
-                  {}
-                    :position $ .unwrap-or (get state :pos) nil
-                    :color $ [] 0.6 0.6 1.0 1.0
+                  .merge
+                    {} $ :color $ [] 0.6 0.6 1.0 1.0
+                    match (get state :pos)
+                      (:some value)
+                        {} $ :position value
+                      (:none) ({})
                   fn (move d!)
                     hint-fn $ Fn quaternion.vector/V3
-                      Fn Enum $ -> Unit
+                      Fn lagopus.main/DemoOp $ -> Unit
                       -> Unit
-                    d! $ :: :state cursor $ assoc state :pos move
+                    d! $ lagopus.main/DemoOp :state cursor $ assoc state :pos move
                 comp-flat-button
                   {}
                     :position $ v3 100 20 0
@@ -695,7 +735,7 @@
                     :size 40
                   fn (_event _dispatch!)
                     hint-fn $ Fn JsObject
-                      Fn Enum $ -> Unit
+                      Fn lagopus.main/DemoOp $ -> Unit
                       -> Unit
                     println |CLICKED
           :examples $ []
@@ -778,7 +818,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :axis
               comp-button
@@ -788,7 +828,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :mountains
               comp-button
@@ -798,7 +838,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :city
               comp-button
@@ -808,7 +848,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :cube
               comp-button
@@ -818,7 +858,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :ribbon
               comp-button
@@ -828,7 +868,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :necklace
               comp-button
@@ -838,7 +878,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :sphere
               comp-button
@@ -848,7 +888,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :plate
               comp-button
@@ -858,7 +898,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :control
               comp-button
@@ -868,7 +908,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :stitch
               comp-button
@@ -878,7 +918,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :bubbles
               comp-button
@@ -888,7 +928,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :triangles
               comp-button
@@ -898,7 +938,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :image
               comp-button
@@ -908,7 +948,7 @@
                   :size 20
                 fn (e d!)
                   hint-fn $ Fn JsObject
-                    Fn Enum $ -> Unit
+                    Fn lagopus.main/DemoOp $ -> Unit
                     -> Unit
                   d! $ : tab :kaleidoscope
           :examples $ []
@@ -971,13 +1011,14 @@
         'comp-cube $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-cube (options)
             let
-                base $ lagopus.math/require-v3 $ either
-                  .unwrap-or (get options :position) nil
-                  v3 0 0 0
+                base $ lagopus.math/require-v3 $ match (get options :position)
+                  (:some matched-field-value)
+                    either matched-field-value $ v3 0 0 0
+                  (:none) (v3 0 0 0)
                 radius $ decode-map-as
-                  either
-                    .unwrap-or (get options :radius) nil
-                    , 80
+                  match (get options :radius)
+                    (:some matched-field-value) (either matched-field-value 80)
+                    (:none) 80
                   , 'Number
               object $ {} (:shader wgsl-cube)
                 :topology $ do :line-strip :triangle-list
@@ -1022,23 +1063,39 @@
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v+ v3
     'lagopus.comp.curves $ %{} 'FileEntry
       :defs $ {}
+        'CurveVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum CurveVertex (:vertex quaternion.vector/V3 Number quaternion.vector/V3 Number Number Number)
+          :examples $ []
+          :schema $ quote EnumDef
         'MarkedPolylinePrevious $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct MarkedPolylinePrevious (:position quaternion.vector/V3)
-            :older $ quote $ Option quaternion.vector/V3
+            :older $ Option quaternion.vector/V3
             :width Number
             :mark Number
           :examples $ []
           :schema $ quote StructDef
+        'MarkedPolylineVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum MarkedPolylineVertex (:vertex quaternion.vector/V3 Number quaternion.vector/V3 Number Number)
+          :examples $ []
+          :schema $ quote EnumDef
+        'PolylineBreak $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum PolylineBreak (:break)
+          :examples $ []
+          :schema $ quote EnumDef
         'PolylinePrevious $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct PolylinePrevious (:position quaternion.vector/V3)
-            :older $ quote $ Option quaternion.vector/V3
+            :older $ Option quaternion.vector/V3
             :width Number
           :examples $ []
           :schema $ quote StructDef
-        'break-mark $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def break-mark (:: :break)
+        'PolylineVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum PolylineVertex (:vertex quaternion.vector/V3 Number quaternion.vector/V3 Number)
           :examples $ []
-          :schema $ quote Enum
+          :schema $ quote EnumDef
+        'break-mark $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ def break-mark (lagopus.comp.curves/PolylineBreak :break)
+          :examples $ []
+          :schema $ quote lagopus.comp.curves/PolylineBreak
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
             let
@@ -1046,7 +1103,7 @@
               map
                 range $ dec size
                 fn (idx)
-                  hint-fn $ Fn Number $ -> (List Enum)
+                  hint-fn $ Fn Number $ -> (List lagopus.comp.curves/CurveVertex)
                   let
                       idx+1 $ inc idx
                       p-raw $ .unwrap $ nth points idx
@@ -1063,10 +1120,10 @@
                         (:none) direction
                       p-width $ curve-width p-raw
                       q-width $ curve-width q-raw
-                    [] (:: :vertex p 0 direction curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction2 curve-ratio idx p-width) (:: :vertex q 0 direction2 curve-ratio idx+1 p-width) (:: :vertex q 1 direction2 curve-ratio idx+1 q-width) (:: :vertex p 1 direction curve-ratio idx p-width)
+                    [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
           :examples $ []
           :schema $ quote $ Fn (List Dynamic) Number
-            -> $ List $ List Enum
+            -> $ List $ List lagopus.comp.curves/CurveVertex
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match p
@@ -1094,22 +1151,22 @@
                             (:none) direction2
                             (:some point) (&v- q point)
                         reset! *prev $ Option :some $ PolylinePrevious :position position :older older :width p-width
-                        write! $ [] (:: :vertex q 0 direction p-width) (:: :vertex q2 0 direction2 q-width) (:: :vertex q 1 direction2 p-width) (:: :vertex q2 0 direction2 p-width) (:: :vertex q2 1 direction2 q-width) (:: :vertex q 1 direction p-width)
+                        write! $ [] (lagopus.comp.curves/PolylineVertex :vertex q 0 direction p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 1 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction p-width)
             identity &unit
           :examples $ []
           :schema $ quote $ Fn
             Ref $ Option lagopus.comp.curves/PolylinePrevious
-            , Enum
-              Fn (List Enum) (-> Unit)
+            , AnyEnum
+              Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
               -> Unit
+              :open :decode
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type (Option :none)
-                  quote $ Option lagopus.comp.curves/PolylinePrevious
+                previous $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/PolylinePrevious)
                 segments $ ref $ assert-type ([])
-                  quote $ List $ List Enum
+                  List $ List lagopus.comp.curves/PolylineVertex
                 emit $ fn (chunk)
-                  hint-fn $ Fn (List Enum) (-> Unit)
+                  hint-fn $ Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1119,7 +1176,7 @@
               build-polyline-points previous (:: :vertex p0 2) emit
               build-polyline-points previous (:: :vertex p1 3) emit
               assert=
-                [] $ [] (:: :vertex p0 0 direction 2) (:: :vertex p1 0 direction 3) (:: :vertex p0 1 direction 2) (:: :vertex p1 0 direction 2) (:: :vertex p1 1 direction 3) (:: :vertex p0 1 direction 2)
+                [] $ [] (lagopus.comp.curves/PolylineVertex :vertex p0 0 direction 2) (lagopus.comp.curves/PolylineVertex :vertex p1 0 direction 3) (lagopus.comp.curves/PolylineVertex :vertex p0 1 direction 2) (lagopus.comp.curves/PolylineVertex :vertex p1 0 direction 2) (lagopus.comp.curves/PolylineVertex :vertex p1 1 direction 3) (lagopus.comp.curves/PolylineVertex :vertex p0 1 direction 2)
                 , @segments
               build-polyline-points previous (:: :break) emit
               assert= (Option :none) @previous
@@ -1156,22 +1213,22 @@
                             (:none) direction2
                             (:some point) (&v- q point)
                         reset! *prev $ Option :some $ MarkedPolylinePrevious :position position :older older :width p-width :mark mark
-                        write! $ [] (:: :vertex q 0 direction p-width prev-mark) (:: :vertex q2 0 direction2 q-width mark) (:: :vertex q 1 direction2 p-width prev-mark) (:: :vertex q2 0 direction2 p-width mark) (:: :vertex q2 1 direction2 q-width mark) (:: :vertex q 1 direction p-width prev-mark)
+                        write! $ [] (lagopus.comp.curves/MarkedPolylineVertex :vertex q 0 direction p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction2 p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 p-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 1 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction p-width prev-mark)
             identity &unit
           :examples $ []
           :schema $ quote $ Fn
             Ref $ Option lagopus.comp.curves/MarkedPolylinePrevious
-            , Enum
-              Fn (List Enum) (-> Unit)
+            , AnyEnum
+              Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
               -> Unit
+              :open :decode
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type (Option :none)
-                  quote $ Option lagopus.comp.curves/MarkedPolylinePrevious
+                previous $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/MarkedPolylinePrevious)
                 segments $ ref $ assert-type ([])
-                  quote $ List $ List Enum
+                  List $ List lagopus.comp.curves/MarkedPolylineVertex
                 emit $ fn (chunk)
-                  hint-fn $ Fn (List Enum) (-> Unit)
+                  hint-fn $ Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1184,8 +1241,8 @@
               build-polyline-points-marked previous (:: :vertex p2 4 6) emit
               assert=
                 []
-                  [] (:: :vertex p0 0 direction 2 4) (:: :vertex p1 0 direction 3 5) (:: :vertex p0 1 direction 2 4) (:: :vertex p1 0 direction 2 5) (:: :vertex p1 1 direction 3 5) (:: :vertex p0 1 direction 2 4)
-                  [] (:: :vertex p1 0 direction2 2 5) (:: :vertex p2 0 direction2 4 6) (:: :vertex p1 1 direction2 2 5) (:: :vertex p2 0 direction2 2 6) (:: :vertex p2 1 direction2 4 6) (:: :vertex p1 1 direction2 2 5)
+                  [] (lagopus.comp.curves/MarkedPolylineVertex :vertex p0 0 direction 2 4) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 0 direction 3 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p0 1 direction 2 4) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 0 direction 2 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 1 direction 3 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p0 1 direction 2 4)
+                  [] (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 0 direction2 2 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p2 0 direction2 4 6) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 1 direction2 2 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p2 0 direction2 2 6) (lagopus.comp.curves/MarkedPolylineVertex :vertex p2 1 direction2 4 6) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 1 direction2 2 5)
                 , @segments
               assert=
                 Option :some $ MarkedPolylinePrevious :position p2 :older (Option :none) :width 2 :mark 6
@@ -1271,90 +1328,95 @@
           :code $ quote $ defn comp-curves (options)
             let
                 curves $ decode-map-as
-                  either
-                    .unwrap-or (get options :curves) nil
-                    []
-                  quote $ List $ List Dynamic
+                  match (get options :curves)
+                    (:some matched-field-value)
+                      either matched-field-value $ []
+                    (:none) ([])
+                  List $ List Dynamic
               object $ {}
-                :shader $ either
-                  .unwrap-or (get options :shader) nil
-                  , wgsl-curves
-                :topology $ either
-                  .unwrap-or (get options :topology) nil
-                  , :triangle-list
+                :shader $ match (get options :shader)
+                  (:some matched-field-value) (either matched-field-value wgsl-curves)
+                  (:none) wgsl-curves
+                :topology $ match (get options :topology)
+                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
                     size $ count curves
                   map-indexed curves $ fn (idx c)
                     hint-fn $ Fn Number (List Dynamic)
-                      -> $ List $ List Enum
+                      -> $ List $ List lagopus.comp.curves/CurveVertex
                     build-curve-points c $ / idx size
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines (options)
             let
-                chunk-writer! $ .unwrap-or (get options :writer) nil
-              object-writer $ {}
-                :shader $ either
-                  .unwrap-or (get options :shader) nil
-                  , wgsl-polylines
-                :topology $ either
-                  .unwrap-or (get options :topology) nil
-                  , :triangle-list
-                :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
-                :writer $ fn (write!)
-                  hint-fn $ Fn
-                    Fn (List Enum) (-> Unit)
-                    -> Unit
-                  let
-                      *prev $ ref $ assert-type (Option :none)
-                        quote $ Option lagopus.comp.curves/PolylinePrevious
-                      collect! $ fn (p)
-                        hint-fn $ Fn Dynamic $ -> Unit
-                        if (list? p)
-                          &doseq (x p)
-                            if (enum? x) (build-polyline-points *prev x write!) (raise "|Expected polyline vertex or break Enum")
-                          if (enum? p) (build-polyline-points *prev p write!) (raise "|Expected polyline vertex or break Enum")
-                        , &unit
-                    if (nil? chunk-writer!) (eprintln "|expected polylines writer")
-                      if (fn? chunk-writer!) (chunk-writer! collect!) (raise "|Expected polylines writer function")
-                  , &unit
-                :get-params $ .unwrap-or (get options :get-params) nil
-                :compute-options $ .unwrap-or (get options :compute-options) nil
+                chunk-writer! $ get options :writer
+              object-writer $ .merge
+                {}
+                  :shader $ match (get options :shader)
+                    (:some matched-field-value) (either matched-field-value wgsl-polylines)
+                    (:none) wgsl-polylines
+                  :topology $ match (get options :topology)
+                    (:some matched-field-value) (either matched-field-value :triangle-list)
+                    (:none) :triangle-list
+                  :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
+                  :writer $ fn (write!)
+                    hint-fn $ Fn
+                      Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+                      -> Unit
+                    let
+                        *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/PolylinePrevious)
+                        collect! $ fn (p)
+                          hint-fn $ Fn Dynamic $ -> Unit
+                          if (list? p)
+                            &doseq (x p)
+                              if (enum? x) (build-polyline-points *prev x write!) (raise "|Expected polyline vertex or break Enum")
+                            if (enum? p) (build-polyline-points *prev p write!) (raise "|Expected polyline vertex or break Enum")
+                          , &unit
+                      match chunk-writer!
+                        (:none) (eprintln "|expected polylines writer")
+                        (:some writer)
+                          if (nil? writer) (eprintln "|expected polylines writer")
+                            if (fn? writer) (writer collect!) (raise "|Expected polylines writer function")
+                    , &unit
+                select-keys options $ [] :get-params :compute-options
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines-marked (options)
             let
-                chunk-writer! $ .unwrap-or (get options :writer) nil
-              object-writer $ {}
-                :shader $ either
-                  .unwrap-or (get options :shader) nil
-                  , wgsl-polylines-marked
-                :topology $ either
-                  .unwrap-or (get options :topology) nil
-                  , :triangle-list
-                :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
-                :writer $ fn (write!)
-                  hint-fn $ Fn
-                    Fn (List Enum) (-> Unit)
-                    -> Unit
-                  let
-                      *prev $ ref $ assert-type (Option :none)
-                        quote $ Option lagopus.comp.curves/MarkedPolylinePrevious
-                      collect! $ fn (p)
-                        hint-fn $ Fn Dynamic $ -> Unit
-                        if (list? p)
-                          &doseq (x p)
-                            if (enum? x) (build-polyline-points-marked *prev x write!) (raise "|Expected polyline vertex or break Enum")
-                          if (enum? p) (build-polyline-points-marked *prev p write!) (raise "|Expected polyline vertex or break Enum")
-                        , &unit
-                    if (nil? chunk-writer!) (eprintln "|expected polylines writer")
-                      if (fn? chunk-writer!) (chunk-writer! collect!) (raise "|Expected polylines writer function")
-                  , &unit
-                :get-params $ .unwrap-or (get options :get-params) nil
-                :compute-options $ .unwrap-or (get options :compute-options) nil
+                chunk-writer! $ get options :writer
+              object-writer $ .merge
+                {}
+                  :shader $ match (get options :shader)
+                    (:some matched-field-value) (either matched-field-value wgsl-polylines-marked)
+                    (:none) wgsl-polylines-marked
+                  :topology $ match (get options :topology)
+                    (:some matched-field-value) (either matched-field-value :triangle-list)
+                    (:none) :triangle-list
+                  :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
+                  :writer $ fn (write!)
+                    hint-fn $ Fn
+                      Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+                      -> Unit
+                    let
+                        *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                        collect! $ fn (p)
+                          hint-fn $ Fn Dynamic $ -> Unit
+                          if (list? p)
+                            &doseq (x p)
+                              if (enum? x) (build-polyline-points-marked *prev x write!) (raise "|Expected polyline vertex or break Enum")
+                            if (enum? p) (build-polyline-points-marked *prev p write!) (raise "|Expected polyline vertex or break Enum")
+                          , &unit
+                      match chunk-writer!
+                        (:none) (eprintln "|expected polylines writer")
+                        (:some writer)
+                          if (nil? writer) (eprintln "|expected polylines writer")
+                            if (fn? writer) (writer collect!) (raise "|Expected polylines writer function")
+                    , &unit
+                select-keys options $ [] :get-params :compute-options
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'count-hex $ %{} 'CodeEntry (:doc |)
@@ -1368,35 +1430,29 @@
           :schema $ quote $ Fn (List Bool) (-> Number)
         'curve-position $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn curve-position (point)
-            point-v3 $ if (enum? point)
-              .unwrap $ nth point 1
-              .unwrap-or
-                get
-                  decode-map-as point $ quote $ Map Tag Dynamic
-                  , :position
-                , nil
+            point-v3 $ .unwrap $ if (enum? point) (nth point 1)
+              get
+                decode-map-as point $ Map Tag Dynamic
+                , :position
           :examples $ []
           :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
         'curve-width $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn curve-width (point)
-            decode-map-as
-              either
-                if (enum? point)
-                  .unwrap-or (nth point 2) nil
-                  .unwrap-or
-                    get
-                      decode-map-as point $ quote $ Map Tag Dynamic
-                      , :width
-                    , nil
-                , 1
-              , 'Number
+            match
+              if (enum? point) (nth point 2)
+                get
+                  decode-map-as point $ Map Tag Dynamic
+                  , :width
+              (:none) 1
+              (:some width)
+                decode-map-as (either width 1) Number
           :examples $ []
           :schema $ quote $ Fn Dynamic (-> Number)
         'point-v3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn point-v3 (point)
             if (list? point)
               let
-                  values $ decode-map-as point $ quote (List Number)
+                  values $ decode-map-as point $ List Number
                 v3
                   .unwrap $ nth values 0
                   .unwrap $ nth values 1
@@ -1498,47 +1554,51 @@
         'comp-plate $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-plate (options)
             let
-                base $ lagopus.math/require-v3 $ either
-                  .unwrap-or (get options :position) nil
-                  v3 0 0 0
-                x-direction $ lagopus.math/require-v3 $ either
-                  .unwrap-or (get options :x-direction) nil
-                  v3 1 0 0
-                y-direction $ lagopus.math/require-v3 $ either
-                  .unwrap-or (get options :y-direction) nil
-                  v3 0 1 0
+                base $ lagopus.math/require-v3 $ match (get options :position)
+                  (:some matched-field-value)
+                    either matched-field-value $ v3 0 0 0
+                  (:none) (v3 0 0 0)
+                x-direction $ lagopus.math/require-v3 $ match (get options :x-direction)
+                  (:some matched-field-value)
+                    either matched-field-value $ v3 1 0 0
+                  (:none) (v3 1 0 0)
+                y-direction $ lagopus.math/require-v3 $ match (get options :y-direction)
+                  (:some matched-field-value)
+                    either matched-field-value $ v3 0 1 0
+                  (:none) (v3 0 1 0)
                 radius $ decode-map-as
-                  either
-                    .unwrap-or (get options :radius) nil
-                    , 80
+                  match (get options :radius)
+                    (:some matched-field-value) (either matched-field-value 80)
+                    (:none) 80
                   , 'Number
                 iteration $ decode-map-as
-                  either
-                    .unwrap-or (get options :iteration) nil
-                    , 4
+                  match (get options :iteration)
+                    (:some matched-field-value) (either matched-field-value 4)
+                    (:none) 4
                   , 'Number
                 color $ decode-map-as
-                  either
-                    .unwrap-or (get options :color) nil
-                    [] 0.6 0.8 0.76
-                  quote $ List Number
+                  match (get options :color)
+                    (:some matched-field-value)
+                      either matched-field-value $ [] 0.6 0.8 0.76
+                    (:none) ([] 0.6 0.8 0.76)
+                  List Number
                 *counter $ ref 0
                 r-unit $ / radius iteration
-                transformer $ either
-                  .unwrap-or (get options :transformer) nil
-                  , identity
+                transformer $ match (get options :transformer)
+                  (:some matched-field-value) (either matched-field-value identity)
+                  (:none) identity
                 chromatism $ decode-map-as
-                  either
-                    .unwrap-or (get options :chromatism) nil
-                    , 0.1
+                  match (get options :chromatism)
+                    (:some matched-field-value) (either matched-field-value 0.1)
+                    (:none) 0.1
                   , 'Number
               object $ {}
-                :shader $ either
-                  .unwrap-or (get options :shader) nil
-                  , wgsl-plate
-                :topology $ either
-                  .unwrap-or (get options :topology) nil
-                  , :triangle-list
+                :shader $ match (get options :shader)
+                  (:some matched-field-value) (either matched-field-value wgsl-plate)
+                  (:none) wgsl-plate
+                :topology $ match (get options :topology)
+                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map (range 6)
                   fn (section-idx)
@@ -1639,32 +1699,34 @@
         'comp-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-sphere (options)
             let
-                base $ lagopus.math/require-v3 $ either
-                  .unwrap-or (get options :position) nil
-                  v3 0 0 0
+                base $ lagopus.math/require-v3 $ match (get options :position)
+                  (:some matched-field-value)
+                    either matched-field-value $ v3 0 0 0
+                  (:none) (v3 0 0 0)
                 radius $ decode-map-as
-                  either
-                    .unwrap-or (get options :radius) nil
-                    , 40
+                  match (get options :radius)
+                    (:some matched-field-value) (either matched-field-value 40)
+                    (:none) 40
                   , 'Number
                 iteration $ decode-map-as
-                  either
-                    .unwrap-or (get options :iteration) nil
-                    , 2
+                  match (get options :iteration)
+                    (:some matched-field-value) (either matched-field-value 2)
+                    (:none) 2
                   , 'Number
                 color $ decode-map-as
-                  either
-                    .unwrap-or (get options :color) nil
-                    [] 0.6 0.8 0.76
-                  quote $ List Number
+                  match (get options :color)
+                    (:some matched-field-value)
+                      either matched-field-value $ [] 0.6 0.8 0.76
+                    (:none) ([] 0.6 0.8 0.76)
+                  List Number
                 *counter $ ref 0
               object $ {}
-                :shader $ either
-                  .unwrap-or (get options :shader) nil
-                  , wgsl-sphere
-                :topology $ either
-                  .unwrap-or (get options :topology) nil
-                  , :triangle-list
+                :shader $ match (get options :shader)
+                  (:some matched-field-value) (either matched-field-value wgsl-sphere)
+                  (:none) wgsl-sphere
+                :topology $ match (get options :topology)
+                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map unit-triangles $ fn (xs)
                   hint-fn $ Fn (List quaternion.vector/V3)
@@ -1713,14 +1775,20 @@
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v-length v3
     'lagopus.comp.spots $ %{} 'FileEntry
       :defs $ {}
+        'SpotVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum SpotVertex (:vertex lagopus.alias/VertexAttribute lagopus.alias/VertexAttribute Number Number Number Number Number)
+          :examples $ []
+          :schema $ quote EnumDef
         'comp-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-bubbles (options)
             let
                 bubbles $ decode-map-as
-                  either
-                    .unwrap-or (get options :bubbles) nil
-                    [] $ [] 0 0 0 100
-                  quote $ List $ List Number
+                  match (get options :bubbles)
+                    (:some matched-field-value)
+                      either matched-field-value $ [] $ [] 0 0 0 100
+                    (:none)
+                      [] $ [] 0 0 0 100
+                  List $ List Number
               object $ {} (:shader wgsl-bubbles) (:topology :line-list)
                 :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
                 :data $ map bubbles $ fn (info)
@@ -1754,47 +1822,49 @@
           :code $ quote $ defn comp-spots (options)
             let
                 points $ decode-map-as
-                  either
-                    .unwrap-or (get options :points) nil
-                    []
-                  quote $ List Dynamic
-                color $ either
-                  .unwrap-or (get options :color) nil
-                  [] 0.8 0.8 1
+                  match (get options :points)
+                    (:some matched-field-value)
+                      either matched-field-value $ []
+                    (:none) ([])
+                  List Dynamic
+                color $ lagopus.alias/decode-vertex-attribute $ match (get options :color)
+                  (:some matched-field-value)
+                    either matched-field-value $ [] 0.8 0.8 1
+                  (:none) ([] 0.8 0.8 1)
                 radius $ decode-map-as
-                  either
-                    .unwrap-or (get options :radius) nil
-                    , 12
+                  match (get options :radius)
+                    (:some matched-field-value) (either matched-field-value 12)
+                    (:none) 12
                   , 'Number
                 shift $ decode-map-as
-                  either
-                    .unwrap-or (get options :shift) nil
-                    , 40
+                  match (get options :shift)
+                    (:some matched-field-value) (either matched-field-value 40)
+                    (:none) 40
                   , 'Number
                 vertex-count $ &max 3 $ decode-map-as
-                  either
-                    .unwrap-or (get options :vertex-count) nil
-                    , 8
+                  match (get options :vertex-count)
+                    (:some matched-field-value) (either matched-field-value 8)
+                    (:none) 8
                   , 'Number
               object $ {}
-                :shader $ either
-                  .unwrap-or (get options :shader) nil
-                  , wgsl-spots
-                :topology $ either
-                  .unwrap-or (get options :topology) nil
-                  , :triangle-list
+                :shader $ match (get options :shader)
+                  (:some matched-field-value) (either matched-field-value wgsl-spots)
+                  (:none) wgsl-spots
+                :topology $ match (get options :topology)
+                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
                   hint-fn $ Fn Number Dynamic $ ->
-                    List $ List Enum
+                    List $ List lagopus.comp.spots/SpotVertex
                   map
                     range $ - vertex-count 2
                     fn (angle-idx)
-                      hint-fn $ Fn Number $ -> (List Enum)
+                      hint-fn $ Fn Number $ -> (List lagopus.comp.spots/SpotVertex)
                       []
-                        :: :vertex base color radius vertex-count 0 shift spot-idx
-                        :: :vertex base color radius vertex-count (+ 1 angle-idx) shift spot-idx
-                        :: :vertex base color radius vertex-count (+ 2 angle-idx) shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count 0 shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 1 angle-idx) shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 2 angle-idx) shift spot-idx
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'wgsl-bubbles $ %{} 'CodeEntry (:doc |)
@@ -1818,37 +1888,40 @@
           :code $ quote $ defn comp-stitch (props)
             let
                 chars $ decode-map-as
-                  either
-                    .unwrap-or (get props :chars) nil
-                    [] 0x1111
-                  quote $ List Number
-                position $ lagopus.math/require-v3 $ either
-                  .unwrap-or (get props :position) nil
-                  v3 0 0 0
+                  match (get props :chars)
+                    (:some matched-field-value)
+                      either matched-field-value $ [] 0x1111
+                    (:none) ([] 0x1111)
+                  List Number
+                position $ lagopus.math/require-v3 $ match (get props :position)
+                  (:some matched-field-value)
+                    either matched-field-value $ v3 0 0 0
+                  (:none) (v3 0 0 0)
                 size $ decode-map-as
-                  either
-                    .unwrap-or (get props :size) nil
-                    , 24
+                  match (get props :size)
+                    (:some matched-field-value) (either matched-field-value 24)
+                    (:none) 24
                   , 'Number
                 gap 4
                 s0 $ * 0.1 size
               group ({})
-                object $ {} (:topology :triangle-list)
-                  :shader $ inline-shader |stitch-bg
-                  :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
-                  :data $ map-indexed chars $ fn (idx c)
-                    hint-fn $ Fn Number Number $ ->
-                      List $ Map Tag Dynamic
-                    ->
-                      [] (v3 0 0 0) (v3 1 0 0) (v3 1 -1 0) (v3 0 0 0) (v3 1 -1 0) (v3 0 -1 0)
-                      map $ fn (x)
-                        hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag Dynamic)
-                        {} (:base position)
-                          :position $ &v+ (v-scale x size)
-                            v-scale
-                              v3 (+ size gap) 0 0
-                              , idx
-                  :hit-region $ .unwrap-or (get props :hit-region) nil
+                object $ .merge
+                  {} (:topology :triangle-list)
+                    :shader $ inline-shader |stitch-bg
+                    :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
+                    :data $ map-indexed chars $ fn (idx c)
+                      hint-fn $ Fn Number Number $ ->
+                        List $ Map Tag Dynamic
+                      ->
+                        [] (v3 0 0 0) (v3 1 0 0) (v3 1 -1 0) (v3 0 0 0) (v3 1 -1 0) (v3 0 -1 0)
+                        map $ fn (x)
+                          hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag Dynamic)
+                          {} (:base position)
+                            :position $ &v+ (v-scale x size)
+                              v-scale
+                                v3 (+ size gap) 0 0
+                                , idx
+                  select-keys props $ [] :hit-region
                 object $ {} (:topology :triangle-list)
                   :shader $ inline-shader |stitch-line
                   :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
@@ -1861,9 +1934,9 @@
                         hint-fn $ Fn (Map Tag Dynamic)
                           -> $ Map Tag Dynamic
                         let
-                            x $ lagopus.math/require-v3 $ .unwrap-or (get info :position) nil
+                            x $ lagopus.math/require-v3 $ .unwrap (get info :position)
                             data-idx $ decode-map-as
-                              .unwrap-or (get info :data) nil
+                              .unwrap $ get info :data
                               , 'Number
                           {} (:base position)
                             :position $ &v+ (v-scale x s0)
@@ -1978,27 +2051,31 @@
             lagopus.browser :refer $ stitch-pattern
     'lagopus.config $ %{} 'FileEntry
       :defs $ {}
+        'ClearColor $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum ClearColor (:rgba Number Number Number Number)
+          :examples $ []
+          :schema $ quote EnumDef
         'bg-color $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def bg-color
             match (get-env |bg-color)
               (:some value) (parse-bg-color value)
               (:none) (Option :none)
           :examples $ []
-          :schema $ quote $ Option Enum
+          :schema $ quote $ Option lagopus.config/ClearColor
         'bloom? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def bloom?
             match (get-env |bloom)
               (:some value) (= value |true)
               (:none) false
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Bool
         'dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def dev?
             match (get-env |mode)
               (:some value) (= value |dev)
               (:none) false
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Bool
         'inline-shader $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defmacro inline-shader (name)
             let
@@ -2014,27 +2091,27 @@
         'mobile-info $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mobile-info (browser/read-mobile-info!)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote lagopus.browser/MobileInfo
         'parse-bg-color $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-bg-color (bg)
             if (blank? bg) (Option :none)
               let
                   items $ map (split bg |,) browser/parse-color-channel
-                Option :some $ :: :rgba
+                Option :some $ lagopus.config/ClearColor :rgba
                   .unwrap $ nth items 0
                   .unwrap $ nth items 1
                   .unwrap $ nth items 2
                   .unwrap-or (nth items 3) 1
           :examples $ []
           :schema $ quote $ Fn String
-            -> $ Option Enum
+            -> $ Option lagopus.config/ClearColor
         'remote-control? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def remote-control?
             match (get-env |remote-control)
               (:some value) true
               (:none) false
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Bool
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.config
           :require
@@ -2047,11 +2124,11 @@
             let
                 parent-cursor $ match (get states :cursor)
                   (:some value)
-                    decode-map-as value $ quote $ List Tag
+                    decode-map-as value $ List Tag
                   (:none) ([])
                 branch $ match (get states k)
                   (:some value)
-                    decode-map-as value $ quote $ Map Tag Dynamic
+                    decode-map-as value $ Map Tag Dynamic
                   (:none) ({})
               assoc branch :cursor $ conj parent-cursor k
           :examples $ []
@@ -2060,8 +2137,7 @@
         'update-states $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn update-states (store cursor new-state)
             assoc store :states $ assoc-in
-                get store :states
-                , .unwrap-or nil
+              .unwrap-or (get store :states) ({})
               cursor.append :data
               , new-state
           :examples $ []
@@ -2093,7 +2169,7 @@
           :schema $ quote Trait
         'Response $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait Response
-            .blob $ quote $ Fn lagopus.gpu/Response (-> lagopus.gpu/Blob) (:async)
+            .blob $ Fn lagopus.gpu/Response (-> lagopus.gpu/Blob) (:async)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
@@ -2158,6 +2234,12 @@
               :tab :axis
           :examples $ []
           :schema $ quote $ Ref (Map Tag Dynamic)
+        'DemoOp $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum DemoOp
+            :state (List Tag) Dynamic
+            :tab Tag
+          :examples $ []
+          :schema $ quote EnumDef
         'canvas $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def canvas (browser/query-canvas!)
           :examples $ []
@@ -2168,16 +2250,12 @@
             let
                 store @*store
                 next-store $ match op
-                  (:state cursor data)
-                    update-states store
-                      decode-map-as cursor $ quote $ List Tag
-                      , data
-                  (:tab tab)
-                    assoc store :tab $ decode-map-as tab 'Tag
+                  (:state cursor data) (update-states store cursor data)
+                  (:tab tab) (assoc store :tab tab)
               if (not= next-store store) (reset! *store next-store)
               , &unit
           :examples $ []
-          :schema $ quote $ Fn Enum (-> Unit)
+          :schema $ quote $ Fn lagopus.main/DemoOp (-> Unit)
         'load-images! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-images! (gpu-device *textures)
             let
@@ -2201,7 +2279,7 @@
               js-await $ gpu/initialize-device!
               , *global-textures
             runtime/initialize-textures!
-            reset-clear-color! $ .unwrap-or bg-color $ :: :rgba 0.18 0.2 0.36 1
+            reset-clear-color! $ .unwrap-or bg-color $ lagopus.config/ClearColor :rgba 0.18 0.2 0.36 1
             render-app!
             runtime/start-controls!
             runtime/register-shader-result! handle-compilation
@@ -2219,8 +2297,7 @@
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             let
-                show! $ unsafe-coerce hud! $ quote
-                  Fn String String $ -> Unit
+                show! $ unsafe-coerce hud! $ Fn String String (-> Unit)
               if (js-nullish? build-errors)
                 do (reset-memof1-caches!) (render-app!) (remove-watch! *store :change) (add-watch! *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
                 show! |error $ str build-errors
@@ -2331,8 +2408,7 @@
         'enable-bloom! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn enable-bloom! ()
             let
-                invoke! $ unsafe-coerce enableBloom $ quote
-                  Fn $ -> Unit
+                invoke! $ unsafe-coerce enableBloom $ Fn (-> Unit)
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2340,8 +2416,7 @@
         'initialize-textures! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn initialize-textures! ()
             let
-                invoke! $ unsafe-coerce initializeCanvasTextures $ quote
-                  Fn $ -> Unit
+                invoke! $ unsafe-coerce initializeCanvasTextures $ Fn (-> Unit)
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2349,8 +2424,7 @@
         'load-gamepad! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-gamepad! ()
             let
-                invoke! $ unsafe-coerce loadGamepadControl $ quote
-                  Fn $ -> Unit
+                invoke! $ unsafe-coerce loadGamepadControl $ Fn (-> Unit)
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2358,8 +2432,7 @@
         'paint! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn paint! ()
             let
-                invoke! $ unsafe-coerce paintLagopusTree $ quote
-                  Fn $ -> Unit
+                invoke! $ unsafe-coerce paintLagopusTree $ Fn (-> Unit)
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2367,10 +2440,9 @@
         'register-shader-result! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn register-shader-result! (handler)
             let
-                register! $ unsafe-coerce registerShaderResult $ quote
-                  Fn
-                    Fn lagopus.util/CompilationInfo String $ -> Unit
-                    -> Unit
+                register! $ unsafe-coerce registerShaderResult $ Fn
+                  Fn lagopus.util/CompilationInfo String $ -> Unit
+                  -> Unit
               register! handler
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2381,22 +2453,21 @@
         'render-tree! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-tree! (tree dispatch!)
             let
-                render! $ unsafe-coerce renderLagopusTree $ quote
-                  Fn JsObject
-                    Fn Enum $ -> Unit
-                    -> Unit
+                render! $ unsafe-coerce renderLagopusTree $ Fn JsObject
+                  Fn Op $ -> Unit
+                  -> Unit
               render! tree dispatch!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn JsObject
-            Fn Enum $ -> Unit
+            Fn Op $ -> Unit
             -> Unit
+            :generics Op
             :features :js-ffi
         'reset-canvas! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reset-canvas! (canvas)
             let
-                invoke! $ unsafe-coerce resetCanvasSize $ quote
-                  Fn lagopus.browser/Canvas $ -> Unit
+                invoke! $ unsafe-coerce resetCanvasSize $ Fn lagopus.browser/Canvas (-> Unit)
               invoke! canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2404,8 +2475,7 @@
         'setup-mouse! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn setup-mouse! (canvas)
             let
-                invoke! $ unsafe-coerce setupMouseEvents $ quote
-                  Fn lagopus.browser/Canvas $ -> Unit
+                invoke! $ unsafe-coerce setupMouseEvents $ Fn lagopus.browser/Canvas (-> Unit)
               invoke! canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2413,8 +2483,7 @@
         'setup-remote! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn setup-remote! ()
             let
-                invoke! $ unsafe-coerce setupRemoteControl $ quote
-                  Fn $ -> Unit
+                invoke! $ unsafe-coerce setupRemoteControl $ Fn (-> Unit)
               invoke!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2422,14 +2491,11 @@
         'start-controls! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn start-controls! ()
             let
-                render! $ unsafe-coerce renderControl $ quote
-                  Fn $ -> Unit
-                control! $ unsafe-coerce onControlEvent $ quote
+                render! $ unsafe-coerce renderControl $ Fn (-> Unit)
+                control! $ unsafe-coerce onControlEvent $ Fn Number JsObject JsObject (-> Unit)
+                start! $ unsafe-coerce startControlLoop $ Fn Number
                   Fn Number JsObject JsObject $ -> Unit
-                start! $ unsafe-coerce startControlLoop $ quote
-                  Fn Number
-                    Fn Number JsObject JsObject $ -> Unit
-                    -> Unit
+                  -> Unit
               render!
               start! 10 control!
           :examples $ []
@@ -2447,7 +2513,7 @@
       :defs $ {}
         'ColorAtom $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait ColorAtom
-            .reset $ quote $ Fn ColorAtom JsObject (-> Unit)
+            .reset $ Fn ColorAtom JsObject $ -> Unit
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
@@ -2463,8 +2529,7 @@
           :schema $ quote Trait
         'ShaderMessages $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait ShaderMessages
-            .at $ quote $ Fn lagopus.util/ShaderMessages Number
-              -> $ JsNullish lagopus.util/ShaderMessage
+            .at $ Fn lagopus.util/ShaderMessages Number $ -> (JsNullish lagopus.util/ShaderMessage)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
           :schema $ quote Trait
@@ -2489,10 +2554,8 @@
                             , line-pos
                           , |
                         , "|^ " $ .-message error
-                    log! $ unsafe-coerce js/console.error $ quote
-                      Fn String $ -> Unit
-                    show! $ unsafe-coerce hud! $ quote
-                      Fn String String $ -> Unit
+                    log! $ unsafe-coerce js/console.error $ Fn String (-> Unit)
+                    show! $ unsafe-coerce hud! $ Fn String String (-> Unit)
                   log! $ str "|WGSL Error:" &newline message
                   show! |error $ str "|WGSL Errors:" &newline message
               , &unit
