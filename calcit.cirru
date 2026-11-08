@@ -1185,6 +1185,13 @@
               assert=
                 Option :some $ PolylinePrevious :position p2 :older (Option :none) :width 9
                 , @previous
+              build-polyline-points previous break-mark emit
+              assert= (Option :none) @previous
+              build-polyline-points previous (:: :vertex p1 6) emit
+              assert= 1 $ count @segments
+              assert=
+                Option :some $ PolylinePrevious :position p1 :older (Option :none) :width 6
+                , @previous
             :tags $ #{} :unit
         'build-polyline-points-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points-marked (*prev p write!)
@@ -1249,6 +1256,14 @@
                 , @previous
               build-polyline-points-marked previous (:: :break) emit
               assert= (Option :none) @previous
+              build-polyline-points-marked previous (:: :vertex p0 2 4) emit
+              build-polyline-points-marked previous break-mark emit
+              assert= (Option :none) @previous
+              build-polyline-points-marked previous (:: :vertex p1 6 7) emit
+              assert= 2 $ count @segments
+              assert=
+                Option :some $ MarkedPolylinePrevious :position p1 :older (Option :none) :width 6 :mark 7
+                , @previous
             :tags $ #{} :unit
         'char-x $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def char-x
