@@ -10,6 +10,10 @@
   :files $ {}
     'lagopus.alias $ %{} 'FileEntry
       :defs $ {}
+        'IndexTree $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion IndexTree Number (List IndexTree)
+          :examples $ []
+          :schema $ quote UnionDef
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
             .push $ Fn NumberArray Number $ -> Number
@@ -33,14 +37,30 @@
           :schema $ quote $ Fn Dynamic (-> String)
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (indices collect!)
-            if (list? indices)
-              &doseq (x indices) (collect-array! x collect!)
-              collect! $ decode-map-as indices 'Number
+            match indices
+              (Number index) (collect! index)
+              (List children)
+                &doseq (child children) (collect-array! child collect!)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn lagopus.alias/IndexTree
             Fn Number $ -> Unit
             -> Unit
+          :tests $ [] $ %{} 'TestEntry (:name |nested-index-order)
+            :code $ quote $ let
+                input $ decode-map-as
+                  [] 0
+                    [] 2 ([] 1 2) ([])
+                    , 3
+                  , 'lagopus.alias/IndexTree
+                output $ ref $ assert-type ([]) (List Number)
+                collect! $ fn (index)
+                  hint-fn $ Fn Number $ -> Unit
+                  swap! output append index
+                  , &unit
+              collect-array! input collect!
+              assert= ([] 0 2 1 2 3) @output
+            :tags $ #{} :unit
         'collect-from-records! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-from-records! (data field idx write!)
             cond
@@ -103,7 +123,7 @@
                           hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                           arr .push x
                           , &unit
-                      collect-array! indices collect!
+                      collect-array! (decode-map-as indices 'lagopus.alias/IndexTree) collect!
                       index-buffer! $ unsafe-coerce arr 'JsObject
                 :getParams $ match (get options :get-params)
                   (:some value) value
