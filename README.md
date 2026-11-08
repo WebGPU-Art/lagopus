@@ -11,7 +11,7 @@
 
 更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.38.0，再生成 JS。
 组件的 `:indices` 继续接收数字或嵌套数字列表，保留原顺序、重复项和空分组。
-直接从开放数据调用底层 `collect-array!` 时，先按 `lagopus.alias/IndexTree` 校验。
+直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验当前节点。
 
 ### 0.5.17 配对 Calcit 0.37.0
 
