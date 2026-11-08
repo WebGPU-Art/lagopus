@@ -1543,6 +1543,18 @@
                 _ $ raise "|Invalid polyline attribute index"
           :examples $ []
           :schema $ quote $ Fn lagopus.comp.curves/PolylineVertex Number (-> lagopus.alias/VertexAttribute)
+          :tests $ [] $ %{} 'TestEntry (:name |keeps-position-and-direction-buffer-slots)
+            :code $ quote $ let
+                position $ v3 1 2 3
+                direction $ v3 4 5 6
+                plain $ PolylineVertex :vertex position 7 direction 8
+                marked $ MarkedPolylineVertex :vertex position 7 direction 8 9
+              assert= position $ polylines-attribute plain 0
+              assert= direction $ polylines-attribute plain 2
+              assert= position $ polylines-marked-attribute marked 0
+              assert= direction $ polylines-marked-attribute marked 2
+              assert= 9 $ polylines-marked-attribute marked 4
+            :tags $ #{} :unit
         'polylines-marked-attribute $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn polylines-marked-attribute (vertex idx)
             match vertex $
