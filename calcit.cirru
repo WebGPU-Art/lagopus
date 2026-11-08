@@ -10,6 +10,11 @@
   :files $ {}
     'lagopus.alias $ %{} 'FileEntry
       :defs $ {}
+        'IndexChunk $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum IndexChunk (:index Number)
+            :children $ List Dynamic
+          :examples $ []
+          :schema $ quote EnumDef
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
             .push $ Fn NumberArray Number $ -> Number
@@ -32,15 +37,30 @@
           :examples $ []
           :schema $ quote $ Fn Dynamic (-> String)
         'collect-array! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn collect-array! (indices collect!)
-            if (list? indices)
-              &doseq (x indices) (collect-array! x collect!)
-              collect! $ decode-map-as indices 'Number
+          :code $ quote $ defn collect-array! (chunk collect!)
+            match chunk
+              (:index index) (collect! index)
+              (:children children)
+                &doseq (child children)
+                  collect-array! (decode-index-chunk child) collect!
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn lagopus.alias/IndexChunk
             Fn Number $ -> Unit
             -> Unit
+          :tests $ [] $ %{} 'TestEntry (:name |nested-index-order)
+            :code $ quote $ let
+                input $ decode-index-chunk $ [] 0
+                  [] 2 ([] 1 2) ([])
+                  , 3
+                output $ ref $ assert-type ([]) (List Number)
+                collect! $ fn (index)
+                  hint-fn $ Fn Number $ -> Unit
+                  swap! output append index
+                  , &unit
+              collect-array! input collect!
+              assert= ([] 0 2 1 2 3) @output
+            :tags $ #{} :unit
         'collect-from-records! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-from-records! (data field idx write!)
             cond
@@ -103,7 +123,7 @@
                           hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                           arr .push x
                           , &unit
-                      collect-array! indices collect!
+                      collect-array! (decode-index-chunk indices) collect!
                       index-buffer! $ unsafe-coerce arr 'JsObject
                 :getParams $ match (get options :get-params)
                   (:some value) value
@@ -124,6 +144,13 @@
           :schema $ quote $ Fn (Map Tag Dynamic)
             List $ Map Tag Dynamic
             , Number (List lagopus.alias/NumberBuffer) (-> JsObject) (:features :js-ffi)
+        'decode-index-chunk $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn decode-index-chunk (value)
+            if (list? value)
+              IndexChunk :children $ assert-type value $ List Dynamic
+              IndexChunk :index $ decode-map-as value 'Number
+          :examples $ []
+          :schema $ quote $ Fn T (-> lagopus.alias/IndexChunk) (:generics T)
         'decode-vertex-attribute $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-vertex-attribute (value)
             cond

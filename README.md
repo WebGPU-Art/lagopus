@@ -7,6 +7,12 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
+### Calcit 0.38.0
+
+更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.38.0，再生成 JS。
+组件的 `:indices` 继续接收数字或嵌套数字列表，保留原顺序、重复项和空分组。
+直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验当前节点。
+
 ### 0.5.17 配对 Calcit 0.37.0
 
 重新安装正式依赖并生成 JS。按钮和渲染入口从回调推导项目自己的操作类型。
@@ -51,7 +57,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.37.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.38.0：
 
 ```sh
 caps --strict --ci
