@@ -263,37 +263,52 @@
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
         'object-writer $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn object-writer (options)
+            object-writer-with options
+              fn (collect!)
+                hint-fn $ Fn
+                  Fn (List AnyEnum) (-> Unit)
+                  -> Unit
+                  :features :js-ffi
+                let
+                    writer $ .unwrap $ get options :writer
+                  if (fn? writer) (writer collect!) (raise "|Expected object writer function")
+                , &unit
+              fn (record idx)
+                let
+                    data $ .unwrap $ nth record (inc idx)
+                  if
+                    not= :vertex $ .unwrap $ nth record 0
+                    eprintln "|expected :vertex tag" record
+                  decode-vertex-attribute data
+          :examples $ []
+          :ffi $ {} (:backend :js) (:target :browser)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
+        'object-writer-with $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn object-writer-with (options writer attribute-at)
             let
                 attrs-list $ map
                   decode-map-as
                     .unwrap $ get options :attrs-list
                     List Dynamic
                   , expand-attr
-                writer $ .unwrap $ get options :writer
-                bundles $ make-empty-js-arrays $ count attrs-list
+                attribute-count $ count attrs-list
+                attribute-indices $ range attribute-count
+                bundles $ make-empty-js-arrays attribute-count
                 *counter $ ref 0
                 collect! $ fn (chunk)
-                  hint-fn $ Fn (List AnyEnum) (-> Unit) (:features :js-ffi)
+                  hint-fn $ Fn (List Vertex) (-> Unit) (:features :js-ffi)
                   &doseq (record chunk) (swap! *counter inc)
-                    let
-                        *index $ ref 0
-                      &doseq (attr attrs-list)
-                        let
-                            idx @*index
-                            arr $ unsafe-coerce (aget bundles idx) NumberArray
-                            data $ .unwrap $ nth record (inc idx)
-                            write! $ fn (value)
-                              hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
-                              arr .push value
-                              , &unit
-                          if
-                            not= :vertex $ .unwrap $ nth record 0
-                            eprintln "|expected :vertex tag" record
-                          write-attribute! data write!
-                        swap! *index inc
+                    &doseq (idx attribute-indices)
+                      let
+                          arr $ unsafe-coerce (aget bundles idx) NumberArray
+                          write! $ fn (value)
+                            hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
+                            arr .push value
+                            , &unit
+                        pack-vertex-attribute! (attribute-at record idx) write!
                   , &unit
                 make-buffer! $ unsafe-coerce newBufferFormatArray $ Fn String JsObject (-> lagopus.alias/NumberBuffer)
-              if (fn? writer) (writer collect!) (raise "|Expected object writer function")
+              writer collect!
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
                     hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
@@ -303,7 +318,29 @@
                 create-object! options attrs-list @*counter buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
+          :schema $ quote $ Fn (Map Tag Dynamic)
+            Fn
+              Fn (List Vertex) (-> Unit)
+              -> Unit
+            Fn Vertex Number $ -> lagopus.alias/VertexAttribute
+            -> JsObject
+            :generics Vertex
+            :features :js-ffi
+        'pack-vertex-attribute! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn pack-vertex-attribute! (attribute write!)
+            match attribute
+              (Number value) (write! value)
+              (V3 vector)
+                match vector $
+                  :v3 x y z
+                  do (write! x) (write! y) (write! z)
+              (List values)
+                &doseq (value values) (write! value)
+            , &unit
+          :examples $ []
+          :schema $ quote $ Fn lagopus.alias/VertexAttribute
+            Fn Number $ -> Unit
+            -> Unit
         'wgsl-colors $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-colors (inline-shader |lagopus-colors)
           :examples $ []
@@ -330,15 +367,7 @@
           :schema $ quote String
         'write-attribute! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn write-attribute! (xs write!)
-            match (decode-vertex-attribute xs)
-              (Number value) (write! value)
-              (V3 vector)
-                match vector $
-                  :v3 x y z
-                  do (write! x) (write! y) (write! z)
-              (List values)
-                &doseq (value values) (write! value)
-            , &unit
+            pack-vertex-attribute! (decode-vertex-attribute xs) write!
           :examples $ []
           :schema $ quote $ Fn Dynamic
             Fn Number $ -> Unit
@@ -1395,70 +1424,74 @@
           :code $ quote $ defn comp-polylines (options)
             let
                 chunk-writer! $ get options :writer
-              object-writer $ .merge
-                {}
-                  :shader $ match (get options :shader)
-                    (:some matched-field-value) (either matched-field-value wgsl-polylines)
-                    (:none) wgsl-polylines
-                  :topology $ match (get options :topology)
-                    (:some matched-field-value) (either matched-field-value :triangle-list)
-                    (:none) :triangle-list
-                  :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
-                  :writer $ fn (write!)
-                    hint-fn $ Fn
-                      Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
-                      -> Unit
-                    let
-                        *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/PolylinePrevious)
-                        collect! $ fn (p)
-                          hint-fn $ Fn Dynamic $ -> Unit
-                          if (list? p)
-                            &doseq (x p)
-                              if (enum? x) (build-polyline-points *prev x write!) (raise "|Expected polyline vertex or break Enum")
-                            if (enum? p) (build-polyline-points *prev p write!) (raise "|Expected polyline vertex or break Enum")
-                          , &unit
-                      match chunk-writer!
-                        (:none) (eprintln "|expected polylines writer")
-                        (:some writer)
-                          if (nil? writer) (eprintln "|expected polylines writer")
-                            if (fn? writer) (writer collect!) (raise "|Expected polylines writer function")
-                    , &unit
-                select-keys options $ [] :get-params :compute-options
+              object-writer-with
+                .merge
+                  {}
+                    :shader $ match (get options :shader)
+                      (:some matched-field-value) (either matched-field-value wgsl-polylines)
+                      (:none) wgsl-polylines
+                    :topology $ match (get options :topology)
+                      (:some matched-field-value) (either matched-field-value :triangle-list)
+                      (:none) :triangle-list
+                    :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
+                  select-keys options $ [] :get-params :compute-options
+                fn (write!)
+                  hint-fn $ Fn
+                    Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+                    -> Unit
+                  let
+                      *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/PolylinePrevious)
+                      collect! $ fn (p)
+                        hint-fn $ Fn Dynamic $ -> Unit
+                        if (list? p)
+                          &doseq (x p)
+                            if (enum? x) (build-polyline-points *prev x write!) (raise "|Expected polyline vertex or break Enum")
+                          if (enum? p) (build-polyline-points *prev p write!) (raise "|Expected polyline vertex or break Enum")
+                        , &unit
+                    match chunk-writer!
+                      (:none) (eprintln "|expected polylines writer")
+                      (:some writer)
+                        if (nil? writer) (eprintln "|expected polylines writer")
+                          if (fn? writer) (writer collect!) (raise "|Expected polylines writer function")
+                  , &unit
+                , polylines-attribute
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines-marked (options)
             let
                 chunk-writer! $ get options :writer
-              object-writer $ .merge
-                {}
-                  :shader $ match (get options :shader)
-                    (:some matched-field-value) (either matched-field-value wgsl-polylines-marked)
-                    (:none) wgsl-polylines-marked
-                  :topology $ match (get options :topology)
-                    (:some matched-field-value) (either matched-field-value :triangle-list)
-                    (:none) :triangle-list
-                  :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
-                  :writer $ fn (write!)
-                    hint-fn $ Fn
-                      Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
-                      -> Unit
-                    let
-                        *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/MarkedPolylinePrevious)
-                        collect! $ fn (p)
-                          hint-fn $ Fn Dynamic $ -> Unit
-                          if (list? p)
-                            &doseq (x p)
-                              if (enum? x) (build-polyline-points-marked *prev x write!) (raise "|Expected polyline vertex or break Enum")
-                            if (enum? p) (build-polyline-points-marked *prev p write!) (raise "|Expected polyline vertex or break Enum")
-                          , &unit
-                      match chunk-writer!
-                        (:none) (eprintln "|expected polylines writer")
-                        (:some writer)
-                          if (nil? writer) (eprintln "|expected polylines writer")
-                            if (fn? writer) (writer collect!) (raise "|Expected polylines writer function")
-                    , &unit
-                select-keys options $ [] :get-params :compute-options
+              object-writer-with
+                .merge
+                  {}
+                    :shader $ match (get options :shader)
+                      (:some matched-field-value) (either matched-field-value wgsl-polylines-marked)
+                      (:none) wgsl-polylines-marked
+                    :topology $ match (get options :topology)
+                      (:some matched-field-value) (either matched-field-value :triangle-list)
+                      (:none) :triangle-list
+                    :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
+                  select-keys options $ [] :get-params :compute-options
+                fn (write!)
+                  hint-fn $ Fn
+                    Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+                    -> Unit
+                  let
+                      *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                      collect! $ fn (p)
+                        hint-fn $ Fn Dynamic $ -> Unit
+                        if (list? p)
+                          &doseq (x p)
+                            if (enum? x) (build-polyline-points-marked *prev x write!) (raise "|Expected polyline vertex or break Enum")
+                          if (enum? p) (build-polyline-points-marked *prev p write!) (raise "|Expected polyline vertex or break Enum")
+                        , &unit
+                    match chunk-writer!
+                      (:none) (eprintln "|expected polylines writer")
+                      (:some writer)
+                        if (nil? writer) (eprintln "|expected polylines writer")
+                          if (fn? writer) (writer collect!) (raise "|Expected polylines writer function")
+                  , &unit
+                , polylines-marked-attribute
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'count-hex $ %{} 'CodeEntry (:doc |)
@@ -1502,23 +1535,51 @@
               lagopus.math/require-v3 point
           :examples $ []
           :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
+        'polylines-attribute $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn polylines-attribute (vertex idx)
+            match vertex $
+              :vertex position brush direction width
+              match idx (0 position) (1 brush) (2 direction) (3 width)
+                _ $ raise "|Invalid polyline attribute index"
+          :examples $ []
+          :schema $ quote $ Fn lagopus.comp.curves/PolylineVertex Number (-> lagopus.alias/VertexAttribute)
+          :tests $ [] $ %{} 'TestEntry (:name |keeps-position-and-direction-buffer-slots)
+            :code $ quote $ let
+                position $ v3 1 2 3
+                direction $ v3 4 5 6
+                plain $ PolylineVertex :vertex position 7 direction 8
+                marked $ MarkedPolylineVertex :vertex position 7 direction 8 9
+              assert= position $ polylines-attribute plain 0
+              assert= direction $ polylines-attribute plain 2
+              assert= position $ polylines-marked-attribute marked 0
+              assert= direction $ polylines-marked-attribute marked 2
+              assert= 9 $ polylines-marked-attribute marked 4
+            :tags $ #{} :unit
+        'polylines-marked-attribute $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn polylines-marked-attribute (vertex idx)
+            match vertex $
+              :vertex position brush direction width mark
+              match idx (0 position) (1 brush) (2 direction) (3 width) (4 mark)
+                _ $ raise "|Invalid polyline attribute index"
+          :examples $ []
+          :schema $ quote $ Fn lagopus.comp.curves/MarkedPolylineVertex Number (-> lagopus.alias/VertexAttribute)
         'wgsl-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-curves (inline-shader |curves)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-polylines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-polylines (inline-shader |polylines)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-polylines-marked (inline-shader |polylines-marked)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.curves
           :require
             lagopus.config :refer $ inline-shader
-            lagopus.alias :refer $ object group object-writer
+            lagopus.alias :refer $ object group object-writer-with
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v3
             lagopus.comp.stitch :refer $ comp-stitch
     'lagopus.comp.image $ %{} 'FileEntry

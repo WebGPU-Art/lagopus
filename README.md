@@ -112,6 +112,8 @@ Alternatively, there's also `object-writer` which provides a writer API, which r
       :: :vertex (v3 1 1 1)
 ```
 
+在 Calcit 0.38.0 下，`comp-polylines` 和 `comp-polylines-marked` 会将具名顶点直接交给缓冲区写入器。公开 `object-writer` 仍接受上述匿名顶点，折线的输入、属性顺序及格式沿用原合同。
+
 ### Shader
 
 Shader file expects 3 parts:
