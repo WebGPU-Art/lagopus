@@ -1879,10 +1879,69 @@
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v-length v3
     'lagopus.comp.spots $ %{} 'FileEntry
       :defs $ {}
+        'BubbleVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct BubbleVertex
+            :position $ List Number
+            :arm $ List Number
+            :radian Number
+          :examples $ []
+          :schema $ quote StructDef
         'SpotVertex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum SpotVertex (:vertex lagopus.alias/VertexAttribute lagopus.alias/VertexAttribute Number Number Number Number Number)
           :examples $ []
           :schema $ quote EnumDef
+        'bubble-attribute $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn bubble-attribute (vertex idx)
+            match idx
+              0 $ :position vertex
+              1 $ :arm vertex
+              2 $ :radian vertex
+              _ $ raise "|Invalid bubble attribute index"
+          :examples $ []
+          :schema $ quote $ Fn lagopus.comp.spots/BubbleVertex Number (-> lagopus.alias/VertexAttribute)
+          :tests $ []
+            %{} 'TestEntry (:name |packs-position-arm-and-angle-in-buffer-order)
+              :code $ quote $ let
+                  vertex $ bubble-vertex ([] 4 5 6) 2 0
+                assert= ([] 4 5 6)
+                  match (bubble-attribute vertex 0)
+                    (List xs) xs
+                    _ $ raise "|Expected position components"
+                assert= ([] 2 0)
+                  match (bubble-attribute vertex 1)
+                    (List xs) xs
+                    _ $ raise "|Expected arm components"
+                assert= 0 $ match (bubble-attribute vertex 2)
+                  (Number angle) angle
+                  _ $ raise "|Expected numeric angle"
+            %{} 'TestEntry (:name |packs-arm-and-angle-at-one-sixth-pi)
+              :code $ quote $ let
+                  radian $ / &PI 6
+                  vertex $ bubble-vertex ([] 4 5 6) 2 radian
+                  arm $ match (bubble-attribute vertex 1)
+                    (List components) components
+                    _ $ raise "|Expected arm components"
+                assert= 2 $ .len arm
+                assert= true $ <
+                  abs $ -
+                    .unwrap $ nth arm 0
+                    sqrt 3
+                  , 0.000000001
+                assert= true $ <
+                  abs $ -
+                    .unwrap $ nth arm 1
+                    , 1
+                  , 0.000000001
+                assert= radian $ match (bubble-attribute vertex 2)
+                  (Number angle) angle
+                  _ $ raise "|Expected numeric angle"
+        'bubble-vertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn bubble-vertex (position radius radian)
+            BubbleVertex :position position :radian radian :arm $ []
+              * radius $ cos radian
+              * radius $ sin radian
+          :examples $ []
+          :schema $ quote $ Fn (List Number) Number Number (-> lagopus.comp.spots/BubbleVertex)
         'comp-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-bubbles (options)
             let
@@ -1893,33 +1952,27 @@
                     (:none)
                       [] $ [] 0 0 0 100
                   List $ List Number
-              object $ {} (:shader wgsl-bubbles) (:topology :line-list)
-                :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
-                :data $ map bubbles $ fn (info)
-                  hint-fn $ Fn (List Number)
-                    -> $ List $ List (Map Tag Dynamic)
-                  let
-                      position $ take info 3
-                      radius $ .unwrap $ nth info 3
-                      size $ + 20 $ * 8 (sqrt radius)
-                      step $ / (* 2 &PI) size
-                    map (range size)
-                      fn (idx)
-                        hint-fn $ Fn Number $ ->
-                          List $ Map Tag Dynamic
-                        []
-                          let
-                              radian $ * step idx
-                            {} (:position position) (:radian radian)
-                              :arm $ []
-                                * radius $ cos radian
-                                * radius $ sin radian
-                          let
-                              radian $ * step $ inc idx
-                            {} (:position position) (:radian radian)
-                              :arm $ []
-                                * radius $ cos radian
-                                * radius $ sin radian
+              lagopus.alias/object-writer-with
+                {} (:shader wgsl-bubbles) (:topology :line-list)
+                  :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
+                fn (write!)
+                  hint-fn $ Fn
+                    Fn (List lagopus.comp.spots/BubbleVertex) (-> Unit)
+                    -> Unit
+                  &doseq (info bubbles)
+                    let
+                        position $ take info 3
+                        radius $ .unwrap $ nth info 3
+                        size $ ceil $ + 20
+                          * 8 $ sqrt radius
+                        step $ / (* 2 &PI) size
+                      &doseq
+                        idx $ range size
+                        write! $ []
+                          bubble-vertex position radius $ * step idx
+                          bubble-vertex position radius $ * step $ inc idx
+                  , &unit
+                , bubble-attribute
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-spots $ %{} 'CodeEntry (:doc |)

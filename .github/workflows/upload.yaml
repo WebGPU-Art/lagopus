@@ -65,6 +65,8 @@ jobs:
         env:
           VITE_BASE_URL: ${{ steps.asset-path.outputs.base-url }}
         run: yarn build
+      - name: Test bubble geometry
+        run: node --test tests/bubble-closure.test.mjs
       - name: Check current production revision
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: production
