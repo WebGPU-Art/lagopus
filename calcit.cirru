@@ -1898,20 +1898,42 @@
               _ $ raise "|Invalid bubble attribute index"
           :examples $ []
           :schema $ quote $ Fn lagopus.comp.spots/BubbleVertex Number (-> lagopus.alias/VertexAttribute)
-          :tests $ [] $ %{} 'TestEntry (:name |packs-position-arm-and-angle-in-buffer-order)
-            :code $ quote $ let
-                vertex $ bubble-vertex ([] 4 5 6) 2 0
-              assert= ([] 4 5 6)
-                match (bubble-attribute vertex 0)
-                  (List xs) xs
-                  _ $ raise "|Expected position components"
-              assert= ([] 2 0)
-                match (bubble-attribute vertex 1)
-                  (List xs) xs
-                  _ $ raise "|Expected arm components"
-              assert= 0 $ match (bubble-attribute vertex 2)
-                (Number angle) angle
-                _ $ raise "|Expected numeric angle"
+          :tests $ []
+            %{} 'TestEntry (:name |packs-position-arm-and-angle-in-buffer-order)
+              :code $ quote $ let
+                  vertex $ bubble-vertex ([] 4 5 6) 2 0
+                assert= ([] 4 5 6)
+                  match (bubble-attribute vertex 0)
+                    (List xs) xs
+                    _ $ raise "|Expected position components"
+                assert= ([] 2 0)
+                  match (bubble-attribute vertex 1)
+                    (List xs) xs
+                    _ $ raise "|Expected arm components"
+                assert= 0 $ match (bubble-attribute vertex 2)
+                  (Number angle) angle
+                  _ $ raise "|Expected numeric angle"
+            %{} 'TestEntry (:name |packs-arm-and-angle-at-one-sixth-pi)
+              :code $ quote $ let
+                  radian $ / &PI 6
+                  vertex $ bubble-vertex ([] 4 5 6) 2 radian
+                  arm $ match (bubble-attribute vertex 1)
+                    (List components) components
+                    _ $ raise "|Expected arm components"
+                assert= 2 $ .len arm
+                assert= true $ <
+                  abs $ -
+                    .unwrap $ nth arm 0
+                    sqrt 3
+                  , 0.000000001
+                assert= true $ <
+                  abs $ -
+                    .unwrap $ nth arm 1
+                    , 1
+                  , 0.000000001
+                assert= radian $ match (bubble-attribute vertex 2)
+                  (Number angle) angle
+                  _ $ raise "|Expected numeric angle"
         'bubble-vertex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn bubble-vertex (position radius radian)
             BubbleVertex :position position :radian radian :arm $ []
