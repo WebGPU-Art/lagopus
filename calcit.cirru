@@ -1962,7 +1962,8 @@
                     let
                         position $ take info 3
                         radius $ .unwrap $ nth info 3
-                        size $ + 20 $ * 8 (sqrt radius)
+                        size $ ceil $ + 20
+                          * 8 $ sqrt radius
                         step $ / (* 2 &PI) size
                       &doseq
                         idx $ range size
