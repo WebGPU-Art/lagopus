@@ -78,6 +78,8 @@ jobs:
           else
             echo "::notice::Skip stale production revision ${GITHUB_SHA}; current main is ${current_sha}."
           fi
+      - name: Test renderer object reuse
+        run: node --test tests/memo-object.test.mjs
       - name: Upload and verify frontend
         if: steps.production.outputs.current == 'true'
         timeout-minutes: 10
