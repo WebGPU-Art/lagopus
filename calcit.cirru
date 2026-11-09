@@ -204,18 +204,19 @@
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number (-> JsObject) (:features :js-ffi)
         'memo-object $ %{} 'CodeEntry
-          :doc "|Reuse the existing memof singleton cache; check its opaque result is a runtime host object before the renderer consumes it. This does not claim a generic cache proof or change cached values, function identity, arguments or clearing."
+          :doc "|Memoize a zero-argument callback using its original function identity, then check that the cached value is a renderer host object."
           :code $ quote $ defn memo-object (f)
             let
-                value $ memof1-call f
+                value $ memof1-call-nullary f
               if
                 = :js-object $ type-of value
                 contract/expect-object "|cached renderer host object" value
                 raise "|Expected a cached renderer host object"
           :examples $ []
           :schema $ quote $ Fn
-            Fn $ -> Dynamic
+            Fn $ -> R
             -> JsObject
+            :generics R
             :features :js-ffi
           :tests $ [] $ %{} 'TestEntry (:name |reject-cached-calcit-values)
             :code $ quote $ let
@@ -395,7 +396,7 @@
             lagopus.config :refer $ inline-shader
             lagopus.browser :as browser
             lagopus.gpu :refer $ Texture
-            memof.once :refer $ memof1-call
+            memof.once :refer $ memof1-call-nullary
             js-ffi.contract :as contract
     'lagopus.browser $ %{} 'FileEntry
       :defs $ {}
