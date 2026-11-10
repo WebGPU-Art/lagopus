@@ -12,9 +12,14 @@
       :defs $ {}
         'IndexChunk $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum IndexChunk (:index Number)
-            :children $ List Dynamic
+            :children $ List IndexValue
           :examples $ []
           :schema $ quote EnumDef
+        'IndexValue $ %{} 'CodeEntry
+          :doc "|A numeric index or a nested list of index values."
+          :code $ quote $ defunion IndexValue Number (List IndexValue)
+          :examples $ []
+          :schema $ quote UnionDef
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
             .push $ Fn NumberArray Number $ -> Number
@@ -40,9 +45,7 @@
           :code $ quote $ defn collect-array! (chunk collect!)
             match chunk
               (:index index) (collect! index)
-              (:children children)
-                &doseq (child children)
-                  collect-array! (decode-index-chunk child) collect!
+              (:children children) (collect-index-values! children collect!)
             , &unit
           :examples $ []
           :schema $ quote $ Fn lagopus.alias/IndexChunk
@@ -59,7 +62,8 @@
                   swap! output append index
                   , &unit
               collect-array! input collect!
-              assert= ([] 0 2 1 2 3) @output
+              collect-array! (decode-index-chunk 7) collect!
+              assert= ([] 0 2 1 2 3 7) @output
             :tags $ #{} :unit
         'collect-from-records! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-from-records! (data field idx write!)
@@ -82,6 +86,17 @@
             , &unit
           :examples $ []
           :schema $ quote $ Fn Dynamic Tag Number
+            Fn Number $ -> Unit
+            -> Unit
+        'collect-index-values! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn collect-index-values! (values collect!)
+            &doseq (value values)
+              match value
+                (Number index) (collect! index)
+                (List children) (collect-index-values! children collect!)
+            , &unit
+          :examples $ []
+          :schema $ quote $ Fn (List IndexValue)
             Fn Number $ -> Unit
             -> Unit
         'count-recursive $ %{} 'CodeEntry (:doc |)
@@ -147,10 +162,20 @@
         'decode-index-chunk $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-index-chunk (value)
             if (list? value)
-              IndexChunk :children $ assert-type value $ List Dynamic
-              IndexChunk :index $ decode-map-as value 'Number
+              IndexChunk :children $ decode-map-as value $ List IndexValue
+              IndexChunk :index $ decode-map-as value Number
           :examples $ []
           :schema $ quote $ Fn T (-> lagopus.alias/IndexChunk) (:generics T)
+          :tests $ [] $ %{} 'TestEntry (:name |rejects-invalid-nested-index)
+            :code $ quote $ assert= true
+              try
+                do
+                  decode-index-chunk $ [] 0 $ [] 1 ([] |invalid-index)
+                  , false
+                fn (message)
+                  hint-fn $ Fn String $ -> Bool
+                  , true
+            :tags $ #{} :unit
         'decode-vertex-attribute $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-vertex-attribute (value)
             cond

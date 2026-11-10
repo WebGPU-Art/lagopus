@@ -12,7 +12,7 @@
 更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.40.0，再生成 JS。
 九个内置 WGSL 常量声明为 `String`，默认颜色声明为 `List Number`。
 组件的 `:indices` 继续接收数字或嵌套数字列表，保留原顺序、重复项和空分组。
-直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验当前节点。
+直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验整棵索引树。遇到无效子节点会在写入任何索引前报错。
 
 ### 0.5.17 配对 Calcit 0.37.0
 
