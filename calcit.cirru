@@ -661,10 +661,11 @@
         'city-wgsl $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def city-wgsl (inline-shader |city)
           :examples $ []
+          :schema $ quote String
         'color-default $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def color-default ([] 1 0 0 1)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote $ List Number
         'comp-bubbles-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-bubbles-demo ()
             let
@@ -1047,6 +1048,7 @@
         'mountains-wgsl $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mountains-wgsl (inline-shader |mountains)
           :examples $ []
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.container
           :require
@@ -1111,7 +1113,7 @@
         'wgsl-cube $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-cube (inline-shader |cube)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.cube
           :require
@@ -1626,11 +1628,11 @@
         'wgsl-image $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-image (inline-shader |image)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-kaleidoscope $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-kaleidoscope (inline-shader |kaleidoscope)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.image
           :require
@@ -1761,7 +1763,7 @@
         'wgsl-plate $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-plate (inline-shader |plate)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.plate
           :require
@@ -1870,7 +1872,7 @@
         'wgsl-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-sphere (inline-shader |sphere)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.sphere
           :require
@@ -2027,11 +2029,11 @@
         'wgsl-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-bubbles (inline-shader |bubbles)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
         'wgsl-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-spots (inline-shader |spots)
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.spots
           :require
