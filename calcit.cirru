@@ -1150,6 +1150,7 @@
         'AxisStrokeInput $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defunion AxisStrokeInput AxisStrokePoint PolylineBreak
           :examples $ []
+          :schema $ quote UnionDef
         'AxisStrokePoint $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum AxisStrokePoint (:vertex quaternion.vector/V3 Number Number)
           :examples $ []
@@ -1169,6 +1170,10 @@
           :code $ quote $ defenum MarkedPolylineVertex (:vertex quaternion.vector/V3 Number quaternion.vector/V3 Number Number)
           :examples $ []
           :schema $ quote EnumDef
+        'PointPosition $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion PointPosition quaternion.vector/V3 (List Number)
+          :examples $ []
+          :schema $ quote UnionDef
         'PolylineBreak $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum PolylineBreak (:break)
           :examples $ []
@@ -1559,15 +1564,22 @@
         'point-v3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn point-v3 (point)
             if (list? point)
-              let
-                  values $ decode-map-as point $ List Number
-                v3
-                  .unwrap $ nth values 0
-                  .unwrap $ nth values 1
-                  .unwrap $ nth values 2
-              lagopus.math/require-v3 point
+              position->v3 $ decode-map-as point $ List Number
+              position->v3 $ lagopus.math/require-v3 point
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
+          :schema $ quote $ Fn T (-> quaternion.vector/V3) (:generics T)
+          :tests $ [] $ %{} 'TestEntry (:name |checks-legacy-coordinate-lists)
+            :code $ quote $ do
+              assert= (v3 1 2 3)
+                point-v3 $ [] 1 2 3 4
+              assert= (v3 1 2 3)
+                point-v3 $ v3 1 2 3
+              assert= :rejected $ try
+                do
+                  point-v3 $ [] 1 2 3 |bad
+                  , :accepted
+                fn (_) :rejected
+            :tags $ #{} :unit
         'polylines-attribute $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn polylines-attribute (vertex idx)
             match vertex $
@@ -1596,6 +1608,17 @@
                 _ $ raise "|Invalid polyline attribute index"
           :examples $ []
           :schema $ quote $ Fn MarkedPolylineVertex Number (-> lagopus.alias/VertexAttribute)
+        'position->v3 $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn position->v3 (position)
+            match position
+              (V3 point) point
+              (List values)
+                v3
+                  .unwrap $ nth values 0
+                  .unwrap $ nth values 1
+                  .unwrap $ nth values 2
+          :examples $ []
+          :schema $ quote $ Fn PointPosition (-> quaternion.vector/V3)
         'wgsl-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-curves (inline-shader |curves)
           :examples $ []
