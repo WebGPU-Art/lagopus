@@ -145,7 +145,7 @@
                 :textures $ js-array & $ map
                   decode-map-as textures $ List Dynamic
                   fn (texture)
-                    hint-fn $ Fn Dynamic (-> lagopus.gpu/Texture) (:features :js-ffi)
+                    hint-fn $ Fn Dynamic (-> Texture) (:features :js-ffi)
                     js-cast texture 'lagopus.gpu/Texture
                 :label $ match (get options :label)
                   (:some value) value
@@ -263,7 +263,7 @@
                 vertices-size $ count-recursive data
                 make-buffer! $ unsafe-coerce newBufferFormatLength $ Fn String Number (-> lagopus.alias/NumberBuffer)
                 buffers $ map-indexed attrs-list $ fn (idx attr)
-                  hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
+                  hint-fn $ Fn Number (Map Tag Dynamic) (-> NumberBuffer) (:features :js-ffi)
                   let
                       buffer $ make-buffer!
                         buffer-format $ .unwrap $ get attr :format
@@ -336,7 +336,7 @@
               writer collect!
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
-                    hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
+                    hint-fn $ Fn Number (Map Tag Dynamic) (-> NumberBuffer) (:features :js-ffi)
                     make-buffer!
                       buffer-format $ .unwrap $ get attr :format
                       unsafe-coerce (aget bundles idx) JsObject
@@ -594,7 +594,7 @@
                         if (list? position) (to-js-data position)
                           do (eprintln "|unknown position" position) (js-array 10 0 0)
               create! host-props $ fn (move d!)
-                hint-fn $ Fn lagopus.comp.button/Motion
+                hint-fn $ Fn Motion
                   Fn Op $ -> Unit
                   -> Unit
                   :features :js-ffi
@@ -647,7 +647,7 @@
               create!
                 unsafe-coerce (to-js-data props) JsObject
                 fn (move d!)
-                  hint-fn $ Fn lagopus.comp.button/Motion
+                  hint-fn $ Fn Motion
                     Fn Op $ -> Unit
                     -> Unit
                     :features :js-ffi
@@ -1213,7 +1213,7 @@
                 map
                   range $ dec $ .len decoded
                   fn (idx)
-                    hint-fn $ Fn Number $ -> (List lagopus.comp.curves/CurveVertex)
+                    hint-fn $ Fn Number $ -> (List CurveVertex)
                     let
                         idx+1 $ inc idx
                         first-point $ .unwrap $ nth decoded idx
@@ -1267,11 +1267,11 @@
               :generics T
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type None (Option lagopus.comp.curves/PolylinePrevious)
+                previous $ ref $ assert-type None (Option PolylinePrevious)
                 segments $ ref $ assert-type ([])
-                  List $ List lagopus.comp.curves/PolylineVertex
+                  List $ List PolylineVertex
                 emit $ fn (chunk)
-                  hint-fn $ Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+                  hint-fn $ Fn (List PolylineVertex) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1330,11 +1330,11 @@
               :generics T
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type None (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                previous $ ref $ assert-type None (Option MarkedPolylinePrevious)
                 segments $ ref $ assert-type ([])
-                  List $ List lagopus.comp.curves/MarkedPolylineVertex
+                  List $ List MarkedPolylineVertex
                 emit $ fn (chunk)
-                  hint-fn $ Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+                  hint-fn $ Fn (List MarkedPolylineVertex) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1459,7 +1459,7 @@
                     size $ count curves
                   map-indexed curves $ fn (idx c)
                     hint-fn $ Fn Number (List Dynamic)
-                      -> $ List $ List lagopus.comp.curves/CurveVertex
+                      -> $ List $ List CurveVertex
                     build-curve-points c $ / idx size
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
@@ -1480,10 +1480,10 @@
                   select-keys options $ [] :get-params :compute-options
                 fn (write!)
                   hint-fn $ Fn
-                    Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+                    Fn (List PolylineVertex) (-> Unit)
                     -> Unit
                   let
-                      *prev $ ref $ assert-type None (Option lagopus.comp.curves/PolylinePrevious)
+                      *prev $ ref $ assert-type None (Option PolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
@@ -1516,10 +1516,10 @@
                   select-keys options $ [] :get-params :compute-options
                 fn (write!)
                   hint-fn $ Fn
-                    Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+                    Fn (List MarkedPolylineVertex) (-> Unit)
                     -> Unit
                   let
-                      *prev $ ref $ assert-type None (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                      *prev $ ref $ assert-type None (Option MarkedPolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
@@ -2042,7 +2042,7 @@
                   :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
                 fn (write!)
                   hint-fn $ Fn
-                    Fn (List lagopus.comp.spots/BubbleVertex) (-> Unit)
+                    Fn (List BubbleVertex) (-> Unit)
                     -> Unit
                   &doseq (info bubbles)
                     let
@@ -2098,11 +2098,11 @@
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
                   hint-fn $ Fn Number Dynamic $ ->
-                    List $ List lagopus.comp.spots/SpotVertex
+                    List $ List SpotVertex
                   map
                     range $ - vertex-count 2
                     fn (angle-idx)
-                      hint-fn $ Fn Number $ -> (List lagopus.comp.spots/SpotVertex)
+                      hint-fn $ Fn Number $ -> (List SpotVertex)
                       []
                         lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count 0 shift spot-idx
                         lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 1 angle-idx) shift spot-idx
