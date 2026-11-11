@@ -103,11 +103,10 @@
           :code $ quote $ defn count-recursive (xs)
             if (list? xs)
               reduce xs 0 $ fn (acc y)
-                hint-fn $ Fn Number Dynamic $ -> Number
                 + acc $ count-recursive y
               , 1
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Number)
+          :schema $ quote $ Fn T (-> Number) (:generics T)
         'create-object! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn create-object! (options attrs-list vertices-size buffers)
             let
