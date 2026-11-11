@@ -1154,6 +1154,10 @@
           :code $ quote $ defenum AxisStrokePoint (:vertex quaternion.vector/V3 Number Number)
           :examples $ []
           :schema $ quote EnumDef
+        'CurvePoint $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct CurvePoint (:position quaternion.vector/V3) (:width Number) (:enum-source? Bool)
+          :examples $ []
+          :schema $ quote StructDef
         'CurveVertex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum CurveVertex (:vertex quaternion.vector/V3 Number quaternion.vector/V3 Number Number Number)
           :examples $ []
@@ -1201,32 +1205,36 @@
           :schema $ quote PolylineBreak
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
-            let
-                size $ count points
-              map
-                range $ dec size
-                fn (idx)
-                  hint-fn $ Fn Number $ -> (List lagopus.comp.curves/CurveVertex)
-                  let
-                      idx+1 $ inc idx
-                      p-raw $ .unwrap $ nth points idx
-                      q-raw $ .unwrap $ nth points idx+1
-                      p $ curve-position p-raw
-                      q $ curve-position q-raw
-                      direction $ &v- q p
-                      direction2 $ match
-                        nth points $ inc idx+1
-                        (:some next-point)
-                          if (enum? next-point)
-                            &v- (curve-position next-point) q
-                            , direction
-                        (:none) direction
-                      p-width $ curve-width p-raw
-                      q-width $ curve-width q-raw
-                    [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
+            if
+              <= (.len points) 1
+              []
+              let
+                  decoded $ .map points read-curve-point
+                map
+                  range $ dec $ .len decoded
+                  fn (idx)
+                    hint-fn $ Fn Number $ -> (List lagopus.comp.curves/CurveVertex)
+                    let
+                        idx+1 $ inc idx
+                        first-point $ .unwrap $ nth decoded idx
+                        second-point $ .unwrap $ nth decoded idx+1
+                        p $ :position first-point
+                        q $ :position second-point
+                        direction $ &v- q p
+                        direction2 $ match
+                          nth decoded $ inc idx+1
+                          (:some next-point)
+                            if (:enum-source? next-point)
+                              &v- (:position next-point) q
+                              , direction
+                          (:none) direction
+                        p-width $ :width first-point
+                        q-width $ :width second-point
+                      [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
           :examples $ []
-          :schema $ quote $ Fn (List Dynamic) Number
+          :schema $ quote $ Fn (List T) Number
             -> $ List $ List CurveVertex
+            :generics T
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match (decode-polyline-input p)
@@ -1543,7 +1551,7 @@
                 decode-map-as point $ Map Tag Dynamic
                 , :position
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
+          :schema $ quote $ Fn T (-> quaternion.vector/V3) (:generics T)
         'curve-width $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn curve-width (point)
             match
@@ -1555,7 +1563,7 @@
               (:some width)
                 decode-map-as (either width 1) Number
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Number)
+          :schema $ quote $ Fn T (-> Number) (:generics T)
         'decode-marked-polyline-input $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-marked-polyline-input (raw)
             if (enum? raw)
@@ -1636,6 +1644,11 @@
                   .unwrap $ nth values 2
           :examples $ []
           :schema $ quote $ Fn PointPosition (-> quaternion.vector/V3)
+        'read-curve-point $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn read-curve-point (raw)
+            CurvePoint :position (curve-position raw) :width (curve-width raw) :enum-source? $ enum? raw
+          :examples $ []
+          :schema $ quote $ Fn T (-> CurvePoint) (:generics T)
         'wgsl-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-curves (inline-shader |curves)
           :examples $ []
