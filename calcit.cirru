@@ -48,7 +48,7 @@
               (:children children) (collect-index-values! children collect!)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn lagopus.alias/IndexChunk
+          :schema $ quote $ Fn IndexChunk
             Fn Number $ -> Unit
             -> Unit
           :tests $ [] $ %{} 'TestEntry (:name |nested-index-order)
@@ -139,7 +139,7 @@
                           arr .push x
                           , &unit
                       collect-array! (decode-index-chunk indices) collect!
-                      index-buffer! $ unsafe-coerce arr 'JsObject
+                      index-buffer! $ unsafe-coerce arr JsObject
                 :getParams $ match (get options :get-params)
                   (:some value) value
                   (:none) js/null
@@ -158,14 +158,14 @@
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
             List $ Map Tag Dynamic
-            , Number (List lagopus.alias/NumberBuffer) (-> JsObject) (:features :js-ffi)
+            , Number (List NumberBuffer) (-> JsObject) (:features :js-ffi)
         'decode-index-chunk $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-index-chunk (value)
             if (list? value)
               IndexChunk :children $ decode-map-as value $ List IndexValue
               IndexChunk :index $ decode-map-as value Number
           :examples $ []
-          :schema $ quote $ Fn T (-> lagopus.alias/IndexChunk) (:generics T)
+          :schema $ quote $ Fn T (-> IndexChunk) (:generics T)
           :tests $ [] $ %{} 'TestEntry (:name |rejects-invalid-nested-index)
             :code $ quote $ assert= true
               try
@@ -187,7 +187,7 @@
                 decode-map-as value $ List Number
               true $ decode-map-as value Number
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> lagopus.alias/VertexAttribute)
+          :schema $ quote $ Fn Dynamic (-> VertexAttribute)
         'expand-attr $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn expand-attr (x)
             if (enum? x)
@@ -340,7 +340,7 @@
                     hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
                     make-buffer!
                       buffer-format $ .unwrap $ get attr :format
-                      unsafe-coerce (aget bundles idx) 'JsObject
+                      unsafe-coerce (aget bundles idx) JsObject
                 create-object! options attrs-list @*counter buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -348,7 +348,7 @@
             Fn
               Fn (List Vertex) (-> Unit)
               -> Unit
-            Fn Vertex Number $ -> lagopus.alias/VertexAttribute
+            Fn Vertex Number $ -> VertexAttribute
             -> JsObject
             :generics Vertex
             :features :js-ffi
@@ -364,7 +364,7 @@
                 &doseq (value values) (write! value)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn lagopus.alias/VertexAttribute
+          :schema $ quote $ Fn VertexAttribute
             Fn Number $ -> Unit
             -> Unit
         'wgsl-colors $ %{} 'CodeEntry (:doc |)
@@ -480,7 +480,7 @@
               if (js-nullish? canvas) (raise "|Missing canvas element") canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (-> lagopus.browser/Canvas) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Canvas) (:features :js-ffi)
         'rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand (n)
             let
@@ -505,10 +505,10 @@
                   {}
                     :args $ [] 'JsObject
                     :return MobileInfo
-              detect $ unsafe-coerce js/window.navigator 'JsObject
+              detect $ unsafe-coerce js/window.navigator JsObject
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (-> lagopus.browser/MobileInfo) (:features :js-ffi)
+          :schema $ quote $ Fn (-> MobileInfo) (:features :js-ffi)
         'replace-first $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn replace-first (text pattern replacement)
             let
@@ -556,7 +556,7 @@
                   .unwrap $ get props :position
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
-                  , 'JsObject
+                  , JsObject
                 create! $ unsafe-coerce compButton $ Fn JsObject
                   Fn JsObject
                     Fn Op $ -> Unit
@@ -621,7 +621,7 @@
                   .unwrap $ get props :position
                 host-props $ unsafe-coerce
                   to-js-data $ assoc props :position position
-                  , 'JsObject
+                  , JsObject
                 create! $ unsafe-coerce compFlatButton $ Fn JsObject
                   Fn JsObject
                     Fn Op $ -> Unit
@@ -646,7 +646,7 @@
                     -> Unit
                   -> JsObject
               create!
-                unsafe-coerce (to-js-data props) 'JsObject
+                unsafe-coerce (to-js-data props) JsObject
                 fn (move d!)
                   hint-fn $ Fn lagopus.comp.button/Motion
                     Fn Op $ -> Unit
@@ -749,7 +749,7 @@
               group nil (lagopus.alias/memo-object comp-tabs)
                 match
                   .unwrap-or (get store :tab) :lagopus/no-tab
-                  :axis $ comp-axis $ Option :some
+                  :axis $ comp-axis $ Some
                     {} (:n 20) (:unit 20)
                   :mountains $ lagopus.alias/memo-object comp-mountains
                   :city $ lagopus.alias/memo-object comp-city
@@ -1147,6 +1147,13 @@
             quaternion.vector :refer $ &v+ v-cross v-scale v-dot &v- v+ v3
     'lagopus.comp.curves $ %{} 'FileEntry
       :defs $ {}
+        'AxisStrokeInput $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion AxisStrokeInput AxisStrokePoint PolylineBreak
+          :examples $ []
+        'AxisStrokePoint $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum AxisStrokePoint (:vertex quaternion.vector/V3 Number Number)
+          :examples $ []
+          :schema $ quote EnumDef
         'CurveVertex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum CurveVertex (:vertex quaternion.vector/V3 Number quaternion.vector/V3 Number Number Number)
           :examples $ []
@@ -1179,7 +1186,7 @@
         'break-mark $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def break-mark (lagopus.comp.curves/PolylineBreak :break)
           :examples $ []
-          :schema $ quote lagopus.comp.curves/PolylineBreak
+          :schema $ quote PolylineBreak
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
             let
@@ -1207,12 +1214,11 @@
                     [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
           :examples $ []
           :schema $ quote $ Fn (List Dynamic) Number
-            -> $ List $ List lagopus.comp.curves/CurveVertex
+            -> $ List $ List CurveVertex
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match p
-              (:break)
-                reset! *prev $ Option :none
+              (:break) (reset! *prev None)
               (:vertex position-raw width-raw)
                 let
                     position $ point-v3 position-raw
@@ -1221,7 +1227,7 @@
                     previous @*prev
                   match previous
                     (:none)
-                      reset! *prev $ Option :some $ PolylinePrevious :position position :older (Option :none) :width width
+                      reset! *prev $ Some $ PolylinePrevious :position position :older None :width width
                     (:some prev)
                       let
                           older $ :older prev
@@ -1234,19 +1240,19 @@
                           direction $ match older
                             (:none) direction2
                             (:some point) (&v- q point)
-                        reset! *prev $ Option :some $ PolylinePrevious :position position :older older :width p-width
+                        reset! *prev $ Some $ PolylinePrevious :position position :older older :width p-width
                         write! $ [] (lagopus.comp.curves/PolylineVertex :vertex q 0 direction p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 1 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction p-width)
             identity &unit
           :examples $ []
           :schema $ quote $ Fn
-            Ref $ Option lagopus.comp.curves/PolylinePrevious
+            Ref $ Option PolylinePrevious
             , AnyEnum
-              Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+              Fn (List PolylineVertex) (-> Unit)
               -> Unit
               :open :decode
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/PolylinePrevious)
+                previous $ ref $ assert-type None (Option lagopus.comp.curves/PolylinePrevious)
                 segments $ ref $ assert-type ([])
                   List $ List lagopus.comp.curves/PolylineVertex
                 emit $ fn (chunk)
@@ -1263,25 +1269,24 @@
                 [] $ [] (lagopus.comp.curves/PolylineVertex :vertex p0 0 direction 2) (lagopus.comp.curves/PolylineVertex :vertex p1 0 direction 3) (lagopus.comp.curves/PolylineVertex :vertex p0 1 direction 2) (lagopus.comp.curves/PolylineVertex :vertex p1 0 direction 2) (lagopus.comp.curves/PolylineVertex :vertex p1 1 direction 3) (lagopus.comp.curves/PolylineVertex :vertex p0 1 direction 2)
                 , @segments
               build-polyline-points previous (:: :break) emit
-              assert= (Option :none) @previous
+              assert= None @previous
               build-polyline-points previous (:: :vertex p2 9) emit
               assert= 1 $ count @segments
               assert=
-                Option :some $ PolylinePrevious :position p2 :older (Option :none) :width 9
+                Some $ PolylinePrevious :position p2 :older None :width 9
                 , @previous
               build-polyline-points previous break-mark emit
-              assert= (Option :none) @previous
+              assert= None @previous
               build-polyline-points previous (:: :vertex p1 6) emit
               assert= 1 $ count @segments
               assert=
-                Option :some $ PolylinePrevious :position p1 :older (Option :none) :width 6
+                Some $ PolylinePrevious :position p1 :older None :width 6
                 , @previous
             :tags $ #{} :unit
         'build-polyline-points-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points-marked (*prev p write!)
             match p
-              (:break)
-                reset! *prev $ Option :none
+              (:break) (reset! *prev None)
               (:vertex position-raw width-raw mark-raw)
                 let
                     position $ point-v3 position-raw
@@ -1290,7 +1295,7 @@
                     previous @*prev
                   match previous
                     (:none)
-                      reset! *prev $ Option :some $ MarkedPolylinePrevious :position position :older (Option :none) :width width :mark mark
+                      reset! *prev $ Some $ MarkedPolylinePrevious :position position :older None :width width :mark mark
                     (:some prev)
                       let
                           older $ :older prev
@@ -1303,19 +1308,19 @@
                           direction $ match older
                             (:none) direction2
                             (:some point) (&v- q point)
-                        reset! *prev $ Option :some $ MarkedPolylinePrevious :position position :older older :width p-width :mark mark
+                        reset! *prev $ Some $ MarkedPolylinePrevious :position position :older older :width p-width :mark mark
                         write! $ [] (lagopus.comp.curves/MarkedPolylineVertex :vertex q 0 direction p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction2 p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 p-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 1 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction p-width prev-mark)
             identity &unit
           :examples $ []
           :schema $ quote $ Fn
-            Ref $ Option lagopus.comp.curves/MarkedPolylinePrevious
+            Ref $ Option MarkedPolylinePrevious
             , AnyEnum
-              Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+              Fn (List MarkedPolylineVertex) (-> Unit)
               -> Unit
               :open :decode
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                previous $ ref $ assert-type None (Option lagopus.comp.curves/MarkedPolylinePrevious)
                 segments $ ref $ assert-type ([])
                   List $ List lagopus.comp.curves/MarkedPolylineVertex
                 emit $ fn (chunk)
@@ -1336,17 +1341,17 @@
                   [] (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 0 direction2 2 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p2 0 direction2 4 6) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 1 direction2 2 5) (lagopus.comp.curves/MarkedPolylineVertex :vertex p2 0 direction2 2 6) (lagopus.comp.curves/MarkedPolylineVertex :vertex p2 1 direction2 4 6) (lagopus.comp.curves/MarkedPolylineVertex :vertex p1 1 direction2 2 5)
                 , @segments
               assert=
-                Option :some $ MarkedPolylinePrevious :position p2 :older (Option :none) :width 2 :mark 6
+                Some $ MarkedPolylinePrevious :position p2 :older None :width 2 :mark 6
                 , @previous
               build-polyline-points-marked previous (:: :break) emit
-              assert= (Option :none) @previous
+              assert= None @previous
               build-polyline-points-marked previous (:: :vertex p0 2 4) emit
               build-polyline-points-marked previous break-mark emit
-              assert= (Option :none) @previous
+              assert= None @previous
               build-polyline-points-marked previous (:: :vertex p1 6 7) emit
               assert= 2 $ count @segments
               assert=
-                Option :some $ MarkedPolylinePrevious :position p1 :older (Option :none) :width 6 :mark 7
+                Some $ MarkedPolylinePrevious :position p1 :older None :width 6 :mark 7
                 , @previous
             :tags $ #{} :unit
         'char-x $ %{} 'CodeEntry (:doc |)
@@ -1357,7 +1362,7 @@
               [] false false false true true false true false
               [] false true false false false false true false
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Number
         'char-y $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def char-y
             count-hex $ reverse $ concat
@@ -1366,7 +1371,7 @@
               [] false false false false true true false false
               [] false false false false true true false false
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Number
         'char-z $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def char-z
             count-hex $ reverse $ concat
@@ -1375,7 +1380,7 @@
               [] false false false true false false false false
               [] false true true true true true true true true
           :examples $ []
-          :schema $ quote Dynamic
+          :schema $ quote Number
         'comp-axis $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-axis (options)
             let
@@ -1393,13 +1398,13 @@
                 :shader $ inline-shader |axis
                 :writer $ fn (write!)
                   hint-fn $ Fn
-                    Fn Dynamic $ -> Unit
+                    Fn AxisStrokeInput $ -> Unit
                     -> Unit
                   &doseq
                     idx $ range
                       inc $ negate n
                       , n
-                    write! $ :: :vertex
+                    write! $ AxisStrokePoint :vertex
                       v3 (* idx unit) 0 0
                       , w 0
                   write! break-mark
@@ -1407,7 +1412,7 @@
                     idx $ range
                       inc $ negate n
                       , n
-                    write! $ :: :vertex
+                    write! $ AxisStrokePoint :vertex
                       v3 0 (* idx unit) 0
                       , w 1
                   write! break-mark
@@ -1415,7 +1420,7 @@
                     idx $ range
                       inc $ negate n
                       , n
-                    write! $ :: :vertex
+                    write! $ AxisStrokePoint :vertex
                       v3 0 0 $ * idx unit
                       , w 2
                   write! break-mark
@@ -1468,7 +1473,7 @@
                     Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
                     -> Unit
                   let
-                      *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/PolylinePrevious)
+                      *prev $ ref $ assert-type None (Option lagopus.comp.curves/PolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
@@ -1505,7 +1510,7 @@
                     Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
                     -> Unit
                   let
-                      *prev $ ref $ assert-type (Option :none) (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                      *prev $ ref $ assert-type None (Option lagopus.comp.curves/MarkedPolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
@@ -1570,7 +1575,7 @@
               match idx (0 position) (1 brush) (2 direction) (3 width)
                 _ $ raise "|Invalid polyline attribute index"
           :examples $ []
-          :schema $ quote $ Fn lagopus.comp.curves/PolylineVertex Number (-> lagopus.alias/VertexAttribute)
+          :schema $ quote $ Fn PolylineVertex Number (-> lagopus.alias/VertexAttribute)
           :tests $ [] $ %{} 'TestEntry (:name |keeps-position-and-direction-buffer-slots)
             :code $ quote $ let
                 position $ v3 1 2 3
@@ -1590,7 +1595,7 @@
               match idx (0 position) (1 brush) (2 direction) (3 width) (4 mark)
                 _ $ raise "|Invalid polyline attribute index"
           :examples $ []
-          :schema $ quote $ Fn lagopus.comp.curves/MarkedPolylineVertex Number (-> lagopus.alias/VertexAttribute)
+          :schema $ quote $ Fn MarkedPolylineVertex Number (-> lagopus.alias/VertexAttribute)
         'wgsl-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-curves (inline-shader |curves)
           :examples $ []
@@ -1925,7 +1930,7 @@
               2 $ :radian vertex
               _ $ raise "|Invalid bubble attribute index"
           :examples $ []
-          :schema $ quote $ Fn lagopus.comp.spots/BubbleVertex Number (-> lagopus.alias/VertexAttribute)
+          :schema $ quote $ Fn BubbleVertex Number (-> lagopus.alias/VertexAttribute)
           :tests $ []
             %{} 'TestEntry (:name |packs-position-arm-and-angle-in-buffer-order)
               :code $ quote $ let
@@ -1968,7 +1973,7 @@
               * radius $ cos radian
               * radius $ sin radian
           :examples $ []
-          :schema $ quote $ Fn (List Number) Number Number (-> lagopus.comp.spots/BubbleVertex)
+          :schema $ quote $ Fn (List Number) Number Number (-> BubbleVertex)
         'comp-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-bubbles (options)
             let
@@ -2243,9 +2248,9 @@
           :code $ quote $ def bg-color
             match (get-env |bg-color)
               (:some value) (parse-bg-color value)
-              (:none) (Option :none)
+              (:none) None
           :examples $ []
-          :schema $ quote $ Option lagopus.config/ClearColor
+          :schema $ quote $ Option ClearColor
         'bloom? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def bloom?
             match (get-env |bloom)
@@ -2275,20 +2280,19 @@
         'mobile-info $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mobile-info (browser/read-mobile-info!)
           :examples $ []
-          :schema $ quote lagopus.browser/MobileInfo
+          :schema $ quote browser/MobileInfo
         'parse-bg-color $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-bg-color (bg)
-            if (blank? bg) (Option :none)
-              let
-                  items $ map (split bg |,) browser/parse-color-channel
-                Option :some $ lagopus.config/ClearColor :rgba
-                  .unwrap $ nth items 0
-                  .unwrap $ nth items 1
-                  .unwrap $ nth items 2
-                  .unwrap-or (nth items 3) 1
+            if (blank? bg) None $ let
+                items $ map (split bg |,) browser/parse-color-channel
+              Some $ lagopus.config/ClearColor :rgba
+                .unwrap $ nth items 0
+                .unwrap $ nth items 1
+                .unwrap $ nth items 2
+                .unwrap-or (nth items 3) 1
           :examples $ []
           :schema $ quote $ Fn String
-            -> $ Option lagopus.config/ClearColor
+            -> $ Option ClearColor
         'remote-control? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def remote-control?
             match (get-env |remote-control)
@@ -2374,7 +2378,7 @@
               if (js-nullish? context) (raise "|WebGPU context initialization failed") (.-device context)
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (-> lagopus.gpu/Device) (:features :js-ffi) (:async)
+          :schema $ quote $ Fn (-> Device) (:features :js-ffi) (:async)
         'load-texture! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-texture! (device url)
             let
@@ -2400,7 +2404,7 @@
                 :h $ .-height bitmap
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn lagopus.gpu/Device String (-> lagopus.gpu/Texture) (:features :js-ffi) (:async)
+          :schema $ quote $ Fn Device String (-> Texture) (:features :js-ffi) (:async)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.gpu
           :require $ |@triadica/lagopus :refer $ createTextureFromSource initializeContext
@@ -2410,7 +2414,7 @@
           :doc "|track textures with a hashmap, this is global states passing to container"
           :code $ quote $ defref *global-textures ({})
           :examples $ []
-          :schema $ quote $ Ref (Map Tag lagopus.gpu/Texture)
+          :schema $ quote $ Ref (Map Tag gpu/Texture)
         '*store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *store
             {}
@@ -2427,7 +2431,7 @@
         'canvas $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def canvas (browser/query-canvas!)
           :examples $ []
-          :schema $ quote lagopus.browser/Canvas
+          :schema $ quote browser/Canvas
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             if dev? $ println op
@@ -2439,7 +2443,7 @@
               if (not= next-store store) (reset! *store next-store)
               , &unit
           :examples $ []
-          :schema $ quote $ Fn lagopus.main/DemoOp (-> Unit)
+          :schema $ quote $ Fn DemoOp (-> Unit)
         'load-images! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-images! (gpu-device *textures)
             let
@@ -2448,8 +2452,8 @@
               , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn lagopus.gpu/Device
-            Ref $ Map Tag lagopus.gpu/Texture
+          :schema $ quote $ Fn gpu/Device
+            Ref $ Map Tag gpu/Texture
             -> Unit
             :features :js-ffi
             :async
@@ -2631,7 +2635,7 @@
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn
-            Fn lagopus.util/CompilationInfo String $ -> Unit
+            Fn CompilationInfo String $ -> Unit
             -> Unit
             :features :js-ffi
         'render-tree! $ %{} 'CodeEntry (:doc |)
@@ -2655,7 +2659,7 @@
               invoke! canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn lagopus.browser/Canvas (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn Canvas (-> Unit) (:features :js-ffi)
         'setup-mouse! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn setup-mouse! (canvas)
             let
@@ -2663,7 +2667,7 @@
               invoke! canvas
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn lagopus.browser/Canvas (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn Canvas (-> Unit) (:features :js-ffi)
         'setup-remote! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn setup-remote! ()
             let
@@ -2745,7 +2749,7 @@
               , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn lagopus.util/CompilationInfo String (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn CompilationInfo String (-> Unit) (:features :js-ffi)
         'reset-clear-color! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reset-clear-color! (color)
             let
@@ -2759,7 +2763,7 @@
                         :b $ decode-map-as b 'Number
                         :a $ decode-map-as a 'Number
                     _ $ raise $ str "|unknown color: " color
-                  unsafe-coerce (to-js-data color) 'JsObject
+                  unsafe-coerce (to-js-data color) JsObject
               color-atom .reset host-color
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
