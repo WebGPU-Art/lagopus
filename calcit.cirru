@@ -10,6 +10,11 @@
   :files $ {}
     'lagopus.alias $ %{} 'FileEntry
       :defs $ {}
+        'AttributeLayout $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct AttributeLayout (:format String)
+            :source $ Map Tag Dynamic
+          :examples $ []
+          :schema $ quote StructDef
         'IndexChunk $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum IndexChunk (:index Number)
             :children $ List IndexValue
@@ -20,6 +25,14 @@
           :code $ quote $ defunion IndexValue Number (List IndexValue)
           :examples $ []
           :schema $ quote UnionDef
+        'IndexedMesh $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion IndexedMesh IndexedVertex (List IndexedMesh)
+          :examples $ []
+          :schema $ quote UnionDef
+        'IndexedVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum IndexedVertex (:vertex quaternion.vector/V3 Number)
+          :examples $ []
+          :schema $ quote EnumDef
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
             .push $ Fn NumberArray Number $ -> Number
@@ -35,12 +48,23 @@
           :code $ quote $ defunion VertexAttribute Number quaternion.vector/V3 (List Number)
           :examples $ []
           :schema $ quote UnionDef
+        'VertexFormat $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion VertexFormat Tag String
+          :examples $ []
+          :schema $ quote UnionDef
         'buffer-format $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn buffer-format (format)
-            match format (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
-              _ $ if (string? format) format $ do (eprintln "|Unknown format" format) |float32
+            match (try-decode-map-as format lagopus.alias/VertexFormat)
+              (:ok decoded)
+                match decoded
+                  (String name) name
+                  (Tag tag)
+                    match tag (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
+                      _ $ do (eprintln "|Unknown format" format) |float32
+              (:err _invalid)
+                do (eprintln "|Unknown format" format) |float32
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> String)
+          :schema $ quote $ Fn Input (-> String) (:generics Input)
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (chunk collect!)
             match chunk
@@ -145,7 +169,7 @@
                 :textures $ js-array & $ map
                   decode-map-as textures $ List Dynamic
                   fn (texture)
-                    hint-fn $ Fn Dynamic (-> lagopus.gpu/Texture) (:features :js-ffi)
+                    hint-fn $ Fn Dynamic (-> Texture) (:features :js-ffi)
                     js-cast texture 'lagopus.gpu/Texture
                 :label $ match (get options :label)
                   (:some value) value
@@ -258,19 +282,17 @@
                   decode-map-as
                     .unwrap $ get options :attrs-list
                     List Dynamic
-                  , expand-attr
+                  , read-attribute-layout
                 data $ .unwrap $ get options :data
                 vertices-size $ count-recursive data
                 make-buffer! $ unsafe-coerce newBufferFormatLength $ Fn String Number (-> lagopus.alias/NumberBuffer)
                 buffers $ map-indexed attrs-list $ fn (idx attr)
-                  hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
+                  hint-fn $ Fn Number AttributeLayout (-> NumberBuffer) (:features :js-ffi)
                   let
-                      buffer $ make-buffer!
-                        buffer-format $ .unwrap $ get attr :format
-                        , vertices-size
+                      buffer $ make-buffer! (attr :format) vertices-size
                       *offset $ ref 0
                       field $ decode-map-as
-                        .unwrap $ get attr :field
+                        .unwrap $ get (attr :source) :field
                         , 'Tag
                       write! $ fn (x)
                         hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
@@ -282,7 +304,9 @@
                       not= @*offset $ .-length buffer
                       eprintln "|buffer size guessed incorrectly"
                     , buffer
-              create-object! options attrs-list vertices-size buffers
+              create-object! options
+                map attrs-list $ fn (attr) (attr :source)
+                , vertices-size buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
@@ -315,7 +339,7 @@
                   decode-map-as
                     .unwrap $ get options :attrs-list
                     List Dynamic
-                  , expand-attr
+                  , read-attribute-layout
                 attribute-count $ count attrs-list
                 attribute-indices $ range attribute-count
                 bundles $ make-empty-js-arrays attribute-count
@@ -336,11 +360,12 @@
               writer collect!
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
-                    hint-fn $ Fn Number (Map Tag Dynamic) (-> lagopus.alias/NumberBuffer) (:features :js-ffi)
-                    make-buffer!
-                      buffer-format $ .unwrap $ get attr :format
+                    hint-fn $ Fn Number AttributeLayout (-> NumberBuffer) (:features :js-ffi)
+                    make-buffer! (attr :format)
                       unsafe-coerce (aget bundles idx) JsObject
-                create-object! options attrs-list @*counter buffers
+                create-object! options
+                  map attrs-list $ fn (attr) (attr :source)
+                  , @*counter buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
@@ -366,6 +391,27 @@
           :schema $ quote $ Fn VertexAttribute
             Fn Number $ -> Unit
             -> Unit
+        'read-attribute-layout $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn read-attribute-layout (raw)
+            let
+                source $ expand-attr raw
+              AttributeLayout :format
+                buffer-format $ .unwrap $ get source :format
+                , :source source
+          :examples $ []
+          :schema $ quote $ Fn Input (-> AttributeLayout) (:generics Input)
+          :tests $ [] $ %{} 'TestEntry (:name |preserves-shorthand-and-extra-fields)
+            :code $ quote $ let
+                raw $ {} (:field :position) (:format |float32x2) (:offset 8)
+                layout $ read-attribute-layout raw
+                shorthand $ read-attribute-layout $ :: :float32x3 :position
+              assert= |float32x2 $ layout :format
+              assert= raw $ layout :source
+              assert= |float32x3 $ shorthand :format
+              assert=
+                {} (:field :position) (:format :float32x3)
+                shorthand :source
+            :tags $ #{} :unit
         'wgsl-colors $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-colors (inline-shader |lagopus-colors)
           :examples $ []
@@ -594,7 +640,7 @@
                         if (list? position) (to-js-data position)
                           do (eprintln "|unknown position" position) (js-array 10 0 0)
               create! host-props $ fn (move d!)
-                hint-fn $ Fn lagopus.comp.button/Motion
+                hint-fn $ Fn Motion
                   Fn Op $ -> Unit
                   -> Unit
                   :features :js-ffi
@@ -647,7 +693,7 @@
               create!
                 unsafe-coerce (to-js-data props) JsObject
                 fn (move d!)
-                  hint-fn $ Fn lagopus.comp.button/Motion
+                  hint-fn $ Fn Motion
                     Fn Op $ -> Unit
                     -> Unit
                     :features :js-ffi
@@ -1205,36 +1251,63 @@
           :schema $ quote PolylineBreak
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
-            if
-              <= (.len points) 1
-              []
-              let
-                  decoded $ .map points read-curve-point
-                map
-                  range $ dec $ .len decoded
-                  fn (idx)
-                    hint-fn $ Fn Number $ -> (List lagopus.comp.curves/CurveVertex)
-                    let
-                        idx+1 $ inc idx
-                        first-point $ .unwrap $ nth decoded idx
-                        second-point $ .unwrap $ nth decoded idx+1
-                        p $ :position first-point
-                        q $ :position second-point
-                        direction $ &v- q p
-                        direction2 $ match
-                          nth decoded $ inc idx+1
-                          (:some next-point)
-                            if (:enum-source? next-point)
-                              &v- (:position next-point) q
-                              , direction
-                          (:none) direction
-                        p-width $ :width first-point
-                        q-width $ :width second-point
-                      [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
+            build-curve-vertices (normalize-curve points) curve-ratio
           :examples $ []
           :schema $ quote $ Fn (List T) Number
             -> $ List $ List CurveVertex
             :generics T
+        'build-curve-vertices $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn build-curve-vertices (decoded curve-ratio)
+            map
+              range $ if
+                <= (.len decoded) 1
+                , 0 $ dec (.len decoded)
+              fn (idx)
+                hint-fn $ Fn Number $ -> (List CurveVertex)
+                let
+                    idx+1 $ inc idx
+                    first-point $ .unwrap $ nth decoded idx
+                    second-point $ .unwrap $ nth decoded idx+1
+                    p $ :position first-point
+                    q $ :position second-point
+                    direction $ &v- q p
+                    direction2 $ match
+                      nth decoded $ inc idx+1
+                      (:some next-point)
+                        if (:enum-source? next-point)
+                          &v- (:position next-point) q
+                          , direction
+                      (:none) direction
+                    p-width $ :width first-point
+                    q-width $ :width second-point
+                  [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
+          :examples $ []
+          :schema $ quote $ Fn (List CurvePoint) Number
+            -> $ List $ List CurveVertex
+          :tests $ [] $ %{} 'TestEntry (:name |legacy-map-and-enum-points)
+            :code $ quote $ let
+                p $ v3 0 0 0
+                q $ v3 1 0 0
+                r $ v3 1 2 0
+                pq $ v3 1 0 0
+                qr $ v3 0 2 0
+                from-map $ {} $ :position ([] 0 0 0)
+                next-map $ {} (:position q) (:width 3)
+                next-enum $ CurveVertex :vertex r 4 qr 0 0 4
+                vertices $ build-curve-points ([] from-map next-map next-enum) 0.5
+                first-segment $ .unwrap $ nth vertices 0
+              assert= 2 $ .len vertices
+              assert= 6 $ .len first-segment
+              assert= (CurveVertex :vertex p 0 pq 0.5 0 1)
+                .unwrap $ nth first-segment 0
+              assert= (CurveVertex :vertex q 0 qr 0.5 1 3)
+                .unwrap $ nth first-segment 1
+              assert= ([])
+                build-curve-points
+                  [] $ {}
+                  , 0
+              assert= ([])
+                build-curve-vertices ([]) 0
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match (decode-polyline-input p)
@@ -1267,11 +1340,11 @@
               :generics T
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type None (Option lagopus.comp.curves/PolylinePrevious)
+                previous $ ref $ assert-type None (Option PolylinePrevious)
                 segments $ ref $ assert-type ([])
-                  List $ List lagopus.comp.curves/PolylineVertex
+                  List $ List PolylineVertex
                 emit $ fn (chunk)
-                  hint-fn $ Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+                  hint-fn $ Fn (List PolylineVertex) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1330,11 +1403,11 @@
               :generics T
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
-                previous $ ref $ assert-type None (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                previous $ ref $ assert-type None (Option MarkedPolylinePrevious)
                 segments $ ref $ assert-type ([])
-                  List $ List lagopus.comp.curves/MarkedPolylineVertex
+                  List $ List MarkedPolylineVertex
                 emit $ fn (chunk)
-                  hint-fn $ Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+                  hint-fn $ Fn (List MarkedPolylineVertex) (-> Unit)
                   swap! segments append chunk
                   identity &unit
                 p0 $ v3 0 0 0
@@ -1441,12 +1514,14 @@
         'comp-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-curves (options)
             let
-                curves $ decode-map-as
-                  match (get options :curves)
-                    (:some matched-field-value)
-                      either matched-field-value $ []
-                    (:none) ([])
-                  List $ List Dynamic
+                curves $ map
+                  decode-map-as
+                    match (get options :curves)
+                      (:some matched-field-value)
+                        either matched-field-value $ []
+                      (:none) ([])
+                    List $ List Dynamic
+                  , normalize-curve
               object $ {}
                 :shader $ match (get options :shader)
                   (:some matched-field-value) (either matched-field-value wgsl-curves)
@@ -1456,11 +1531,11 @@
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
-                    size $ count curves
+                    size $ .len curves
                   map-indexed curves $ fn (idx c)
-                    hint-fn $ Fn Number (List Dynamic)
-                      -> $ List $ List lagopus.comp.curves/CurveVertex
-                    build-curve-points c $ / idx size
+                    hint-fn $ Fn Number (List CurvePoint)
+                      -> $ List $ List CurveVertex
+                    build-curve-vertices c $ / idx size
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines $ %{} 'CodeEntry (:doc |)
@@ -1480,10 +1555,10 @@
                   select-keys options $ [] :get-params :compute-options
                 fn (write!)
                   hint-fn $ Fn
-                    Fn (List lagopus.comp.curves/PolylineVertex) (-> Unit)
+                    Fn (List PolylineVertex) (-> Unit)
                     -> Unit
                   let
-                      *prev $ ref $ assert-type None (Option lagopus.comp.curves/PolylinePrevious)
+                      *prev $ ref $ assert-type None (Option PolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
@@ -1516,10 +1591,10 @@
                   select-keys options $ [] :get-params :compute-options
                 fn (write!)
                   hint-fn $ Fn
-                    Fn (List lagopus.comp.curves/MarkedPolylineVertex) (-> Unit)
+                    Fn (List MarkedPolylineVertex) (-> Unit)
                     -> Unit
                   let
-                      *prev $ ref $ assert-type None (Option lagopus.comp.curves/MarkedPolylinePrevious)
+                      *prev $ ref $ assert-type None (Option MarkedPolylinePrevious)
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
@@ -1586,6 +1661,16 @@
               raise "|Expected polyline vertex or break Enum"
           :examples $ []
           :schema $ quote $ Fn T (-> PolylineInput) (:generics T)
+        'normalize-curve $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn normalize-curve (points)
+            if
+              <= (.len points) 1
+              []
+              .map points read-curve-point
+          :examples $ []
+          :schema $ quote $ Fn (List T)
+            -> $ List CurvePoint
+            :generics T
         'point-v3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn point-v3 (point)
             if (list? point)
@@ -1791,7 +1876,8 @@
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map (range 6)
                   fn (section-idx)
-                    hint-fn $ Fn Number $ -> (List Dynamic)
+                    hint-fn $ Fn Number $ ->
+                      List $ List $ List lagopus.alias/IndexedMesh
                     let
                         angle $ * section-idx $ / &PI 3
                         angle-next $ * (inc section-idx) (/ &PI 3)
@@ -1816,11 +1902,12 @@
                               raise |Expected-plate-transformer-function
                       map (range iteration)
                         fn (idx)
-                          hint-fn $ Fn Number $ -> (List Dynamic)
+                          hint-fn $ Fn Number $ ->
+                            List $ List lagopus.alias/IndexedMesh
                           map
                             range $ - iteration idx
                             fn (j)
-                              hint-fn $ Fn Number $ -> (List Dynamic)
+                              hint-fn $ Fn Number $ -> (List lagopus.alias/IndexedMesh)
                               let
                                   c @*counter
                                   c1 $ inc c
@@ -1829,10 +1916,10 @@
                                   ps2 $ point $ [] idx (inc j)
                                   ps3 $ point $ [] (inc idx) (inc j)
                                 swap! *counter + 2
-                                [] (:: :vertex ps0 c) (:: :vertex ps1 c) (:: :vertex ps2 c)
+                                [] (lagopus.alias/IndexedVertex :vertex ps0 c) (lagopus.alias/IndexedVertex :vertex ps1 c) (lagopus.alias/IndexedVertex :vertex ps2 c)
                                   if
                                     < (+ idx j) (dec iteration)
-                                    [] (:: :vertex ps3 c1) (:: :vertex ps1 c1) (:: :vertex ps2 c1)
+                                    [] (lagopus.alias/IndexedVertex :vertex ps3 c1) (lagopus.alias/IndexedVertex :vertex ps1 c1) (lagopus.alias/IndexedVertex :vertex ps2 c1)
                                     []
                 :get-params $ fn ()
                   hint-fn $ Fn (-> JsObject) (:features :js-ffi)
@@ -1864,13 +1951,13 @@
                   idx $ deref *counter
                 swap! *counter inc
                 []
-                  :: :vertex
+                  lagopus.alias/IndexedVertex :vertex
                     &v+ base $ v-scale p0 radius
                     , idx
-                  :: :vertex
+                  lagopus.alias/IndexedVertex :vertex
                     &v+ base $ v-scale p1 radius
                     , idx
-                  :: :vertex
+                  lagopus.alias/IndexedVertex :vertex
                     &v+ base $ v-scale p2 radius
                     , idx
               let
@@ -1884,7 +1971,33 @@
                   build-sphere-triangles base radius (dec depth) *counter p01 p12 p02
           :examples $ []
           :schema $ quote $ Fn quaternion.vector/V3 Number Number (Ref Number) quaternion.vector/V3 quaternion.vector/V3 quaternion.vector/V3
-            -> $ List Dynamic
+            -> $ List lagopus.alias/IndexedMesh
+          :tests $ [] $ %{} 'TestEntry (:name |preserves-packed-position-and-index-order)
+            :code $ quote $ let
+                counter $ ref 0
+                base $ v3 0 0 0
+                x $ v3 1 0 0
+                y $ v3 0 1 0
+                z $ v3 0 0 1
+                triangle $ build-sphere-triangles base 2 0 counter x y z
+                subdivided $ build-sphere-triangles base 2 1 counter x y z
+                positions $ ref $ assert-type ([]) (List Number)
+                indices $ ref $ assert-type ([]) (List Number)
+              lagopus.alias/collect-from-records! triangle :position 0 $ fn (n)
+                hint-fn $ Fn Number $ -> Unit
+                swap! positions append n
+                , &unit
+              lagopus.alias/collect-from-records! subdivided :idx 1 $ fn (n)
+                hint-fn $ Fn Number $ -> Unit
+                swap! indices append n
+                , &unit
+              assert=
+                [] 2 0 0 0 2 0 0 0 2
+                , @positions
+              assert=
+                [] 1 1 1 2 2 2 3 3 3 4 4 4
+                , @indices
+              assert= 5 @counter
         'comp-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-sphere (options)
             let
@@ -1919,7 +2032,7 @@
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map unit-triangles $ fn (xs)
                   hint-fn $ Fn (List quaternion.vector/V3)
-                    -> $ List Dynamic
+                    -> $ List lagopus.alias/IndexedMesh
                   build-sphere-triangles base radius iteration *counter
                     .unwrap $ nth xs 0
                     .unwrap $ nth xs 1
@@ -2042,7 +2155,7 @@
                   :attrs-list $ [] (:: :float32x3 :position) (:: :float32x2 :arm) (:: :float32 :radian)
                 fn (write!)
                   hint-fn $ Fn
-                    Fn (List lagopus.comp.spots/BubbleVertex) (-> Unit)
+                    Fn (List BubbleVertex) (-> Unit)
                     -> Unit
                   &doseq (info bubbles)
                     let
@@ -2098,11 +2211,11 @@
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
                   hint-fn $ Fn Number Dynamic $ ->
-                    List $ List lagopus.comp.spots/SpotVertex
+                    List $ List SpotVertex
                   map
                     range $ - vertex-count 2
                     fn (angle-idx)
-                      hint-fn $ Fn Number $ -> (List lagopus.comp.spots/SpotVertex)
+                      hint-fn $ Fn Number $ -> (List SpotVertex)
                       []
                         lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count 0 shift spot-idx
                         lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 1 angle-idx) shift spot-idx

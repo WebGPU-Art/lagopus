@@ -7,9 +7,9 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### Calcit 0.41.0
+### Calcit 0.41.1
 
-更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.41.0，再生成 JS。
+更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.41.1，再生成 JS。
 九个内置 WGSL 常量声明为 `String`，默认颜色声明为 `List Number`。
 组件的 `:indices` 继续接收数字或嵌套数字列表，保留原顺序、重复项和空分组。
 直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验整棵索引树。遇到无效子节点会在写入任何索引前报错。
@@ -58,7 +58,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.41.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.41.1：
 
 ```sh
 caps --strict --ci
@@ -113,7 +113,24 @@ Alternatively, there's also `object-writer` which provides a writer API, which r
       :: :vertex (v3 1 1 1)
 ```
 
-在 Calcit 0.38.0 下，`comp-polylines` 和 `comp-polylines-marked` 会将具名顶点直接交给缓冲区写入器。公开 `object-writer` 仍接受上述匿名顶点，折线的输入、属性顺序及格式沿用原合同。
+已有匿名顶点可继续用 `object-writer`。具名顶点可用 `lagopus.alias/object-writer-with`，将配置、分批写入函数和属性提取函数分别传入。写入函数和属性提取函数共享同一个顶点类型，属性提取函数按 `:attrs-list` 的零基索引返回 `VertexAttribute`（数字、`V3` 或数字列表）。
+
+```cirru
+defenum PositionVertex (:vertex quaternion.vector/V3)
+
+object-writer-with
+  {} (:shader wgsl-example)
+    :attrs-list $ [] (:: :float32x3 :position)
+  fn (write!)
+    hint-fn $ Fn (Fn (List PositionVertex) (-> Unit)) (-> Unit)
+    write! $ [] $ PositionVertex :vertex (v3 1 1 1)
+  fn (vertex _idx)
+    hint-fn $ Fn PositionVertex Number (-> lagopus.alias/VertexAttribute)
+    match vertex
+      (:vertex position) position
+```
+
+`comp-polylines` 和 `comp-polylines-marked` 已通过该入口将具名顶点直接交给缓冲区写入器。
 
 ### Shader
 
