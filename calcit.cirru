@@ -10,6 +10,11 @@
   :files $ {}
     'lagopus.alias $ %{} 'FileEntry
       :defs $ {}
+        'AttributeLayout $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct AttributeLayout (:format String)
+            :source $ Map Tag Dynamic
+          :examples $ []
+          :schema $ quote StructDef
         'IndexChunk $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum IndexChunk (:index Number)
             :children $ List IndexValue
@@ -266,19 +271,17 @@
                   decode-map-as
                     .unwrap $ get options :attrs-list
                     List Dynamic
-                  , expand-attr
+                  , read-attribute-layout
                 data $ .unwrap $ get options :data
                 vertices-size $ count-recursive data
                 make-buffer! $ unsafe-coerce newBufferFormatLength $ Fn String Number (-> lagopus.alias/NumberBuffer)
                 buffers $ map-indexed attrs-list $ fn (idx attr)
-                  hint-fn $ Fn Number (Map Tag Dynamic) (-> NumberBuffer) (:features :js-ffi)
+                  hint-fn $ Fn Number AttributeLayout (-> NumberBuffer) (:features :js-ffi)
                   let
-                      buffer $ make-buffer!
-                        buffer-format $ .unwrap $ get attr :format
-                        , vertices-size
+                      buffer $ make-buffer! (attr :format) vertices-size
                       *offset $ ref 0
                       field $ decode-map-as
-                        .unwrap $ get attr :field
+                        .unwrap $ get (attr :source) :field
                         , 'Tag
                       write! $ fn (x)
                         hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
@@ -290,7 +293,9 @@
                       not= @*offset $ .-length buffer
                       eprintln "|buffer size guessed incorrectly"
                     , buffer
-              create-object! options attrs-list vertices-size buffers
+              create-object! options
+                map attrs-list $ fn (attr) (attr :source)
+                , vertices-size buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
@@ -323,7 +328,7 @@
                   decode-map-as
                     .unwrap $ get options :attrs-list
                     List Dynamic
-                  , expand-attr
+                  , read-attribute-layout
                 attribute-count $ count attrs-list
                 attribute-indices $ range attribute-count
                 bundles $ make-empty-js-arrays attribute-count
@@ -344,11 +349,12 @@
               writer collect!
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
-                    hint-fn $ Fn Number (Map Tag Dynamic) (-> NumberBuffer) (:features :js-ffi)
-                    make-buffer!
-                      buffer-format $ .unwrap $ get attr :format
+                    hint-fn $ Fn Number AttributeLayout (-> NumberBuffer) (:features :js-ffi)
+                    make-buffer! (attr :format)
                       unsafe-coerce (aget bundles idx) JsObject
-                create-object! options attrs-list @*counter buffers
+                create-object! options
+                  map attrs-list $ fn (attr) (attr :source)
+                  , @*counter buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (Map Tag Dynamic)
@@ -374,6 +380,27 @@
           :schema $ quote $ Fn VertexAttribute
             Fn Number $ -> Unit
             -> Unit
+        'read-attribute-layout $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn read-attribute-layout (raw)
+            let
+                source $ expand-attr raw
+              AttributeLayout :format
+                buffer-format $ .unwrap $ get source :format
+                , :source source
+          :examples $ []
+          :schema $ quote $ Fn Input (-> AttributeLayout) (:generics Input)
+          :tests $ [] $ %{} 'TestEntry (:name |preserves-shorthand-and-extra-fields)
+            :code $ quote $ let
+                raw $ {} (:field :position) (:format |float32x2) (:offset 8)
+                layout $ read-attribute-layout raw
+                shorthand $ read-attribute-layout $ :: :float32x3 :position
+              assert= |float32x2 $ layout :format
+              assert= raw $ layout :source
+              assert= |float32x3 $ shorthand :format
+              assert=
+                {} (:field :position) (:format :float32x3)
+                shorthand :source
+            :tags $ #{} :unit
         'wgsl-colors $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-colors (inline-shader |lagopus-colors)
           :examples $ []
