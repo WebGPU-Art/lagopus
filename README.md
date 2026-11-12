@@ -113,7 +113,24 @@ Alternatively, there's also `object-writer` which provides a writer API, which r
       :: :vertex (v3 1 1 1)
 ```
 
-在 Calcit 0.38.0 下，`comp-polylines` 和 `comp-polylines-marked` 会将具名顶点直接交给缓冲区写入器。公开 `object-writer` 仍接受上述匿名顶点，折线的输入、属性顺序及格式沿用原合同。
+已有匿名顶点可继续用 `object-writer`。具名顶点可用 `lagopus.alias/object-writer-with`，将配置、分批写入函数和属性提取函数分别传入。写入函数和属性提取函数共享同一个顶点类型，属性提取函数按 `:attrs-list` 的零基索引返回 `VertexAttribute`（数字、`V3` 或数字列表）。
+
+```cirru
+defenum PositionVertex (:vertex quaternion.vector/V3)
+
+object-writer-with
+  {} (:shader wgsl-example)
+    :attrs-list $ [] (:: :float32x3 :position)
+  fn (write!)
+    hint-fn $ Fn (Fn (List PositionVertex) (-> Unit)) (-> Unit)
+    write! $ [] $ PositionVertex :vertex (v3 1 1 1)
+  fn (vertex _idx)
+    hint-fn $ Fn PositionVertex Number (-> lagopus.alias/VertexAttribute)
+    match vertex
+      (:vertex position) position
+```
+
+`comp-polylines` 和 `comp-polylines-marked` 已通过该入口将具名顶点直接交给缓冲区写入器。
 
 ### Shader
 
