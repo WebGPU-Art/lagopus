@@ -1213,36 +1213,63 @@
           :schema $ quote PolylineBreak
         'build-curve-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-curve-points (points curve-ratio)
-            if
-              <= (.len points) 1
-              []
-              let
-                  decoded $ .map points read-curve-point
-                map
-                  range $ dec $ .len decoded
-                  fn (idx)
-                    hint-fn $ Fn Number $ -> (List CurveVertex)
-                    let
-                        idx+1 $ inc idx
-                        first-point $ .unwrap $ nth decoded idx
-                        second-point $ .unwrap $ nth decoded idx+1
-                        p $ :position first-point
-                        q $ :position second-point
-                        direction $ &v- q p
-                        direction2 $ match
-                          nth decoded $ inc idx+1
-                          (:some next-point)
-                            if (:enum-source? next-point)
-                              &v- (:position next-point) q
-                              , direction
-                          (:none) direction
-                        p-width $ :width first-point
-                        q-width $ :width second-point
-                      [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
+            build-curve-vertices (normalize-curve points) curve-ratio
           :examples $ []
           :schema $ quote $ Fn (List T) Number
             -> $ List $ List CurveVertex
             :generics T
+        'build-curve-vertices $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn build-curve-vertices (decoded curve-ratio)
+            map
+              range $ if
+                <= (.len decoded) 1
+                , 0 $ dec (.len decoded)
+              fn (idx)
+                hint-fn $ Fn Number $ -> (List CurveVertex)
+                let
+                    idx+1 $ inc idx
+                    first-point $ .unwrap $ nth decoded idx
+                    second-point $ .unwrap $ nth decoded idx+1
+                    p $ :position first-point
+                    q $ :position second-point
+                    direction $ &v- q p
+                    direction2 $ match
+                      nth decoded $ inc idx+1
+                      (:some next-point)
+                        if (:enum-source? next-point)
+                          &v- (:position next-point) q
+                          , direction
+                      (:none) direction
+                    p-width $ :width first-point
+                    q-width $ :width second-point
+                  [] (lagopus.comp.curves/CurveVertex :vertex p 0 direction curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction2 curve-ratio idx p-width) (lagopus.comp.curves/CurveVertex :vertex q 0 direction2 curve-ratio idx+1 p-width) (lagopus.comp.curves/CurveVertex :vertex q 1 direction2 curve-ratio idx+1 q-width) (lagopus.comp.curves/CurveVertex :vertex p 1 direction curve-ratio idx p-width)
+          :examples $ []
+          :schema $ quote $ Fn (List CurvePoint) Number
+            -> $ List $ List CurveVertex
+          :tests $ [] $ %{} 'TestEntry (:name |legacy-map-and-enum-points)
+            :code $ quote $ let
+                p $ v3 0 0 0
+                q $ v3 1 0 0
+                r $ v3 1 2 0
+                pq $ v3 1 0 0
+                qr $ v3 0 2 0
+                from-map $ {} $ :position ([] 0 0 0)
+                next-map $ {} (:position q) (:width 3)
+                next-enum $ CurveVertex :vertex r 4 qr 0 0 4
+                vertices $ build-curve-points ([] from-map next-map next-enum) 0.5
+                first-segment $ .unwrap $ nth vertices 0
+              assert= 2 $ .len vertices
+              assert= 6 $ .len first-segment
+              assert= (CurveVertex :vertex p 0 pq 0.5 0 1)
+                .unwrap $ nth first-segment 0
+              assert= (CurveVertex :vertex q 0 qr 0.5 1 3)
+                .unwrap $ nth first-segment 1
+              assert= ([])
+                build-curve-points
+                  [] $ {}
+                  , 0
+              assert= ([])
+                build-curve-vertices ([]) 0
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
             match (decode-polyline-input p)
@@ -1449,12 +1476,14 @@
         'comp-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-curves (options)
             let
-                curves $ decode-map-as
-                  match (get options :curves)
-                    (:some matched-field-value)
-                      either matched-field-value $ []
-                    (:none) ([])
-                  List $ List Dynamic
+                curves $ map
+                  decode-map-as
+                    match (get options :curves)
+                      (:some matched-field-value)
+                        either matched-field-value $ []
+                      (:none) ([])
+                    List $ List Dynamic
+                  , normalize-curve
               object $ {}
                 :shader $ match (get options :shader)
                   (:some matched-field-value) (either matched-field-value wgsl-curves)
@@ -1464,11 +1493,11 @@
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
-                    size $ count curves
+                    size $ .len curves
                   map-indexed curves $ fn (idx c)
-                    hint-fn $ Fn Number (List Dynamic)
+                    hint-fn $ Fn Number (List CurvePoint)
                       -> $ List $ List CurveVertex
-                    build-curve-points c $ / idx size
+                    build-curve-vertices c $ / idx size
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
         'comp-polylines $ %{} 'CodeEntry (:doc |)
@@ -1594,6 +1623,16 @@
               raise "|Expected polyline vertex or break Enum"
           :examples $ []
           :schema $ quote $ Fn T (-> PolylineInput) (:generics T)
+        'normalize-curve $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn normalize-curve (points)
+            if
+              <= (.len points) 1
+              []
+              .map points read-curve-point
+          :examples $ []
+          :schema $ quote $ Fn (List T)
+            -> $ List CurvePoint
+            :generics T
         'point-v3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn point-v3 (point)
             if (list? point)
