@@ -48,12 +48,23 @@
           :code $ quote $ defunion VertexAttribute Number quaternion.vector/V3 (List Number)
           :examples $ []
           :schema $ quote UnionDef
+        'VertexFormat $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion VertexFormat Tag String
+          :examples $ []
+          :schema $ quote UnionDef
         'buffer-format $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn buffer-format (format)
-            match format (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
-              _ $ if (string? format) format $ do (eprintln "|Unknown format" format) |float32
+            match (try-decode-map-as format lagopus.alias/VertexFormat)
+              (:ok decoded)
+                match decoded
+                  (String name) name
+                  (Tag tag)
+                    match tag (:float32 |float32) (:float32x2 |float32x2) (:float32x3 |float32x3) (:float32x4 |float32x4) (:uint32 |uint32)
+                      _ $ do (eprintln "|Unknown format" format) |float32
+              (:err _invalid)
+                do (eprintln "|Unknown format" format) |float32
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> String)
+          :schema $ quote $ Fn Input (-> String) (:generics Input)
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (chunk collect!)
             match chunk
