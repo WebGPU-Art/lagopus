@@ -64,7 +64,7 @@
               (:err _invalid)
                 do (eprintln "|Unknown format" format) |float32
           :examples $ []
-          :schema $ quote $ Fn Input (-> String) (:generics Input)
+          :schema $ quote $ Fn Input (-> String) (:generics Input) (:features :io)
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (chunk collect!)
             match chunk
@@ -112,6 +112,7 @@
           :schema $ quote $ Fn Dynamic Tag Number
             Fn Number $ -> Unit
             -> Unit
+            :features :io
         'collect-index-values! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-index-values! (values collect!)
             &doseq (value values)
@@ -210,7 +211,7 @@
                 decode-map-as value $ List Number
               true $ decode-map-as value Number
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> VertexAttribute)
+          :schema $ quote $ Fn Input (-> VertexAttribute) (:generics Input)
         'expand-attr $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn expand-attr (x)
             if (enum? x)
@@ -219,8 +220,9 @@
                 :format $ .unwrap $ nth x 0
               decode-map-as x $ Map Tag Dynamic
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'group $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn group (a & children)
             if
@@ -235,7 +237,7 @@
           :schema $ quote $ Fn Dynamic
             & $ JsNullish JsObject
             -> JsObject
-            :features :js-ffi
+            :features :io :js-ffi
         'inject-shader-snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn inject-shader-snippets (code)
             -> code (browser/replace-first "|#import lagopus::simplex" wgsl-simplex) (browser/replace-first "|#import lagopus::perspective" wgsl-perspective) (browser/replace-first "|#import lagopus::colors" wgsl-colors) (browser/replace-first "|#import lagopus::rand" wgsl-rand) (browser/replace-first "|#import lagopus::rotation" wgsl-rotation) (browser/replace-first "|#import lagopus::hsluv" wgsl-hsluv)
@@ -309,7 +311,7 @@
                 , vertices-size buffers
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io :js-ffi)
         'object-writer $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn object-writer (options)
             object-writer-with options
@@ -331,7 +333,7 @@
                   decode-vertex-attribute data
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io :js-ffi)
         'object-writer-with $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn object-writer-with (options writer attribute-at)
             let
@@ -375,7 +377,7 @@
             Fn Vertex Number $ -> VertexAttribute
             -> JsObject
             :generics Vertex
-            :features :js-ffi
+            :features :io :js-ffi
         'pack-vertex-attribute! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn pack-vertex-attribute! (attribute write!)
             match attribute
@@ -399,7 +401,7 @@
                 buffer-format $ .unwrap $ get source :format
                 , :source source
           :examples $ []
-          :schema $ quote $ Fn Input (-> AttributeLayout) (:generics Input)
+          :schema $ quote $ Fn Input (-> AttributeLayout) (:generics Input) (:features :io)
           :tests $ [] $ %{} 'TestEntry (:name |preserves-shorthand-and-extra-fields)
             :code $ quote $ let
                 raw $ {} (:field :position) (:format |float32x2) (:offset 8)
@@ -658,7 +660,7 @@
               -> Unit
             -> JsObject
             :generics Op
-            :features :js-ffi
+            :features :io :js-ffi
         'comp-flat-button $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-flat-button (props on-click)
             let
@@ -746,7 +748,7 @@
                     [] (rand-shift 0 area) (rand-shift 0 area) (rand-shift 0 area)
                       + 6 $ rand 120
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-city $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-city ()
             object $ {} (:shader city-wgsl)
@@ -783,7 +785,7 @@
                             [] (:: :vertex p0 5 4) (:: :vertex p0 5 5) (:: :vertex p0 5 6)
                             [] (:: :vertex p0 5 4) (:: :vertex p0 5 6) (:: :vertex p0 5 7)
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-container (store textures-dict)
             let
@@ -822,7 +824,7 @@
                   :kaleidoscope $ comp-kaleidoscope textures-dict
                   _ $ group nil
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (Map Tag lagopus.gpu/Texture) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Map Tag lagopus.gpu/Texture) (-> JsObject) (:features :io :state)
         'comp-control-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-control-demo (states)
             let
@@ -867,7 +869,7 @@
                       -> Unit
                     println |CLICKED
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'comp-mountains $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-mountains ()
             object $ {} (:shader mountains-wgsl)
@@ -901,7 +903,7 @@
                               :: :vertex $ [] x1 y1
                               :: :vertex $ [] x0 y1
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-necklace $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-necklace ()
             comp-spots $ {} (; :topology :line-strip) (:radius 6) (:vertex-count 8) (:shift 12)
@@ -913,7 +915,7 @@
                       * r $ cos $ * 0.1129 idx
                       * r $ sin $ * 0.123 idx
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-ribbon $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-ribbon ()
             comp-curves $ {} (; :topology :line-strip)
@@ -929,13 +931,13 @@
                         * r $ sin angle
                       :width 2
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-stitch-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-stitch-demo ()
             group nil $ comp-stitch $ {}
               :chars $ [] 0xf2dfea34 0xc3c4a59d 0x88737645
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-tabs $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-tabs ()
             group nil
@@ -1080,7 +1082,7 @@
                     -> Unit
                   d! $ : tab :kaleidoscope
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io)
         'comp-triangles-demo $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-triangles-demo ()
             let
@@ -1114,7 +1116,7 @@
                         : vertex (v3 100 20 200) width 2
                         , break-mark
           :examples $ []
-          :schema $ quote $ Fn (-> JsObject)
+          :schema $ quote $ Fn (-> JsObject) (:features :io :state)
         'mountains-wgsl $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mountains-wgsl (inline-shader |mountains)
           :examples $ []
@@ -1179,7 +1181,7 @@
                     v3 1 -1 1
                 :indices $ [] ([] 0 1 2 0 2 3) ([] 0 1 5 0 4 5) ([] 1 2 6 1 6 5) ([] 2 3 6 3 6 7) ([] 0 3 4 3 4 7) ([] 4 5 6 4 6 7)
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'wgsl-cube $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-cube (inline-shader |cube)
           :examples $ []
@@ -1338,6 +1340,7 @@
               Fn (List PolylineVertex) (-> Unit)
               -> Unit
               :generics T
+              :features :state
           :tests $ [] $ %{} 'TestEntry (:name |segment-order-width-and-break)
             :code $ quote $ let
                 previous $ ref $ assert-type None (Option PolylinePrevious)
@@ -1401,6 +1404,7 @@
               Fn (List MarkedPolylineVertex) (-> Unit)
               -> Unit
               :generics T
+              :features :state
           :tests $ [] $ %{} 'TestEntry (:name |marked-segment-state-and-break)
             :code $ quote $ let
                 previous $ ref $ assert-type None (Option MarkedPolylinePrevious)
@@ -1511,6 +1515,7 @@
           :schema $ quote $ Fn
             Option $ Map Tag Dynamic
             -> JsObject
+            :features :io :state
         'comp-curves $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-curves (options)
             let
@@ -1537,7 +1542,7 @@
                       -> $ List $ List CurveVertex
                     build-curve-vertices c $ / idx size
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'comp-polylines $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines (options)
             let
@@ -1573,7 +1578,7 @@
                   , &unit
                 , polylines-attribute
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io :state)
         'comp-polylines-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-polylines-marked (options)
             let
@@ -1609,7 +1614,7 @@
                   , &unit
                 , polylines-marked-attribute
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io :state)
         'count-hex $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn count-hex (xs)
             -> xs
@@ -1773,7 +1778,7 @@
                   :: :vertex ([] 0 0 0) ([] 0 0)
               :textures $ [] $ .unwrap (get textures-dict :tiye)
           :examples $ []
-          :schema $ quote $ Fn (Map Tag lagopus.gpu/Texture) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag lagopus.gpu/Texture) (-> JsObject) (:features :io)
         'comp-kaleidoscope $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-kaleidoscope (textures-dict)
             object $ {} (:label :image) (:shader wgsl-kaleidoscope)
@@ -1792,7 +1797,7 @@
                   :: :vertex ([] 0 0 0) ([] 0 0)
               :textures $ [] $ .unwrap (get textures-dict :tiye)
           :examples $ []
-          :schema $ quote $ Fn (Map Tag lagopus.gpu/Texture) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag lagopus.gpu/Texture) (-> JsObject) (:features :io)
         'wgsl-image $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-image (inline-shader |image)
           :examples $ []
@@ -1925,7 +1930,7 @@
                   hint-fn $ Fn (-> JsObject) (:features :js-ffi)
                   js-array & $ .append color chromatism
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io :js-ffi)
         'sqrt-3 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def sqrt-3 (sqrt 3)
           :examples $ []
@@ -1972,6 +1977,7 @@
           :examples $ []
           :schema $ quote $ Fn quaternion.vector/V3 Number Number (Ref Number) quaternion.vector/V3 quaternion.vector/V3 quaternion.vector/V3
             -> $ List lagopus.alias/IndexedMesh
+            :features :state
           :tests $ [] $ %{} 'TestEntry (:name |preserves-packed-position-and-index-order)
             :code $ quote $ let
                 counter $ ref 0
@@ -2041,7 +2047,7 @@
                   hint-fn $ Fn (-> JsObject) (:features :js-ffi)
                   js-array & $ .append color 1
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :js-ffi)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io :js-ffi :state)
         'pick-radian-middle $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn pick-radian-middle (p0 p1)
             let
@@ -2172,7 +2178,7 @@
                   , &unit
                 , bubble-attribute
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'comp-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-spots (options)
             let
@@ -2221,7 +2227,7 @@
                         lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 1 angle-idx) shift spot-idx
                         lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 2 angle-idx) shift spot-idx
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'wgsl-bubbles $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def wgsl-bubbles (inline-shader |bubbles)
           :examples $ []
@@ -2302,7 +2308,7 @@
                               = |1 $ .unwrap $ get pattern data-idx
                               , 1 0
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject)
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'stitch-strokes $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def stitch-strokes
             let
@@ -2609,7 +2615,7 @@
               if (not= next-store store) (reset! *store next-store)
               , &unit
           :examples $ []
-          :schema $ quote $ Fn DemoOp (-> Unit)
+          :schema $ quote $ Fn DemoOp (-> Unit) (:features :io :state)
         'load-images! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-images! (gpu-device *textures)
             let
@@ -2621,7 +2627,7 @@
           :schema $ quote $ Fn gpu/Device
             Ref $ Map Tag gpu/Texture
             -> Unit
-            :features :js-ffi
+            :features :js-ffi :state
             :async
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
@@ -2647,7 +2653,7 @@
             , &unit
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi) (:async)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state) (:async)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             let
@@ -2657,7 +2663,7 @@
                 show! |error $ str build-errors
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
@@ -2665,7 +2671,7 @@
               runtime/render-tree! tree dispatch!
               runtime/paint!
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'resize! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn resize! (_event) (runtime/reset-canvas! canvas) (runtime/initialize-textures!) (runtime/paint!)
           :examples $ []
@@ -2673,7 +2679,7 @@
         'store-changed! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn store-changed! (_next _previous) (render-app!)
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (Map Tag Dynamic) (-> Unit)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Map Tag Dynamic) (-> Unit) (:features :io :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.main
           :require
