@@ -20,6 +20,14 @@
           :code $ quote $ defunion IndexValue Number (List IndexValue)
           :examples $ []
           :schema $ quote UnionDef
+        'IndexedMesh $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion IndexedMesh IndexedVertex (List IndexedMesh)
+          :examples $ []
+          :schema $ quote UnionDef
+        'IndexedVertex $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum IndexedVertex (:vertex quaternion.vector/V3 Number)
+          :examples $ []
+          :schema $ quote EnumDef
         'NumberArray $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait NumberArray
             .push $ Fn NumberArray Number $ -> Number
@@ -1791,7 +1799,8 @@
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map (range 6)
                   fn (section-idx)
-                    hint-fn $ Fn Number $ -> (List Dynamic)
+                    hint-fn $ Fn Number $ ->
+                      List $ List $ List lagopus.alias/IndexedMesh
                     let
                         angle $ * section-idx $ / &PI 3
                         angle-next $ * (inc section-idx) (/ &PI 3)
@@ -1816,11 +1825,12 @@
                               raise |Expected-plate-transformer-function
                       map (range iteration)
                         fn (idx)
-                          hint-fn $ Fn Number $ -> (List Dynamic)
+                          hint-fn $ Fn Number $ ->
+                            List $ List lagopus.alias/IndexedMesh
                           map
                             range $ - iteration idx
                             fn (j)
-                              hint-fn $ Fn Number $ -> (List Dynamic)
+                              hint-fn $ Fn Number $ -> (List lagopus.alias/IndexedMesh)
                               let
                                   c @*counter
                                   c1 $ inc c
@@ -1829,10 +1839,10 @@
                                   ps2 $ point $ [] idx (inc j)
                                   ps3 $ point $ [] (inc idx) (inc j)
                                 swap! *counter + 2
-                                [] (:: :vertex ps0 c) (:: :vertex ps1 c) (:: :vertex ps2 c)
+                                [] (lagopus.alias/IndexedVertex :vertex ps0 c) (lagopus.alias/IndexedVertex :vertex ps1 c) (lagopus.alias/IndexedVertex :vertex ps2 c)
                                   if
                                     < (+ idx j) (dec iteration)
-                                    [] (:: :vertex ps3 c1) (:: :vertex ps1 c1) (:: :vertex ps2 c1)
+                                    [] (lagopus.alias/IndexedVertex :vertex ps3 c1) (lagopus.alias/IndexedVertex :vertex ps1 c1) (lagopus.alias/IndexedVertex :vertex ps2 c1)
                                     []
                 :get-params $ fn ()
                   hint-fn $ Fn (-> JsObject) (:features :js-ffi)
@@ -1864,13 +1874,13 @@
                   idx $ deref *counter
                 swap! *counter inc
                 []
-                  :: :vertex
+                  lagopus.alias/IndexedVertex :vertex
                     &v+ base $ v-scale p0 radius
                     , idx
-                  :: :vertex
+                  lagopus.alias/IndexedVertex :vertex
                     &v+ base $ v-scale p1 radius
                     , idx
-                  :: :vertex
+                  lagopus.alias/IndexedVertex :vertex
                     &v+ base $ v-scale p2 radius
                     , idx
               let
@@ -1884,7 +1894,33 @@
                   build-sphere-triangles base radius (dec depth) *counter p01 p12 p02
           :examples $ []
           :schema $ quote $ Fn quaternion.vector/V3 Number Number (Ref Number) quaternion.vector/V3 quaternion.vector/V3 quaternion.vector/V3
-            -> $ List Dynamic
+            -> $ List lagopus.alias/IndexedMesh
+          :tests $ [] $ %{} 'TestEntry (:name |preserves-packed-position-and-index-order)
+            :code $ quote $ let
+                counter $ ref 0
+                base $ v3 0 0 0
+                x $ v3 1 0 0
+                y $ v3 0 1 0
+                z $ v3 0 0 1
+                triangle $ build-sphere-triangles base 2 0 counter x y z
+                subdivided $ build-sphere-triangles base 2 1 counter x y z
+                positions $ ref $ assert-type ([]) (List Number)
+                indices $ ref $ assert-type ([]) (List Number)
+              lagopus.alias/collect-from-records! triangle :position 0 $ fn (n)
+                hint-fn $ Fn Number $ -> Unit
+                swap! positions append n
+                , &unit
+              lagopus.alias/collect-from-records! subdivided :idx 1 $ fn (n)
+                hint-fn $ Fn Number $ -> Unit
+                swap! indices append n
+                , &unit
+              assert=
+                [] 2 0 0 0 2 0 0 0 2
+                , @positions
+              assert=
+                [] 1 1 1 2 2 2 3 3 3 4 4 4
+                , @indices
+              assert= 5 @counter
         'comp-sphere $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-sphere (options)
             let
@@ -1919,7 +1955,7 @@
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map unit-triangles $ fn (xs)
                   hint-fn $ Fn (List quaternion.vector/V3)
-                    -> $ List Dynamic
+                    -> $ List lagopus.alias/IndexedMesh
                   build-sphere-triangles base radius iteration *counter
                     .unwrap $ nth xs 0
                     .unwrap $ nth xs 1
