@@ -2726,7 +2726,7 @@
           :code $ quote $ defn require-v3 (value)
             if (enum? value) (decode-map-as value 'quaternion.vector/V3) (raise |Expected-V3)
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> quaternion.vector/V3)
+          :schema $ quote $ Fn Input (-> quaternion.vector/V3) (:generics Input)
         'rotate-3d $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rotate-3d (origin axis-0 angle p)
             let
