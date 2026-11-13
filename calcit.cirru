@@ -2941,7 +2941,7 @@
               color-atom .reset host-color
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn Color (-> Unit) (:generics Color) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.util
           :require (|bottom-tip :default hud!)
