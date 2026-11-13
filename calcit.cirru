@@ -235,9 +235,10 @@
               make-group nil & children
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Options
             & $ JsNullish JsObject
             -> JsObject
+            :generics Options
             :features :io :js-ffi
         'inject-shader-snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn inject-shader-snippets (code)
