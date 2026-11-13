@@ -109,9 +109,10 @@
               true $ raise "|unknown data"
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic Tag Number
+          :schema $ quote $ Fn Input Tag Number
             Fn Number $ -> Unit
             -> Unit
+            :generics Input
             :features :io
         'collect-index-values! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-index-values! (values collect!)
