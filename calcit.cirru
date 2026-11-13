@@ -442,9 +442,10 @@
           :code $ quote $ defn write-attribute! (xs write!)
             pack-vertex-attribute! (decode-vertex-attribute xs) write!
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             Fn Number $ -> Unit
             -> Unit
+            :generics Input
           :tests $ [] $ %{} 'TestEntry (:name |packs-scalar-list-and-vectors)
             :code $ quote $ let
                 values $ ref $ assert-type ([]) (List Number)
