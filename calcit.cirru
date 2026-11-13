@@ -318,10 +318,6 @@
           :code $ quote $ defn object-writer (options)
             object-writer-with options
               fn (collect!)
-                hint-fn $ Fn
-                  Fn (List AnyEnum) (-> Unit)
-                  -> Unit
-                  :features :js-ffi
                 let
                     writer $ .unwrap $ get options :writer
                   if (fn? writer) (writer collect!) (raise "|Expected object writer function")
