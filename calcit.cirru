@@ -2181,12 +2181,14 @@
         'comp-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-spots (options)
             let
-                points $ decode-map-as
-                  match (get options :points)
-                    (:some matched-field-value)
-                      either matched-field-value $ []
-                    (:none) ([])
-                  List Dynamic
+                points $ map
+                  decode-map-as
+                    match (get options :points)
+                      (:some matched-field-value)
+                        either matched-field-value $ []
+                      (:none) ([])
+                    List Dynamic
+                  , lagopus.alias/decode-vertex-attribute
                 color $ lagopus.alias/decode-vertex-attribute $ match (get options :color)
                   (:some matched-field-value)
                     either matched-field-value $ [] 0.8 0.8 1
@@ -2215,16 +2217,16 @@
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
-                  hint-fn $ Fn Number Dynamic $ ->
+                  hint-fn $ Fn Number lagopus.alias/VertexAttribute $ ->
                     List $ List SpotVertex
                   map
                     range $ - vertex-count 2
                     fn (angle-idx)
                       hint-fn $ Fn Number $ -> (List SpotVertex)
                       []
-                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count 0 shift spot-idx
-                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 1 angle-idx) shift spot-idx
-                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 2 angle-idx) shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex base color radius vertex-count 0 shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex base color radius vertex-count (+ 1 angle-idx) shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex base color radius vertex-count (+ 2 angle-idx) shift spot-idx
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'wgsl-bubbles $ %{} 'CodeEntry (:doc |)
