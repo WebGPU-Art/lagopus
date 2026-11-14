@@ -109,9 +109,10 @@
               true $ raise "|unknown data"
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic Tag Number
+          :schema $ quote $ Fn Input Tag Number
             Fn Number $ -> Unit
             -> Unit
+            :generics Input
             :features :io
         'collect-index-values! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-index-values! (values collect!)
@@ -234,9 +235,10 @@
               make-group nil & children
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Options
             & $ JsNullish JsObject
             -> JsObject
+            :generics Options
             :features :io :js-ffi
         'inject-shader-snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn inject-shader-snippets (code)
@@ -316,10 +318,6 @@
           :code $ quote $ defn object-writer (options)
             object-writer-with options
               fn (collect!)
-                hint-fn $ Fn
-                  Fn (List AnyEnum) (-> Unit)
-                  -> Unit
-                  :features :js-ffi
                 let
                     writer $ .unwrap $ get options :writer
                   if (fn? writer) (writer collect!) (raise "|Expected object writer function")
@@ -442,9 +440,10 @@
           :code $ quote $ defn write-attribute! (xs write!)
             pack-vertex-attribute! (decode-vertex-attribute xs) write!
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             Fn Number $ -> Unit
             -> Unit
+            :generics Input
           :tests $ [] $ %{} 'TestEntry (:name |packs-scalar-list-and-vectors)
             :code $ quote $ let
                 values $ ref $ assert-type ([]) (List Number)
@@ -2182,12 +2181,14 @@
         'comp-spots $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-spots (options)
             let
-                points $ decode-map-as
-                  match (get options :points)
-                    (:some matched-field-value)
-                      either matched-field-value $ []
-                    (:none) ([])
-                  List Dynamic
+                points $ map
+                  decode-map-as
+                    match (get options :points)
+                      (:some matched-field-value)
+                        either matched-field-value $ []
+                      (:none) ([])
+                    List Dynamic
+                  , lagopus.alias/decode-vertex-attribute
                 color $ lagopus.alias/decode-vertex-attribute $ match (get options :color)
                   (:some matched-field-value)
                     either matched-field-value $ [] 0.8 0.8 1
@@ -2216,16 +2217,16 @@
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
-                  hint-fn $ Fn Number Dynamic $ ->
+                  hint-fn $ Fn Number lagopus.alias/VertexAttribute $ ->
                     List $ List SpotVertex
                   map
                     range $ - vertex-count 2
                     fn (angle-idx)
                       hint-fn $ Fn Number $ -> (List SpotVertex)
                       []
-                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count 0 shift spot-idx
-                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 1 angle-idx) shift spot-idx
-                        lagopus.comp.spots/SpotVertex :vertex (lagopus.alias/decode-vertex-attribute base) color radius vertex-count (+ 2 angle-idx) shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex base color radius vertex-count 0 shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex base color radius vertex-count (+ 1 angle-idx) shift spot-idx
+                        lagopus.comp.spots/SpotVertex :vertex base color radius vertex-count (+ 2 angle-idx) shift spot-idx
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> JsObject) (:features :io)
         'wgsl-bubbles $ %{} 'CodeEntry (:doc |)
@@ -2939,7 +2940,7 @@
               color-atom .reset host-color
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn Color (-> Unit) (:generics Color) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.util
           :require (|bottom-tip :default hud!)
