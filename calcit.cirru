@@ -1311,27 +1311,7 @@
                 build-curve-vertices ([]) 0
         'build-polyline-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points (*prev p write!)
-            match (decode-polyline-input p)
-              (PolylineBreak _) (reset! *prev None)
-              (Tuple vertex)
-                let[] (position width) vertex $ match @*prev
-                  (:none)
-                    reset! *prev $ Some $ PolylinePrevious :position position :older None :width width
-                  (:some prev)
-                    let
-                        older $ :older prev
-                        q $ :position prev
-                        q2 position
-                        p-width $ :width prev
-                        q-width width
-                        ; keep original segment width propagation
-                        direction2 $ &v- q2 q
-                        direction $ match older
-                          (:none) direction2
-                          (:some point) (&v- q point)
-                      reset! *prev $ Some $ PolylinePrevious :position position :older older :width p-width
-                      write! $ [] (lagopus.comp.curves/PolylineVertex :vertex q 0 direction p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 1 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction p-width)
-            identity &unit
+            emit-polyline-points *prev (decode-polyline-input p) write!
           :examples $ []
           :schema $ quote $ Fn
             Ref $ Option PolylinePrevious
@@ -1375,27 +1355,7 @@
             :tags $ #{} :unit
         'build-polyline-points-marked $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn build-polyline-points-marked (*prev p write!)
-            match (decode-marked-polyline-input p)
-              (PolylineBreak _) (reset! *prev None)
-              (Tuple vertex)
-                let[] (position width mark) vertex $ match @*prev
-                  (:none)
-                    reset! *prev $ Some $ MarkedPolylinePrevious :position position :older None :width width :mark mark
-                  (:some prev)
-                    let
-                        older $ :older prev
-                        q $ :position prev
-                        q2 position
-                        p-width $ :width prev
-                        q-width width
-                        prev-mark $ :mark prev
-                        direction2 $ &v- q2 q
-                        direction $ match older
-                          (:none) direction2
-                          (:some point) (&v- q point)
-                      reset! *prev $ Some $ MarkedPolylinePrevious :position position :older older :width p-width :mark mark
-                      write! $ [] (lagopus.comp.curves/MarkedPolylineVertex :vertex q 0 direction p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction2 p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 p-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 1 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction p-width prev-mark)
-            identity &unit
+            emit-polyline-points-marked *prev (decode-marked-polyline-input p) write!
           :examples $ []
           :schema $ quote $ Fn
             Ref $ Option MarkedPolylinePrevious
@@ -1566,8 +1526,9 @@
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
-                          &doseq (x p) (build-polyline-points *prev x write!)
-                          build-polyline-points *prev p write!
+                          &doseq (x p)
+                            emit-polyline-points *prev (decode-polyline-input x) write!
+                          emit-polyline-points *prev (decode-polyline-input p) write!
                         , &unit
                     match chunk-writer!
                       (:none) (eprintln "|expected polylines writer")
@@ -1602,8 +1563,9 @@
                       collect! $ fn (p)
                         hint-fn $ Fn Dynamic $ -> Unit
                         if (list? p)
-                          &doseq (x p) (build-polyline-points-marked *prev x write!)
-                          build-polyline-points-marked *prev p write!
+                          &doseq (x p)
+                            emit-polyline-points-marked *prev (decode-marked-polyline-input x) write!
+                          emit-polyline-points-marked *prev (decode-marked-polyline-input p) write!
                         , &unit
                     match chunk-writer!
                       (:none) (eprintln "|expected polylines writer")
@@ -1665,6 +1627,66 @@
               raise "|Expected polyline vertex or break Enum"
           :examples $ []
           :schema $ quote $ Fn T (-> PolylineInput) (:generics T)
+        'emit-polyline-points $ %{} 'CodeEntry (:doc "|Emit geometry from a decoded point or break.")
+          :code $ quote $ defn emit-polyline-points (*prev p write!)
+            match p
+              (PolylineBreak _) (reset! *prev None)
+              (Tuple vertex)
+                let[] (position width) vertex $ match @*prev
+                  (:none)
+                    reset! *prev $ Some $ PolylinePrevious :position position :older None :width width
+                  (:some prev)
+                    let
+                        older $ :older prev
+                        q $ :position prev
+                        q2 position
+                        p-width $ :width prev
+                        q-width width
+                        ; keep original segment width propagation
+                        direction2 $ &v- q2 q
+                        direction $ match older
+                          (:none) direction2
+                          (:some point) (&v- q point)
+                      reset! *prev $ Some $ PolylinePrevious :position position :older older :width p-width
+                      write! $ [] (lagopus.comp.curves/PolylineVertex :vertex q 0 direction p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 0 direction2 p-width) (lagopus.comp.curves/PolylineVertex :vertex q2 1 direction2 q-width) (lagopus.comp.curves/PolylineVertex :vertex q 1 direction p-width)
+            identity &unit
+          :examples $ []
+          :schema $ quote $ Fn
+            Ref $ Option PolylinePrevious
+            , PolylineInput
+              Fn (List PolylineVertex) (-> Unit)
+              -> Unit
+              :features :state
+        'emit-polyline-points-marked $ %{} 'CodeEntry (:doc "|Emit geometry from a decoded point or break.")
+          :code $ quote $ defn emit-polyline-points-marked (*prev p write!)
+            match p
+              (PolylineBreak _) (reset! *prev None)
+              (Tuple vertex)
+                let[] (position width mark) vertex $ match @*prev
+                  (:none)
+                    reset! *prev $ Some $ MarkedPolylinePrevious :position position :older None :width width :mark mark
+                  (:some prev)
+                    let
+                        older $ :older prev
+                        q $ :position prev
+                        q2 position
+                        p-width $ :width prev
+                        q-width width
+                        prev-mark $ :mark prev
+                        direction2 $ &v- q2 q
+                        direction $ match older
+                          (:none) direction2
+                          (:some point) (&v- q point)
+                      reset! *prev $ Some $ MarkedPolylinePrevious :position position :older older :width p-width :mark mark
+                      write! $ [] (lagopus.comp.curves/MarkedPolylineVertex :vertex q 0 direction p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction2 p-width prev-mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 0 direction2 p-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q2 1 direction2 q-width mark) (lagopus.comp.curves/MarkedPolylineVertex :vertex q 1 direction p-width prev-mark)
+            identity &unit
+          :examples $ []
+          :schema $ quote $ Fn
+            Ref $ Option MarkedPolylinePrevious
+            , MarkedPolylineInput
+              Fn (List MarkedPolylineVertex) (-> Unit)
+              -> Unit
+              :features :state
         'normalize-curve $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn normalize-curve (points)
             if
