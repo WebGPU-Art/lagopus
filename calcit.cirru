@@ -5,11 +5,15 @@
   :entries $ {} $ :default
     {} (:description |) (:init-fn 'lagopus.main/main!) (:mode :js) (:reload-fn 'lagopus.main/reload!) (:target :browser)
       :feature-policy $ {}
-      :modules $ [] |memof/ |quaternion/ |js-ffi/
+      :modules $ [] |quaternion/ |js-ffi/
       :type-slots $ {}
   :files $ {}
     'lagopus.alias $ %{} 'FileEntry
       :defs $ {}
+        '*object-cache $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defref *object-cache ({})
+          :examples $ []
+          :schema $ quote $ Ref (Map Dynamic Dynamic)
         'AttributeLayout $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct AttributeLayout (:format String)
             :source $ Map Tag Dynamic
@@ -65,6 +69,11 @@
                 do (eprintln "|Unknown format" format) |float32
           :examples $ []
           :schema $ quote $ Fn Input (-> String) (:generics Input) (:features :io)
+        'clear-object-cache! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn clear-object-cache! ()
+            reset! *object-cache $ {}
+            , &unit
+          :examples $ []
         'collect-array! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn collect-array! (chunk collect!)
             match chunk
@@ -259,7 +268,14 @@
           :doc "|Memoize a zero-argument callback using its original function identity, then check that the cached value is a renderer host object."
           :code $ quote $ defn memo-object (f)
             let
-                value $ memof1-call-nullary f
+                cached $ &map:get @*object-cache f
+                value $ match cached
+                  (:some v) v
+                  (:none)
+                    let
+                        v $ f
+                      reset! *object-cache $ assoc @*object-cache f v
+                      , v
               if
                 = :js-object $ type-of value
                 contract/expect-object "|cached renderer host object" value
@@ -269,7 +285,7 @@
             Fn $ -> R
             -> JsObject
             :generics R
-            :features :js-ffi
+            :features :js-ffi :state
           :tests $ [] $ %{} 'TestEntry (:name |reject-cached-calcit-values)
             :code $ quote $ let
                 calls $ ref 0
@@ -467,7 +483,6 @@
             lagopus.config :refer $ inline-shader
             lagopus.browser :as browser
             lagopus.gpu :refer $ Texture
-            memof.once :refer $ memof1-call-nullary
             js-ffi.contract :as contract
     'lagopus.browser $ %{} 'FileEntry
       :defs $ {}
@@ -1832,7 +1847,6 @@
           :require
             lagopus.alias :refer $ group object
             lagopus.comp.button :refer $ comp-button comp-slider comp-drag-point
-            memof.once :refer $ memof1-call
             quaternion.vector :refer $ v+ v3
             lagopus.cursor :refer $ >>
             |@calcit/std :refer $ rand-shift rand
@@ -2682,7 +2696,7 @@
             let
                 show! $ unsafe-coerce hud! $ Fn String String (-> Unit)
               if (js-nullish? build-errors)
-                do (reset-memof1-caches!) (render-app!) (remove-watch! *store :change) (add-watch! *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
+                do (lagopus.alias/clear-object-cache!) (render-app!) (remove-watch! *store :change) (add-watch! *store :change store-changed!) (println |Reloaded.) (show! |ok~ |OK)
                 show! |error $ str build-errors
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
@@ -2711,7 +2725,6 @@
             lagopus.util :refer $ handle-compilation reset-clear-color!
             |bottom-tip :default hud!
             |./calcit.build-errors :default build-errors
-            memof.once :refer $ reset-memof1-caches!
             lagopus.cursor :refer $ update-states
             lagopus.gpu :as gpu
             lagopus.browser :as browser
