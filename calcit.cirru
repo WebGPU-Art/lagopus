@@ -282,10 +282,10 @@
                 raise "|Expected a cached renderer host object"
           :examples $ []
           :schema $ quote $ Fn
-            Fn $ -> R
+            Fn (-> R) (:features :io)
             -> JsObject
             :generics R
-            :features :js-ffi :state
+            :features :io :js-ffi :state
           :tests $ [] $ %{} 'TestEntry (:name |reject-cached-calcit-values)
             :code $ quote $ let
                 calls $ ref 0
@@ -2776,7 +2776,7 @@
                 rot-v $ v-scale rot-direction $ v-length flat-p-v
               v+ origin h-v (v-scale flat-p-v cos-d) (v-scale rot-v sin-d)
           :examples $ []
-          :schema $ quote $ Fn quaternion.vector/V3 quaternion.vector/V3 Number quaternion.vector/V3 (-> quaternion.vector/V3)
+          :schema $ quote $ Fn quaternion.vector/V3 quaternion.vector/V3 Number quaternion.vector/V3 (-> quaternion.vector/V3) (:features :io)
         'rotate-3d-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rotate-3d-fn (origin axis angle)
             let
@@ -2796,6 +2796,7 @@
           :examples $ []
           :schema $ quote $ Fn quaternion.vector/V3 quaternion.vector/V3 Number
             -> $ Fn quaternion.vector/V3 $ -> quaternion.vector/V3
+            :features :io
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.math
           :require $ quaternion.vector :refer $ v-dot v-normalize &v- v-scale v-cross v+ &v+ v-length v3
@@ -2850,16 +2851,16 @@
           :code $ quote $ defn render-tree! (tree dispatch!)
             let
                 render! $ unsafe-coerce renderLagopusTree $ Fn JsObject
-                  Fn Op $ -> Unit
+                  Fn Op (-> Unit) (:features :io :state)
                   -> Unit
               render! tree dispatch!
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn JsObject
-            Fn Op $ -> Unit
+            Fn Op (-> Unit) (:features :io :state)
             -> Unit
             :generics Op
-            :features :js-ffi
+            :features :io :js-ffi :state
         'reset-canvas! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reset-canvas! (canvas)
             let
