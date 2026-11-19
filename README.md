@@ -7,9 +7,9 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### Calcit 0.43.0
+### Calcit 0.44.0
 
-更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.43.0，再生成 JS。
+更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.44.0，重新安装依赖后再生成 JS。本次迁移不改变公开接口或渲染源码。
 九个内置 WGSL 常量声明为 `String`，默认颜色声明为 `List Number`。
 组件的 `:indices` 继续接收数字或嵌套数字列表，保留原顺序、重复项和空分组。
 直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验整棵索引树。遇到无效子节点会在写入任何索引前报错。
@@ -58,7 +58,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.43.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.44.0：
 
 ```sh
 caps --strict --ci
