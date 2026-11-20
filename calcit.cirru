@@ -2313,11 +2313,11 @@
                     :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
                     :data $ map-indexed chars $ fn (idx c)
                       hint-fn $ Fn Number Number $ ->
-                        List $ Map Tag Dynamic
+                        List $ Map Tag quaternion.vector/V3
                       ->
                         [] (v3 0 0 0) (v3 1 0 0) (v3 1 -1 0) (v3 0 0 0) (v3 1 -1 0) (v3 0 -1 0)
                         map $ fn (x)
-                          hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag Dynamic)
+                          hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag quaternion.vector/V3)
                           {} (:base position)
                             :position $ &v+ (v-scale x size)
                               v-scale
@@ -2329,12 +2329,12 @@
                   :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
                   :data $ map-indexed chars $ fn (idx c)
                     hint-fn $ Fn Number Number $ ->
-                      List $ Map Tag Dynamic
+                      List $ Map Tag StitchField
                     let
                         pattern $ stitch-pattern c
                       map stitch-strokes $ fn (info)
                         hint-fn $ Fn (Map Tag StitchField)
-                          -> $ Map Tag Dynamic
+                          -> $ Map Tag StitchField
                         let
                             x $ lagopus.math/require-v3 $ .unwrap (get info :position)
                             data-idx $ decode-map-as
