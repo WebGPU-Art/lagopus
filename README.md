@@ -10,6 +10,7 @@
 ### Calcit 0.44.0
 
 更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.44.0，重新安装依赖后再生成 JS。本次迁移不改变公开接口或渲染源码。
+候选 0.5.18 使用正式 Quaternion 0.2.26 和 JS-FFI 0.2.19；消费者需统一精确依赖图，0.5.18 在正式 tag 发布前仍为候选。
 九个内置 WGSL 常量声明为 `String`，默认颜色声明为 `List Number`。
 组件的 `:indices` 继续接收数字或嵌套数字列表，保留原顺序、重复项和空分组。
 直接从开放数据调用底层 `collect-array!` 时，先用 `lagopus.alias/decode-index-chunk` 校验整棵索引树。遇到无效子节点会在写入任何索引前报错。
