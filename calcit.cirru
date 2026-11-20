@@ -2282,6 +2282,10 @@
             quaternion.complex :refer $ complex
     'lagopus.comp.stitch $ %{} 'FileEntry
       :defs $ {}
+        'StitchField $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion StitchField Number quaternion.vector/V3
+          :examples $ []
+          :schema $ quote UnionDef
         'comp-stitch $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-stitch (props)
             let
@@ -2329,7 +2333,7 @@
                     let
                         pattern $ stitch-pattern c
                       map stitch-strokes $ fn (info)
-                        hint-fn $ Fn (Map Tag Dynamic)
+                        hint-fn $ Fn (Map Tag StitchField)
                           -> $ Map Tag Dynamic
                         let
                             x $ lagopus.math/require-v3 $ .unwrap (get info :position)
@@ -2439,7 +2443,7 @@
                             :position $ &v+ base-bottom-left $ v3 -0.2 -0.2 0
                             :data base-idx-next
           :examples $ []
-          :schema $ quote $ List (Map Tag Dynamic)
+          :schema $ quote $ List (Map Tag StitchField)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.stitch
           :require
