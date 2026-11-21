@@ -2282,6 +2282,10 @@
             quaternion.complex :refer $ complex
     'lagopus.comp.stitch $ %{} 'FileEntry
       :defs $ {}
+        'StitchField $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion StitchField Number quaternion.vector/V3
+          :examples $ []
+          :schema $ quote UnionDef
         'comp-stitch $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn comp-stitch (props)
             let
@@ -2309,11 +2313,11 @@
                     :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position)
                     :data $ map-indexed chars $ fn (idx c)
                       hint-fn $ Fn Number Number $ ->
-                        List $ Map Tag Dynamic
+                        List $ Map Tag quaternion.vector/V3
                       ->
                         [] (v3 0 0 0) (v3 1 0 0) (v3 1 -1 0) (v3 0 0 0) (v3 1 -1 0) (v3 0 -1 0)
                         map $ fn (x)
-                          hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag Dynamic)
+                          hint-fn $ Fn quaternion.vector/V3 $ -> (Map Tag quaternion.vector/V3)
                           {} (:base position)
                             :position $ &v+ (v-scale x size)
                               v-scale
@@ -2325,12 +2329,12 @@
                   :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :position) (:: :uint32 :value)
                   :data $ map-indexed chars $ fn (idx c)
                     hint-fn $ Fn Number Number $ ->
-                      List $ Map Tag Dynamic
+                      List $ Map Tag StitchField
                     let
                         pattern $ stitch-pattern c
                       map stitch-strokes $ fn (info)
-                        hint-fn $ Fn (Map Tag Dynamic)
-                          -> $ Map Tag Dynamic
+                        hint-fn $ Fn (Map Tag StitchField)
+                          -> $ Map Tag StitchField
                         let
                             x $ lagopus.math/require-v3 $ .unwrap (get info :position)
                             data-idx $ decode-map-as
@@ -2439,7 +2443,7 @@
                             :position $ &v+ base-bottom-left $ v3 -0.2 -0.2 0
                             :data base-idx-next
           :examples $ []
-          :schema $ quote $ List (Map Tag Dynamic)
+          :schema $ quote $ List (Map Tag StitchField)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.comp.stitch
           :require
