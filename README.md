@@ -64,7 +64,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.45.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.45.1：
 
 ```sh
 caps --strict --ci
