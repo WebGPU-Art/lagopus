@@ -7,9 +7,9 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### Calcit 0.44.0
+### Calcit 0.45.0
 
-更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.44.0，重新安装依赖后再生成 JS。本次迁移不改变公开接口或渲染源码。
+更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.45.0，重新安装依赖后再生成 JS。本次迁移不改变公开接口或渲染源码。
 候选 0.5.18 使用正式 Quaternion 0.2.26 和 JS-FFI 0.2.19；消费者需统一精确依赖图，0.5.18 在正式 tag 发布前仍为候选。
 刺绣顶点表的值声明为 `StitchField = Number | quaternion.vector/V3`，实际 Map、顶点顺序和数值不变。直接使用 `stitch-strokes` 的严格类型代码应按 union 成员处理值。
 九个内置 WGSL 常量声明为 `String`，默认颜色声明为 `List Number`。
@@ -60,7 +60,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.1 和正式 Calcit 0.44.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.45.0：
 
 ```sh
 caps --strict --ci
