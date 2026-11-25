@@ -7,6 +7,10 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
+### 0.5.19 候选 / Calcit 0.45.1
+
+请配对正式 Calcit 和 `@calcit/procs` 0.45.1，重新安装依赖并生成 JS；使用 Quaternion 0.2.27 和 JS-FFI 0.2.24。渲染接口、数据格式和 HUD 保持，正式 tag 发布后再升级。
+
 ### Calcit 0.45.0
 
 更新源码后请配对正式 Calcit CLI 和 `@calcit/procs` 0.45.0，重新安装依赖后再生成 JS。本次迁移不改变公开接口或渲染源码。
@@ -60,7 +64,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.45.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.45.1：
 
 ```sh
 caps --strict --ci

@@ -13,7 +13,10 @@
         '*object-cache $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *object-cache ({})
           :examples $ []
-          :schema $ quote $ Ref (Map Dynamic Dynamic)
+          :schema $ quote $ Ref
+            Map
+              Fn (-> Dynamic) (:features :io)
+              , Dynamic
         'AttributeLayout $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct AttributeLayout (:format String)
             :source $ Map Tag Dynamic
