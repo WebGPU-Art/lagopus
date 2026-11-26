@@ -110,7 +110,9 @@
                 let
                     tag $ .unwrap $ nth data 0
                     xs $ .unwrap $ nth data (inc idx)
-                  if (not= :vertex tag) (eprintln "|expected :vertex tag" data)
+                  if
+                    not $ &= :vertex tag
+                    eprintln "|expected :vertex tag" data
                   write-attribute! xs write!
               (map? data)
                 let
@@ -240,7 +242,7 @@
           :code $ quote $ defn group (a & children)
             if
               not $ or (nil? a)
-                = a $ {}
+                &= a $ {}
               eprintln "|group options is not used at current" a
             let
                 make-group $ unsafe-coerce lagopus/group $ Fn Nil & (JsNullish JsObject) (-> JsObject)
@@ -345,7 +347,7 @@
                 let
                     data $ .unwrap $ nth record (inc idx)
                   if
-                    not= :vertex $ .unwrap $ nth record 0
+                    not $ &= :vertex $ .unwrap (nth record 0)
                     eprintln "|expected :vertex tag" record
                   decode-vertex-attribute data
           :examples $ []
