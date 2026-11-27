@@ -20,6 +20,7 @@ const hook = registerHooks({
   },
 });
 const { comp_bubbles, comp_spots } = await import('../js-out/lagopus.comp.spots.mjs');
+const { object_writer_with } = await import('../js-out/lagopus.alias.mjs');
 hook.deregister();
 
 test('radius 7 produces 42 line segments and ends at one full turn', () => {
@@ -40,4 +41,13 @@ test('spots reuse decoded vector and list positions in every triangle', () => {
     ...Array.from({ length: 6 }, () => [1, 2, 3]).flat(),
     ...Array.from({ length: 6 }, () => [4, 5, 6]).flat(),
   ]);
+});
+
+// Exercise the streaming writer path as well as the direct geometry tests above.
+test('streamed vertex attributes reach the renderer in order', () => {
+  const attr = _$n__$M_(to_tag('field'), to_tag('position'), to_tag('format'), 'float32x3');
+  const options = _$n__$M_(to_tag('shader'), '', to_tag('topology'), to_tag('triangle-list'), to_tag('attrs-list'), _$L_(attr));
+  const result = object_writer_with(options, emit => emit(_$L_(_$L_(1, 2, 3), _$L_(4, 5, 6))), value => value);
+  assert.equal(result.verticesLength, 2);
+  assert.deepEqual(Array.from(result.vertices[0]), [1, 2, 3, 4, 5, 6]);
 });
