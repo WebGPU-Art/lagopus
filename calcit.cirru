@@ -541,9 +541,9 @@
         'query-canvas! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn query-canvas! ()
             let
-                document-host $ unsafe-coerce js/document Document
+                document-host $ js-cast js/document Document
                 canvas $ document-host .query-selector |canvas
-              if (js-nullish? canvas) (raise "|Missing canvas element") canvas
+              if (js-nullish? canvas) (raise "|Missing canvas element") (js-cast canvas Canvas)
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (-> Canvas) (:features :js-ffi)
@@ -582,7 +582,7 @@
         'set-resize-handler! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn set-resize-handler! (handler)
             let
-                window-host $ unsafe-coerce js/window Window
+                window-host $ js-cast js/window Window
               js-set window-host :onresize handler
               , &unit
           :examples $ []
