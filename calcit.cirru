@@ -598,9 +598,9 @@
         'stitch-pattern $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn stitch-pattern (value)
             let
-                binary $ unsafe-coerce (&number:display-by value 2) TextHost
-                digits $ unsafe-coerce (binary .slice 2) TextHost
-              digits .pad-start 32 |0
+                binary $ &number:display-by value 2
+                digits $ .slice binary 2 None
+              .pad-left digits 32 |0
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number (-> String) (:features :js-ffi)
