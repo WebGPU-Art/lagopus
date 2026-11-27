@@ -549,18 +549,14 @@
           :schema $ quote $ Fn (-> Canvas) (:features :js-ffi)
         'rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand (n)
-            let
-                random! $ unsafe-coerce js/Math.random $ Fn (-> Number)
-              * (random!) n
+            * (host/random) n
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number (-> Number) (:features :js-ffi)
         'rand-shift $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand-shift (n dn)
-            let
-                random! $ unsafe-coerce js/Math.random $ Fn (-> Number)
-              + (- n dn)
-                * 2 dn $ random!
+            + (- n dn)
+              * 2 dn $ host/random
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number Number (-> Number) (:features :js-ffi)
@@ -606,7 +602,7 @@
           :schema $ quote $ Fn Number (-> String) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.browser
-          :require $ |ismobilejs :default ismobile
+          :require (|ismobilejs :default ismobile) (js-ffi.browser :as host)
     'lagopus.comp.button $ %{} 'FileEntry
       :defs $ {}
         'Motion $ %{} 'CodeEntry (:doc |)
