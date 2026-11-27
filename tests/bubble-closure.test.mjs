@@ -7,6 +7,7 @@ import { v3 } from '../js-out/quaternion.vector.mjs';
 // Observe the generated buffers before they reach the WebGPU renderer.
 const renderer = `
   export const createRenderer = options => options;
+  export const u32buffer = values => Uint32Array.from(values);
   export const newBufferFormatLength = (format, length) =>
     new Float32Array(length * (format.endsWith('x3') ? 3 : 1));
   export const newBufferFormatArray = (_format, values) => Float32Array.from(values);
@@ -46,8 +47,10 @@ test('spots reuse decoded vector and list positions in every triangle', () => {
 // Exercise the streaming writer path as well as the direct geometry tests above.
 test('streamed vertex attributes reach the renderer in order', () => {
   const attr = _$n__$M_(to_tag('field'), to_tag('position'), to_tag('format'), 'float32x3');
-  const options = _$n__$M_(to_tag('shader'), '', to_tag('topology'), to_tag('triangle-list'), to_tag('attrs-list'), _$L_(attr));
+  const options = _$n__$M_(to_tag('shader'), '', to_tag('topology'), to_tag('triangle-list'), to_tag('attrs-list'), _$L_(attr), to_tag('indices'), _$L_(0, _$L_(1, 2)));
   const result = object_writer_with(options, emit => emit(_$L_(_$L_(1, 2, 3), _$L_(4, 5, 6))), value => value);
   assert.equal(result.verticesLength, 2);
   assert.deepEqual(Array.from(result.vertices[0]), [1, 2, 3, 4, 5, 6]);
+  assert.ok(result.indices instanceof Uint32Array);
+  assert.deepEqual(Array.from(result.indices), [0, 1, 2]);
 });

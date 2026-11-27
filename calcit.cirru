@@ -150,14 +150,12 @@
         'create-object! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn create-object! (options attrs-list vertices-size buffers)
             let
-                create! $ unsafe-coerce createRenderer $ Fn JsObject (-> JsObject)
-                index-buffer! $ unsafe-coerce u32buffer $ Fn JsObject (-> JsObject)
                 indices $ get options :indices
                 textures $ match (get options :textures)
                   (:some matched-field-value)
                     either matched-field-value $ []
                   (:none) ([])
-              create! $ js-object
+              contract/expect-object |renderer $ createRenderer $ js-object
                 :shader $ inject-shader-snippets $ decode-map-as
                   .unwrap $ get options :shader
                   , 'String
@@ -172,13 +170,13 @@
                   (:none) js/undefined
                   (:some indices)
                     if (nil? indices) js/undefined $ let
-                        arr $ unsafe-coerce (js-array) NumberArray
+                        arr $ js-cast (js-array) NumberArray
                         collect! $ fn (x)
                           hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                           arr .push x
                           , &unit
                       collect-array! (decode-index-chunk indices) collect!
-                      index-buffer! $ unsafe-coerce arr JsObject
+                      contract/expect-object |index-buffer $ u32buffer $ contract/expect-object |index-values arr
                 :getParams $ match (get options :get-params)
                   (:some value) value
                   (:none) js/null
