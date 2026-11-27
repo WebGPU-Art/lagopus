@@ -524,17 +524,13 @@
           :schema $ quote Trait
         'atan2 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn atan2 (y x)
-            let
-                invoke $ unsafe-coerce js/Math.atan2 $ Fn Number Number (-> Number)
-              invoke y x
+            contract/expect-number |Math.atan2 $ js/Math.atan2 y x
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number Number (-> Number) (:features :js-ffi)
         'parse-color-channel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-color-channel (text)
-            let
-                parse $ unsafe-coerce js/parseFloat $ Fn String (-> Number)
-              parse text
+            contract/expect-number |parseFloat $ js/parseFloat text
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn String (-> Number) (:features :js-ffi)
@@ -602,7 +598,7 @@
           :schema $ quote $ Fn Number (-> String) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.browser
-          :require (|ismobilejs :default ismobile) (js-ffi.browser :as host)
+          :require (|ismobilejs :default ismobile) (js-ffi.browser :as host) (js-ffi.contract :as contract)
     'lagopus.comp.button $ %{} 'FileEntry
       :defs $ {}
         'Motion $ %{} 'CodeEntry (:doc |)
