@@ -150,14 +150,12 @@
         'create-object! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn create-object! (options attrs-list vertices-size buffers)
             let
-                create! $ unsafe-coerce createRenderer $ Fn JsObject (-> JsObject)
-                index-buffer! $ unsafe-coerce u32buffer $ Fn JsObject (-> JsObject)
                 indices $ get options :indices
                 textures $ match (get options :textures)
                   (:some matched-field-value)
                     either matched-field-value $ []
                   (:none) ([])
-              create! $ js-object
+              contract/expect-object |renderer $ createRenderer $ js-object
                 :shader $ inject-shader-snippets $ decode-map-as
                   .unwrap $ get options :shader
                   , 'String
@@ -172,13 +170,13 @@
                   (:none) js/undefined
                   (:some indices)
                     if (nil? indices) js/undefined $ let
-                        arr $ unsafe-coerce (js-array) NumberArray
+                        arr $ js-cast (js-array) NumberArray
                         collect! $ fn (x)
                           hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                           arr .push x
                           , &unit
                       collect-array! (decode-index-chunk indices) collect!
-                      index-buffer! $ unsafe-coerce arr JsObject
+                      contract/expect-object |index-buffer $ u32buffer $ contract/expect-object |index-values arr
                 :getParams $ match (get options :get-params)
                   (:some value) value
                   (:none) js/null
@@ -310,11 +308,12 @@
                   , read-attribute-layout
                 data $ .unwrap $ get options :data
                 vertices-size $ count-recursive data
-                make-buffer! $ unsafe-coerce newBufferFormatLength $ Fn String Number (-> lagopus.alias/NumberBuffer)
                 buffers $ map-indexed attrs-list $ fn (idx attr)
                   hint-fn $ Fn Number AttributeLayout (-> NumberBuffer) (:features :js-ffi)
                   let
-                      buffer $ make-buffer! (attr :format) vertices-size
+                      buffer $ js-cast
+                        newBufferFormatLength (attr :format) vertices-size
+                        , lagopus.alias/NumberBuffer
                       *offset $ ref 0
                       field $ decode-map-as
                         .unwrap $ get (attr :source) :field
@@ -370,20 +369,21 @@
                   &doseq (record chunk) (swap! *counter inc)
                     &doseq (idx attribute-indices)
                       let
-                          arr $ unsafe-coerce (aget bundles idx) NumberArray
+                          arr $ js-cast (aget bundles idx) NumberArray
                           write! $ fn (value)
                             hint-fn $ Fn Number (-> Unit) (:features :js-ffi)
                             arr .push value
                             , &unit
                         pack-vertex-attribute! (attribute-at record idx) write!
                   , &unit
-                make-buffer! $ unsafe-coerce newBufferFormatArray $ Fn String JsObject (-> lagopus.alias/NumberBuffer)
               writer collect!
               let
                   buffers $ map-indexed attrs-list $ fn (idx attr)
                     hint-fn $ Fn Number AttributeLayout (-> NumberBuffer) (:features :js-ffi)
-                    make-buffer! (attr :format)
-                      unsafe-coerce (aget bundles idx) JsObject
+                    js-cast
+                      newBufferFormatArray (attr :format)
+                        contract/expect-object |vertex-array $ aget bundles idx
+                      , lagopus.alias/NumberBuffer
                 create-object! options
                   map attrs-list $ fn (attr) (attr :source)
                   , @*counter buffers
