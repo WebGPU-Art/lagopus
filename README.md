@@ -7,9 +7,9 @@
 
 ![Dandelions, made previously with Triadica](https://pbs.twimg.com/media/FlUvndXaYAEK0iu?format=jpg)
 
-### 0.5.20 候选 / Calcit 0.46.0
+### 0.5.21 候选 / Calcit 0.47.1
 
-请配对正式 Calcit 和 `@calcit/procs` 0.46.0，重新安装依赖并生成 JS；使用 Quaternion 0.2.28 和 JS-FFI 0.2.26。渲染接口、数据格式和 HUD 保持，正式 tag 发布后再升级。
+请配对正式 Calcit 和 `@calcit/procs` 0.47.1，重新安装依赖并生成 JS；使用 Quaternion 0.2.29 和 JS-FFI 0.2.26。渲染接口、数据格式和 HUD 保持，正式 tag 发布后再升级。39 处旧默认值改为仅在 nil 时回退，保留 false 与默认值的惰性求值。开放属性、宿主对象缓存等动态边界仍需逐项收窄。
 
 ### 0.5.19 / Calcit 0.45.1
 
@@ -68,7 +68,7 @@ CLI/runtime 仍配对正式 0.32.1，原正式依赖图保持。新 tag 验收�
 
 ### 开发与部署
 
-使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.46.0：
+使用 Node.js 24、Yarn 4.18.0、Caps 0.1.2 和正式 Calcit 0.47.1：
 
 ```sh
 caps --strict --ci

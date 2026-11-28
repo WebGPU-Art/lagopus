@@ -153,7 +153,7 @@
                 indices $ get options :indices
                 textures $ match (get options :textures)
                   (:some matched-field-value)
-                    either matched-field-value $ []
+                    if (nil? matched-field-value) ([]) matched-field-value
                   (:none) ([])
               contract/expect-object |renderer $ createRenderer $ js-object
                 :shader $ inject-shader-snippets $ decode-map-as
@@ -845,7 +845,9 @@
                 state $ decode-map-as
                   match (get states :data)
                     (:some matched-field-value)
-                      either matched-field-value $ {} $ :pos ([] 60 0 0)
+                      if (nil? matched-field-value)
+                        {} $ :pos $ [] 60 0 0
+                        , matched-field-value
                     (:none)
                       {} $ :pos $ [] 60 0 0
                   Map Tag lagopus.main/DemoPosition
@@ -1155,11 +1157,12 @@
             let
                 base $ lagopus.math/require-v3 $ match (get options :position)
                   (:some matched-field-value)
-                    either matched-field-value $ v3 0 0 0
+                    if (nil? matched-field-value) (v3 0 0 0) matched-field-value
                   (:none) (v3 0 0 0)
                 radius $ decode-map-as
                   match (get options :radius)
-                    (:some matched-field-value) (either matched-field-value 80)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 80 matched-field-value
                     (:none) 80
                   , 'Number
               object $ {} (:shader wgsl-cube)
@@ -1494,16 +1497,18 @@
                   decode-map-as
                     match (get options :curves)
                       (:some matched-field-value)
-                        either matched-field-value $ []
+                        if (nil? matched-field-value) ([]) matched-field-value
                       (:none) ([])
                     List $ List Dynamic
                   , normalize-curve
               object $ {}
                 :shader $ match (get options :shader)
-                  (:some matched-field-value) (either matched-field-value wgsl-curves)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) wgsl-curves matched-field-value
                   (:none) wgsl-curves
                 :topology $ match (get options :topology)
-                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) :triangle-list matched-field-value
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :curve_ratio) (:: :uint32 :color_index) (:: :float32 :width)
                 :data $ let
@@ -1522,10 +1527,12 @@
                 .merge
                   {}
                     :shader $ match (get options :shader)
-                      (:some matched-field-value) (either matched-field-value wgsl-polylines)
+                      (:some matched-field-value)
+                        if (nil? matched-field-value) wgsl-polylines matched-field-value
                       (:none) wgsl-polylines
                     :topology $ match (get options :topology)
-                      (:some matched-field-value) (either matched-field-value :triangle-list)
+                      (:some matched-field-value)
+                        if (nil? matched-field-value) :triangle-list matched-field-value
                       (:none) :triangle-list
                     :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width)
                   select-keys options $ [] :get-params :compute-options
@@ -1559,10 +1566,12 @@
                 .merge
                   {}
                     :shader $ match (get options :shader)
-                      (:some matched-field-value) (either matched-field-value wgsl-polylines-marked)
+                      (:some matched-field-value)
+                        if (nil? matched-field-value) wgsl-polylines-marked matched-field-value
                       (:none) wgsl-polylines-marked
                     :topology $ match (get options :topology)
-                      (:some matched-field-value) (either matched-field-value :triangle-list)
+                      (:some matched-field-value)
+                        if (nil? matched-field-value) :triangle-list matched-field-value
                       (:none) :triangle-list
                     :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :brush) (:: :float32x3 :direction) (:: :float32 :width) (:: :float32 :mark)
                   select-keys options $ [] :get-params :compute-options
@@ -1614,7 +1623,9 @@
                   , :width
               (:none) 1
               (:some width)
-                decode-map-as (either width 1) Number
+                decode-map-as
+                  if (nil? width) 1 width
+                  , Number
           :examples $ []
           :schema $ quote $ Fn T (-> Number) (:generics T)
         'decode-marked-polyline-input $ %{} 'CodeEntry (:doc |)
@@ -1867,48 +1878,54 @@
             let
                 base $ lagopus.math/require-v3 $ match (get options :position)
                   (:some matched-field-value)
-                    either matched-field-value $ v3 0 0 0
+                    if (nil? matched-field-value) (v3 0 0 0) matched-field-value
                   (:none) (v3 0 0 0)
                 x-direction $ lagopus.math/require-v3 $ match (get options :x-direction)
                   (:some matched-field-value)
-                    either matched-field-value $ v3 1 0 0
+                    if (nil? matched-field-value) (v3 1 0 0) matched-field-value
                   (:none) (v3 1 0 0)
                 y-direction $ lagopus.math/require-v3 $ match (get options :y-direction)
                   (:some matched-field-value)
-                    either matched-field-value $ v3 0 1 0
+                    if (nil? matched-field-value) (v3 0 1 0) matched-field-value
                   (:none) (v3 0 1 0)
                 radius $ decode-map-as
                   match (get options :radius)
-                    (:some matched-field-value) (either matched-field-value 80)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 80 matched-field-value
                     (:none) 80
                   , 'Number
                 iteration $ decode-map-as
                   match (get options :iteration)
-                    (:some matched-field-value) (either matched-field-value 4)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 4 matched-field-value
                     (:none) 4
                   , 'Number
                 color $ decode-map-as
                   match (get options :color)
                     (:some matched-field-value)
-                      either matched-field-value $ [] 0.6 0.8 0.76
+                      if (nil? matched-field-value) ([] 0.6 0.8 0.76) matched-field-value
                     (:none) ([] 0.6 0.8 0.76)
                   List Number
                 *counter $ ref 0
                 r-unit $ / radius iteration
                 transformer $ match (get options :transformer)
-                  (:some matched-field-value) (either matched-field-value identity)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) identity matched-field-value
                   (:none) identity
                 chromatism $ decode-map-as
                   match (get options :chromatism)
-                    (:some matched-field-value) (either matched-field-value 0.1)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 0.1 matched-field-value
                     (:none) 0.1
                   , 'Number
               object $ {}
                 :shader $ match (get options :shader)
-                  (:some matched-field-value) (either matched-field-value wgsl-plate)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) wgsl-plate matched-field-value
                   (:none) wgsl-plate
                 :topology $ match (get options :topology)
-                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) :triangle-list matched-field-value
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map (range 6)
@@ -2041,31 +2058,35 @@
             let
                 base $ lagopus.math/require-v3 $ match (get options :position)
                   (:some matched-field-value)
-                    either matched-field-value $ v3 0 0 0
+                    if (nil? matched-field-value) (v3 0 0 0) matched-field-value
                   (:none) (v3 0 0 0)
                 radius $ decode-map-as
                   match (get options :radius)
-                    (:some matched-field-value) (either matched-field-value 40)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 40 matched-field-value
                     (:none) 40
                   , 'Number
                 iteration $ decode-map-as
                   match (get options :iteration)
-                    (:some matched-field-value) (either matched-field-value 2)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 2 matched-field-value
                     (:none) 2
                   , 'Number
                 color $ decode-map-as
                   match (get options :color)
                     (:some matched-field-value)
-                      either matched-field-value $ [] 0.6 0.8 0.76
+                      if (nil? matched-field-value) ([] 0.6 0.8 0.76) matched-field-value
                     (:none) ([] 0.6 0.8 0.76)
                   List Number
                 *counter $ ref 0
               object $ {}
                 :shader $ match (get options :shader)
-                  (:some matched-field-value) (either matched-field-value wgsl-sphere)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) wgsl-sphere matched-field-value
                   (:none) wgsl-sphere
                 :topology $ match (get options :topology)
-                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) :triangle-list matched-field-value
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :position) (:: :uint32 :idx)
                 :data $ map unit-triangles $ fn (xs)
@@ -2184,7 +2205,9 @@
                 bubbles $ decode-map-as
                   match (get options :bubbles)
                     (:some matched-field-value)
-                      either matched-field-value $ [] $ [] 0 0 0 100
+                      if (nil? matched-field-value)
+                        [] $ [] 0 0 0 100
+                        , matched-field-value
                     (:none)
                       [] $ [] 0 0 0 100
                   List $ List Number
@@ -2218,35 +2241,40 @@
                   decode-map-as
                     match (get options :points)
                       (:some matched-field-value)
-                        either matched-field-value $ []
+                        if (nil? matched-field-value) ([]) matched-field-value
                       (:none) ([])
                     List Dynamic
                   , lagopus.alias/decode-vertex-attribute
                 color $ lagopus.alias/decode-vertex-attribute $ match (get options :color)
                   (:some matched-field-value)
-                    either matched-field-value $ [] 0.8 0.8 1
+                    if (nil? matched-field-value) ([] 0.8 0.8 1) matched-field-value
                   (:none) ([] 0.8 0.8 1)
                 radius $ decode-map-as
                   match (get options :radius)
-                    (:some matched-field-value) (either matched-field-value 12)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 12 matched-field-value
                     (:none) 12
                   , 'Number
                 shift $ decode-map-as
                   match (get options :shift)
-                    (:some matched-field-value) (either matched-field-value 40)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 40 matched-field-value
                     (:none) 40
                   , 'Number
                 vertex-count $ &max 3 $ decode-map-as
                   match (get options :vertex-count)
-                    (:some matched-field-value) (either matched-field-value 8)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 8 matched-field-value
                     (:none) 8
                   , 'Number
               object $ {}
                 :shader $ match (get options :shader)
-                  (:some matched-field-value) (either matched-field-value wgsl-spots)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) wgsl-spots matched-field-value
                   (:none) wgsl-spots
                 :topology $ match (get options :topology)
-                  (:some matched-field-value) (either matched-field-value :triangle-list)
+                  (:some matched-field-value)
+                    if (nil? matched-field-value) :triangle-list matched-field-value
                   (:none) :triangle-list
                 :attrs-list $ [] (:: :float32x3 :base) (:: :float32x3 :color) (:: :float32 :radius) (:: :uint32 :vertex-count) (:: :uint32 :angle-idx) (:: :float32 :shift) (:: :uint32 :spot-idx)
                 :data $ map-indexed points $ fn (spot-idx base)
@@ -2289,16 +2317,17 @@
                 chars $ decode-map-as
                   match (get props :chars)
                     (:some matched-field-value)
-                      either matched-field-value $ [] 0x1111
+                      if (nil? matched-field-value) ([] 0x1111) matched-field-value
                     (:none) ([] 0x1111)
                   List Number
                 position $ lagopus.math/require-v3 $ match (get props :position)
                   (:some matched-field-value)
-                    either matched-field-value $ v3 0 0 0
+                    if (nil? matched-field-value) (v3 0 0 0) matched-field-value
                   (:none) (v3 0 0 0)
                 size $ decode-map-as
                   match (get props :size)
-                    (:some matched-field-value) (either matched-field-value 24)
+                    (:some matched-field-value)
+                      if (nil? matched-field-value) 24 matched-field-value
                     (:none) 24
                   , 'Number
                 gap 4
