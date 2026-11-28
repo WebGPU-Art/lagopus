@@ -524,43 +524,35 @@
           :schema $ quote Trait
         'atan2 $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn atan2 (y x)
-            let
-                invoke $ unsafe-coerce js/Math.atan2 $ Fn Number Number (-> Number)
-              invoke y x
+            contract/expect-number |Math.atan2 $ js/Math.atan2 y x
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number Number (-> Number) (:features :js-ffi)
         'parse-color-channel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn parse-color-channel (text)
-            let
-                parse $ unsafe-coerce js/parseFloat $ Fn String (-> Number)
-              parse text
+            contract/expect-number |parseFloat $ js/parseFloat text
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn String (-> Number) (:features :js-ffi)
         'query-canvas! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn query-canvas! ()
             let
-                document-host $ unsafe-coerce js/document Document
+                document-host $ js-cast js/document Document
                 canvas $ document-host .query-selector |canvas
-              if (js-nullish? canvas) (raise "|Missing canvas element") canvas
+              if (js-nullish? canvas) (raise "|Missing canvas element") (js-cast canvas Canvas)
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn (-> Canvas) (:features :js-ffi)
         'rand $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand (n)
-            let
-                random! $ unsafe-coerce js/Math.random $ Fn (-> Number)
-              * (random!) n
+            * (host/random) n
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number (-> Number) (:features :js-ffi)
         'rand-shift $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn rand-shift (n dn)
-            let
-                random! $ unsafe-coerce js/Math.random $ Fn (-> Number)
-              + (- n dn)
-                * 2 dn $ random!
+            + (- n dn)
+              * 2 dn $ host/random
           :examples $ []
           :ffi $ {} (:backend :js) (:target :browser)
           :schema $ quote $ Fn Number Number (-> Number) (:features :js-ffi)
@@ -586,7 +578,7 @@
         'set-resize-handler! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn set-resize-handler! (handler)
             let
-                window-host $ unsafe-coerce js/window Window
+                window-host $ js-cast js/window Window
               js-set window-host :onresize handler
               , &unit
           :examples $ []
@@ -606,7 +598,7 @@
           :schema $ quote $ Fn Number (-> String) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns lagopus.browser
-          :require $ |ismobilejs :default ismobile
+          :require (|ismobilejs :default ismobile) (js-ffi.browser :as host) (js-ffi.contract :as contract)
     'lagopus.comp.button $ %{} 'FileEntry
       :defs $ {}
         'Motion $ %{} 'CodeEntry (:doc |)
