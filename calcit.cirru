@@ -856,7 +856,7 @@
                       either matched-field-value $ {} $ :pos ([] 60 0 0)
                     (:none)
                       {} $ :pos $ [] 60 0 0
-                  Map Tag Dynamic
+                  Map Tag lagopus.main/DemoPosition
               group nil
                 comp-slider
                   {} $ :position $ [] 0 0 0
@@ -2642,10 +2642,36 @@
           :schema $ quote $ Ref (Map Tag Dynamic)
         'DemoOp $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum DemoOp
-            :state (List Tag) Dynamic
+            :state (List Tag) (Map Tag DemoPosition)
             :tab Tag
           :examples $ []
           :schema $ quote EnumDef
+        'DemoPosition $ %{} 'CodeEntry
+          :doc "|Demo control position accepts the initial numeric list or a V3 emitted by dragging; this is demo state, not the renderer input contract."
+          :code $ quote $ defunion DemoPosition (List Number) quaternion.vector/V3
+          :examples $ []
+          :schema $ quote UnionDef
+          :tests $ [] $ %{} 'TestEntry (:name |accepts-list-and-vector)
+            :code $ quote $ do
+              match
+                try-decode-map-as
+                  {} $ :pos $ [] 60 0 0
+                  Map Tag DemoPosition
+                (:ok _) &unit
+                (:err message) (raise message)
+              match
+                try-decode-map-as
+                  {} $ :pos $ quaternion.vector/v3 1 2 3
+                  Map Tag DemoPosition
+                (:ok _) &unit
+                (:err message) (raise message)
+              assert= true $ match
+                try-decode-map-as
+                  {} $ :pos :bad
+                  Map Tag DemoPosition
+                (:ok _) false
+                (:err _) true
+            :tags $ #{} :regression :unit
         'canvas $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def canvas (browser/query-canvas!)
           :examples $ []
